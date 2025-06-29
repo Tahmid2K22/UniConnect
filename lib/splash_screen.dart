@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uni_connect/front_page.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

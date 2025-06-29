@@ -37,7 +37,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.2
-  fl_chart: ^0.65.0
+  fl_chart: ^1.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -49,6 +49,7 @@ dev_dependencies:
   flutter_launcher_icons: "^0.14.4"
   build_runner: ^2.5.4
   hive_generator: ^2.0.1
+  flutter_lints: ^6.0.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -77,6 +78,9 @@ flutter:
     - assets/background/
     - assets/user_profile_demo.json
     - assets/profile/
+    - assets/ct_marks_demo.json
+    - assets/avg_ct_marks_demo.json
+    - assets/batchmate_cgpa_demo.json
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

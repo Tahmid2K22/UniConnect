@@ -1,0 +1,1454 @@
+[
+  {
+    "roll": "2207001",
+    "name": "Logan White",
+    "status": "active",
+    "cgpa_list": [
+      2.53,
+      3.25,
+      3.41,
+      2.85,
+      2.01
+    ]
+  },
+  {
+    "roll": "2207002",
+    "name": "Chloe Allen",
+    "status": "active",
+    "cgpa_list": [
+      3.05,
+      3.02,
+      2.45,
+      3.17,
+      2.02
+    ]
+  },
+  {
+    "roll": "2207003",
+    "name": "Ariana Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.74,
+      3.74,
+      2.64,
+      3.48,
+      2.54
+    ]
+  },
+  {
+    "roll": "2207004",
+    "name": "Elijah Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.95,
+      3.32,
+      2.28,
+      2.44,
+      2.41
+    ]
+  },
+  {
+    "roll": "2207005",
+    "name": "Oliver Green",
+    "status": "active",
+    "cgpa_list": [
+      3.05,
+      2.58,
+      3.35,
+      2.74,
+      3.53
+    ]
+  },
+  {
+    "roll": "2207006",
+    "name": "Rafsan Riasat",
+    "status": "active",
+    "cgpa_list": [
+      3.22,
+      3.54,
+      3.93,
+      3.78,
+      4.0
+    ]
+  },
+  {
+    "roll": "2207007",
+    "name": "Noah White",
+    "status": "active",
+    "cgpa_list": [
+      2.88,
+      2.11,
+      3.94,
+      3.97,
+      3.87
+    ]
+  },
+  {
+    "roll": "2207008",
+    "name": "Ella Baker",
+    "status": "active",
+    "cgpa_list": [
+      2.49,
+      3.88,
+      3.81,
+      2.02,
+      3.53
+    ]
+  },
+  {
+    "roll": "2207009",
+    "name": "James Baker",
+    "status": "active",
+    "cgpa_list": [
+      3.52,
+      2.58,
+      3.41,
+      2.13,
+      3.85
+    ]
+  },
+  {
+    "roll": "2207010",
+    "name": "Aria King",
+    "status": "active",
+    "cgpa_list": [
+      3.52,
+      2.11,
+      2.54,
+      2.91,
+      2.44
+    ]
+  },
+  {
+    "roll": "2207011",
+    "name": "Luna Lewis",
+    "status": "active",
+    "cgpa_list": [
+      2.3,
+      3.39,
+      2.15,
+      2.5,
+      3.83
+    ]
+  },
+  {
+    "roll": "2207012",
+    "name": "Grace Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.62,
+      2.96,
+      2.56,
+      2.06,
+      3.12
+    ]
+  },
+  {
+    "roll": "2207013",
+    "name": "Henry Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.38,
+      2.26,
+      3.31,
+      3.25,
+      3.05
+    ]
+  },
+  {
+    "roll": "2207014",
+    "name": "Sofia Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.11,
+      2.29,
+      4.0,
+      3.47,
+      3.32
+    ]
+  },
+  {
+    "roll": "2207015",
+    "name": "Grace Walker",
+    "status": "active",
+    "cgpa_list": [
+      2.98,
+      2.78,
+      3.42,
+      2.17,
+      3.06
+    ]
+  },
+  {
+    "roll": "2207016",
+    "name": "James Scott",
+    "status": "active",
+    "cgpa_list": [
+      3.55,
+      3.2,
+      2.2,
+      3.34,
+      2.91
+    ]
+  },
+  {
+    "roll": "2207017",
+    "name": "Lucas Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.47,
+      3.22,
+      3.42,
+      2.85,
+      2.06
+    ]
+  },
+  {
+    "roll": "2207018",
+    "name": "Mason Smith",
+    "status": "active",
+    "cgpa_list": [
+      3.1,
+      2.56,
+      3.56,
+      2.74,
+      3.4
+    ]
+  },
+  {
+    "roll": "2207019",
+    "name": "Mason Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.29,
+      2.43,
+      3.44,
+      2.12,
+      2.02
+    ]
+  },
+  {
+    "roll": "2207020",
+    "name": "Ella Green",
+    "status": "semester_drop",
+    "cgpa_list": [
+      2.93,
+      2.93,
+      2.54,
+      3.15,
+      2.88
+    ]
+  },
+  {
+    "roll": "2207021",
+    "name": "Elijah Lewis",
+    "status": "active",
+    "cgpa_list": [
+      3.0,
+      3.15,
+      2.12,
+      2.76,
+      2.06
+    ]
+  },
+  {
+    "roll": "2207022",
+    "name": "Chloe Taylor",
+    "status": "active",
+    "cgpa_list": [
+      2.74,
+      3.94,
+      3.4,
+      2.97,
+      2.45
+    ]
+  },
+  {
+    "roll": "2207023",
+    "name": "Ariana Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.66,
+      3.76,
+      3.63,
+      3.87,
+      3.59
+    ]
+  },
+  {
+    "roll": "2207024",
+    "name": "Sofia Lewis",
+    "status": "active",
+    "cgpa_list": [
+      2.36,
+      2.32,
+      3.81,
+      3.04,
+      3.82
+    ]
+  },
+  {
+    "roll": "2207025",
+    "name": "Logan King",
+    "status": "active",
+    "cgpa_list": [
+      3.1,
+      2.41,
+      2.64,
+      3.97,
+      3.65
+    ]
+  },
+  {
+    "roll": "2207026",
+    "name": "James Nelson",
+    "status": "active",
+    "cgpa_list": [
+      3.3,
+      2.02,
+      3.95,
+      3.99,
+      3.13
+    ]
+  },
+  {
+    "roll": "2207027",
+    "name": "Liam Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.99,
+      2.19,
+      3.36,
+      2.8,
+      2.65
+    ]
+  },
+  {
+    "roll": "2207028",
+    "name": "Lucas Nelson",
+    "status": "active",
+    "cgpa_list": [
+      3.97,
+      3.18,
+      3.35,
+      2.61,
+      2.41
+    ]
+  },
+  {
+    "roll": "2207029",
+    "name": "Layla Anderson",
+    "status": "active",
+    "cgpa_list": [
+      2.11,
+      2.32,
+      2.26,
+      3.36,
+      3.32
+    ]
+  },
+  {
+    "roll": "2207030",
+    "name": "Luna Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.27,
+      2.92,
+      2.23,
+      2.06,
+      3.93
+    ]
+  },
+  {
+    "roll": "2207031",
+    "name": "Layla Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.01,
+      2.08,
+      3.81,
+      2.78,
+      3.18
+    ]
+  },
+  {
+    "roll": "2207032",
+    "name": "Zara Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.59,
+      2.12,
+      3.17,
+      3.78,
+      2.22
+    ]
+  },
+  {
+    "roll": "2207033",
+    "name": "Maya Baker",
+    "status": "active",
+    "cgpa_list": [
+      2.35,
+      2.82,
+      2.25,
+      3.38,
+      2.28
+    ]
+  },
+  {
+    "roll": "2207034",
+    "name": "Luna Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.97,
+      3.14,
+      2.91,
+      2.96,
+      3.36
+    ]
+  },
+  {
+    "roll": "2207035",
+    "name": "Aria Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.98,
+      3.25,
+      3.65,
+      2.31,
+      3.67
+    ]
+  },
+  {
+    "roll": "2207036",
+    "name": "Liam White",
+    "status": "active",
+    "cgpa_list": [
+      2.56,
+      3.75,
+      3.71,
+      2.66,
+      2.14
+    ]
+  },
+  {
+    "roll": "2207037",
+    "name": "Luna White",
+    "status": "active",
+    "cgpa_list": [
+      2.29,
+      2.11,
+      2.31,
+      2.9,
+      2.3
+    ]
+  },
+  {
+    "roll": "2207038",
+    "name": "Luna Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.53,
+      3.86,
+      3.18,
+      2.2,
+      3.04
+    ]
+  },
+  {
+    "roll": "2207039",
+    "name": "Ella Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.02,
+      3.61,
+      2.09,
+      2.75,
+      2.11
+    ]
+  },
+  {
+    "roll": "2207040",
+    "name": "Ethan Young",
+    "status": "active",
+    "cgpa_list": [
+      3.87,
+      3.0,
+      2.79,
+      3.59,
+      3.21
+    ]
+  },
+  {
+    "roll": "2207041",
+    "name": "Layla Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.51,
+      3.59,
+      3.84,
+      3.34,
+      2.16
+    ]
+  },
+  {
+    "roll": "2207042",
+    "name": "Zara Johnson",
+    "status": "active",
+    "cgpa_list": [
+      3.42,
+      2.6,
+      2.42,
+      3.5,
+      2.55
+    ]
+  },
+  {
+    "roll": "2207043",
+    "name": "Mason Young",
+    "status": "active",
+    "cgpa_list": [
+      3.79,
+      3.42,
+      2.38,
+      2.68,
+      3.73
+    ]
+  },
+  {
+    "roll": "2207044",
+    "name": "Sofia Carter",
+    "status": "active",
+    "cgpa_list": [
+      3.45,
+      2.32,
+      3.16,
+      2.36,
+      3.58
+    ]
+  },
+  {
+    "roll": "2207045",
+    "name": "Liam Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.05,
+      3.4,
+      3.01,
+      2.69,
+      2.92
+    ]
+  },
+  {
+    "roll": "2207046",
+    "name": "Luna Walker",
+    "status": "active",
+    "cgpa_list": [
+      3.66,
+      2.57,
+      2.01,
+      2.91,
+      2.83
+    ]
+  },
+  {
+    "roll": "2207047",
+    "name": "Oliver Smith",
+    "status": "active",
+    "cgpa_list": [
+      3.17,
+      3.68,
+      3.44,
+      2.75,
+      2.65
+    ]
+  },
+  {
+    "roll": "2207048",
+    "name": "Sofia Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.9,
+      2.52,
+      2.85,
+      2.91,
+      3.35
+    ]
+  },
+  {
+    "roll": "2207049",
+    "name": "Aria Walker",
+    "status": "active",
+    "cgpa_list": [
+      3.86,
+      3.11,
+      3.88,
+      3.49,
+      3.09
+    ]
+  },
+  {
+    "roll": "2207050",
+    "name": "Henry Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.51,
+      2.5,
+      3.2,
+      3.73,
+      2.17
+    ]
+  },
+  {
+    "roll": "2207051",
+    "name": "Grace King",
+    "status": "active",
+    "cgpa_list": [
+      3.16,
+      2.71,
+      2.66,
+      3.61,
+      3.7
+    ]
+  },
+  {
+    "roll": "2207052",
+    "name": "Zara Anderson",
+    "status": "active",
+    "cgpa_list": [
+      2.95,
+      2.5,
+      2.29,
+      2.62,
+      3.27
+    ]
+  },
+  {
+    "roll": "2207053",
+    "name": "Oliver Allen",
+    "status": "active",
+    "cgpa_list": [
+      3.91,
+      3.0,
+      3.98,
+      2.11,
+      2.84
+    ]
+  },
+  {
+    "roll": "2207054",
+    "name": "Logan Johnson",
+    "status": "active",
+    "cgpa_list": [
+      3.33,
+      2.84,
+      2.84,
+      2.16,
+      2.02
+    ]
+  },
+  {
+    "roll": "2207055",
+    "name": "Henry Lewis",
+    "status": "active",
+    "cgpa_list": [
+      3.26,
+      2.64,
+      2.61,
+      2.04,
+      2.26
+    ]
+  },
+  {
+    "roll": "2207056",
+    "name": "Henry Taylor",
+    "status": "active",
+    "cgpa_list": [
+      2.43,
+      3.56,
+      3.4,
+      3.07,
+      3.51
+    ]
+  },
+  {
+    "roll": "2207057",
+    "name": "Ariana Walker",
+    "status": "active",
+    "cgpa_list": [
+      2.44,
+      3.28,
+      3.79,
+      3.78,
+      2.69
+    ]
+  },
+  {
+    "roll": "2207058",
+    "name": "Oliver Clark",
+    "status": "active",
+    "cgpa_list": [
+      2.78,
+      2.42,
+      3.06,
+      3.71,
+      3.32
+    ]
+  },
+  {
+    "roll": "2207059",
+    "name": "James Hall",
+    "status": "active",
+    "cgpa_list": [
+      3.89,
+      2.05,
+      2.25,
+      3.31,
+      3.74
+    ]
+  },
+  {
+    "roll": "2207060",
+    "name": "Sofia Carter",
+    "status": "semester_drop",
+    "cgpa_list": [
+      2.39,
+      2.7,
+      2.41,
+      2.78,
+      3.15
+    ]
+  },
+  {
+    "roll": "2207061",
+    "name": "Zara King",
+    "status": "active",
+    "cgpa_list": [
+      3.45,
+      2.08,
+      2.74,
+      2.34,
+      3.52
+    ]
+  },
+  {
+    "roll": "2207062",
+    "name": "Ariana King",
+    "status": "active",
+    "cgpa_list": [
+      3.39,
+      2.17,
+      3.6,
+      3.72,
+      2.77
+    ]
+  },
+  {
+    "roll": "2207063",
+    "name": "Henry Baker",
+    "status": "active",
+    "cgpa_list": [
+      2.24,
+      2.44,
+      2.75,
+      3.47,
+      3.23
+    ]
+  },
+  {
+    "roll": "2207064",
+    "name": "Layla Carter",
+    "status": "active",
+    "cgpa_list": [
+      2.54,
+      3.99,
+      2.54,
+      3.99,
+      3.26
+    ]
+  },
+  {
+    "roll": "2207065",
+    "name": "Mason Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.7,
+      3.49,
+      3.08,
+      2.18,
+      2.95
+    ]
+  },
+  {
+    "roll": "2207066",
+    "name": "Mason Walker",
+    "status": "active",
+    "cgpa_list": [
+      2.37,
+      3.64,
+      2.39,
+      2.75,
+      3.83
+    ]
+  },
+  {
+    "roll": "2207067",
+    "name": "Liam Clark",
+    "status": "active",
+    "cgpa_list": [
+      3.01,
+      2.07,
+      2.59,
+      3.6,
+      3.49
+    ]
+  },
+  {
+    "roll": "2207068",
+    "name": "Ella Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.46,
+      4.0,
+      3.78,
+      2.98,
+      2.9
+    ]
+  },
+  {
+    "roll": "2207069",
+    "name": "Luna Baker",
+    "status": "active",
+    "cgpa_list": [
+      3.84,
+      2.76,
+      2.7,
+      3.73,
+      3.4
+    ]
+  },
+  {
+    "roll": "2207070",
+    "name": "Ariana Nelson",
+    "status": "active",
+    "cgpa_list": [
+      3.58,
+      3.98,
+      3.99,
+      3.13,
+      2.52
+    ]
+  },
+  {
+    "roll": "2207071",
+    "name": "Oliver Lee",
+    "status": "active",
+    "cgpa_list": [
+      3.43,
+      3.25,
+      3.98,
+      3.98,
+      2.76
+    ]
+  },
+  {
+    "roll": "2207072",
+    "name": "Layla Hall",
+    "status": "active",
+    "cgpa_list": [
+      3.97,
+      3.11,
+      3.21,
+      3.05,
+      3.84
+    ]
+  },
+  {
+    "roll": "2207073",
+    "name": "Henry Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.31,
+      2.23,
+      3.87,
+      2.73,
+      3.76
+    ]
+  },
+  {
+    "roll": "2207074",
+    "name": "Grace Young",
+    "status": "active",
+    "cgpa_list": [
+      3.38,
+      2.57,
+      2.53,
+      2.8,
+      3.74
+    ]
+  },
+  {
+    "roll": "2207075",
+    "name": "Noah Young",
+    "status": "active",
+    "cgpa_list": [
+      3.64,
+      3.12,
+      2.13,
+      3.04,
+      2.43
+    ]
+  },
+  {
+    "roll": "2207076",
+    "name": "Chloe Brown",
+    "status": "active",
+    "cgpa_list": [
+      2.07,
+      2.7,
+      2.18,
+      2.33,
+      3.64
+    ]
+  },
+  {
+    "roll": "2207077",
+    "name": "Zara Taylor",
+    "status": "active",
+    "cgpa_list": [
+      2.94,
+      2.86,
+      2.69,
+      2.11,
+      2.49
+    ]
+  },
+  {
+    "roll": "2207078",
+    "name": "Grace Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.78,
+      2.2,
+      3.84,
+      3.09,
+      3.81
+    ]
+  },
+  {
+    "roll": "2207079",
+    "name": "James Lee",
+    "status": "active",
+    "cgpa_list": [
+      3.07,
+      3.97,
+      2.77,
+      2.4,
+      2.31
+    ]
+  },
+  {
+    "roll": "2207080",
+    "name": "Elijah Taylor",
+    "status": "semester_drop",
+    "cgpa_list": [
+      2.64,
+      2.91,
+      3.62,
+      2.26,
+      3.41
+    ]
+  },
+  {
+    "roll": "2207081",
+    "name": "Elijah Young",
+    "status": "active",
+    "cgpa_list": [
+      2.63,
+      2.16,
+      2.65,
+      3.6,
+      2.31
+    ]
+  },
+  {
+    "roll": "2207082",
+    "name": "Aria Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.73,
+      2.65,
+      3.92,
+      3.13,
+      3.65
+    ]
+  },
+  {
+    "roll": "2207083",
+    "name": "James White",
+    "status": "active",
+    "cgpa_list": [
+      3.21,
+      3.6,
+      2.9,
+      3.68,
+      3.24
+    ]
+  },
+  {
+    "roll": "2207084",
+    "name": "Oliver King",
+    "status": "active",
+    "cgpa_list": [
+      3.82,
+      3.7,
+      2.73,
+      3.76,
+      3.04
+    ]
+  },
+  {
+    "roll": "2207085",
+    "name": "Ariana Green",
+    "status": "active",
+    "cgpa_list": [
+      3.85,
+      2.65,
+      2.74,
+      2.66,
+      3.06
+    ]
+  },
+  {
+    "roll": "2207086",
+    "name": "Oliver Scott",
+    "status": "active",
+    "cgpa_list": [
+      3.36,
+      3.55,
+      3.3,
+      3.57,
+      2.39
+    ]
+  },
+  {
+    "roll": "2207087",
+    "name": "James Clark",
+    "status": "active",
+    "cgpa_list": [
+      2.25,
+      3.11,
+      2.85,
+      3.08,
+      3.37
+    ]
+  },
+  {
+    "roll": "2207088",
+    "name": "Zara White",
+    "status": "active",
+    "cgpa_list": [
+      3.87,
+      2.26,
+      3.17,
+      3.72,
+      3.69
+    ]
+  },
+  {
+    "roll": "2207089",
+    "name": "Henry Lee",
+    "status": "active",
+    "cgpa_list": [
+      3.37,
+      2.17,
+      2.13,
+      2.83,
+      2.23
+    ]
+  },
+  {
+    "roll": "2207090",
+    "name": "Henry Nelson",
+    "status": "active",
+    "cgpa_list": [
+      3.05,
+      2.69,
+      2.14,
+      2.16,
+      2.48
+    ]
+  },
+  {
+    "roll": "2207091",
+    "name": "Ariana Green",
+    "status": "active",
+    "cgpa_list": [
+      3.66,
+      2.38,
+      2.16,
+      3.45,
+      2.61
+    ]
+  },
+  {
+    "roll": "2207092",
+    "name": "Maya White",
+    "status": "active",
+    "cgpa_list": [
+      2.76,
+      3.61,
+      3.34,
+      3.76,
+      3.26
+    ]
+  },
+  {
+    "roll": "2207093",
+    "name": "Maya Baker",
+    "status": "active",
+    "cgpa_list": [
+      3.59,
+      3.29,
+      2.3,
+      3.29,
+      3.16
+    ]
+  },
+  {
+    "roll": "2207094",
+    "name": "Chloe Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.13,
+      3.9,
+      3.52,
+      3.37,
+      2.98
+    ]
+  },
+  {
+    "roll": "2207095",
+    "name": "Chloe Smith",
+    "status": "active",
+    "cgpa_list": [
+      2.67,
+      2.73,
+      3.06,
+      2.61,
+      2.69
+    ]
+  },
+  {
+    "roll": "2207096",
+    "name": "Luna Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.43,
+      2.49,
+      3.17,
+      2.68,
+      3.95
+    ]
+  },
+  {
+    "roll": "2207097",
+    "name": "Ethan Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.2,
+      2.58,
+      2.32,
+      3.7,
+      2.95
+    ]
+  },
+  {
+    "roll": "2207098",
+    "name": "James Taylor",
+    "status": "active",
+    "cgpa_list": [
+      3.11,
+      2.26,
+      2.35,
+      2.04,
+      2.95
+    ]
+  },
+  {
+    "roll": "2207099",
+    "name": "Noah Smith",
+    "status": "active",
+    "cgpa_list": [
+      3.33,
+      3.67,
+      3.45,
+      2.92,
+      3.75
+    ]
+  },
+  {
+    "roll": "2207100",
+    "name": "Mason Scott",
+    "status": "semester_drop",
+    "cgpa_list": [
+      3.05,
+      2.97,
+      2.06,
+      3.75,
+      2.77
+    ]
+  },
+  {
+    "roll": "2207101",
+    "name": "Henry Clark",
+    "status": "active",
+    "cgpa_list": [
+      2.47,
+      2.29,
+      3.28,
+      3.87,
+      3.33
+    ]
+  },
+  {
+    "roll": "2207102",
+    "name": "Ella Johnson",
+    "status": "active",
+    "cgpa_list": [
+      3.88,
+      3.78,
+      2.57,
+      2.57,
+      2.59
+    ]
+  },
+  {
+    "roll": "2207103",
+    "name": "Logan King",
+    "status": "active",
+    "cgpa_list": [
+      2.95,
+      3.55,
+      3.58,
+      2.62,
+      3.45
+    ]
+  },
+  {
+    "roll": "2207104",
+    "name": "Lucas Lee",
+    "status": "active",
+    "cgpa_list": [
+      2.16,
+      2.61,
+      2.35,
+      2.09,
+      2.08
+    ]
+  },
+  {
+    "roll": "2207105",
+    "name": "Ariana White",
+    "status": "active",
+    "cgpa_list": [
+      3.52,
+      3.35,
+      2.22,
+      3.1,
+      2.34
+    ]
+  },
+  {
+    "roll": "2207106",
+    "name": "Liam King",
+    "status": "active",
+    "cgpa_list": [
+      2.6,
+      2.55,
+      2.52,
+      3.65,
+      2.76
+    ]
+  },
+  {
+    "roll": "2207107",
+    "name": "Mason Baker",
+    "status": "active",
+    "cgpa_list": [
+      3.68,
+      2.13,
+      2.1,
+      3.29,
+      3.39
+    ]
+  },
+  {
+    "roll": "2207108",
+    "name": "Chloe Johnson",
+    "status": "active",
+    "cgpa_list": [
+      2.86,
+      3.22,
+      2.89,
+      3.08,
+      3.84
+    ]
+  },
+  {
+    "roll": "2207109",
+    "name": "Liam Martin",
+    "status": "active",
+    "cgpa_list": [
+      3.88,
+      2.47,
+      2.18,
+      3.34,
+      3.26
+    ]
+  },
+  {
+    "roll": "2207110",
+    "name": "Logan Nelson",
+    "status": "active",
+    "cgpa_list": [
+      2.93,
+      3.11,
+      2.13,
+      2.75,
+      2.39
+    ]
+  },
+  {
+    "roll": "2207111",
+    "name": "Zara Hall",
+    "status": "active",
+    "cgpa_list": [
+      3.76,
+      2.6,
+      3.39,
+      3.77,
+      2.03
+    ]
+  },
+  {
+    "roll": "2207112",
+    "name": "Grace Green",
+    "status": "active",
+    "cgpa_list": [
+      2.93,
+      3.41,
+      3.36,
+      2.49,
+      2.49
+    ]
+  },
+  {
+    "roll": "2207113",
+    "name": "Zara Scott",
+    "status": "active",
+    "cgpa_list": [
+      3.79,
+      3.74,
+      3.8,
+      3.69,
+      3.28
+    ]
+  },
+  {
+    "roll": "2207114",
+    "name": "Ariana King",
+    "status": "active",
+    "cgpa_list": [
+      2.77,
+      3.88,
+      2.87,
+      2.02,
+      2.99
+    ]
+  },
+  {
+    "roll": "2207115",
+    "name": "Luna King",
+    "status": "active",
+    "cgpa_list": [
+      2.74,
+      2.63,
+      3.44,
+      2.4,
+      3.16
+    ]
+  },
+  {
+    "roll": "2207116",
+    "name": "Oliver Baker",
+    "status": "active",
+    "cgpa_list": [
+      3.2,
+      3.07,
+      2.15,
+      3.68,
+      3.84
+    ]
+  },
+  {
+    "roll": "2207117",
+    "name": "Ariana Allen",
+    "status": "active",
+    "cgpa_list": [
+      2.44,
+      3.77,
+      3.03,
+      2.41,
+      3.8
+    ]
+  },
+  {
+    "roll": "2207118",
+    "name": "Aria Anderson",
+    "status": "active",
+    "cgpa_list": [
+      2.35,
+      2.74,
+      3.65,
+      2.76,
+      3.91
+    ]
+  },
+  {
+    "roll": "2207119",
+    "name": "Chloe Scott",
+    "status": "active",
+    "cgpa_list": [
+      2.87,
+      2.87,
+      3.36,
+      2.69,
+      3.04
+    ]
+  },
+  {
+    "roll": "2207120",
+    "name": "Layla Taylor",
+    "status": "semester_drop",
+    "cgpa_list": [
+      3.66,
+      2.29,
+      2.72,
+      2.82,
+      2.66
+    ]
+  },
+  {
+    "roll": "2207121",
+    "name": "Aria Walker",
+    "status": "active",
+    "cgpa_list": [
+      3.95,
+      2.96,
+      3.34,
+      2.02,
+      2.56
+    ]
+  }
+]

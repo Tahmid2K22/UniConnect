@@ -7,7 +7,7 @@ import 'package:uni_connect/features/navigation/side_navigation.dart';
 import 'avg_cgpa_animation.dart';
 
 class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({Key? key}) : super(key: key);
+  const UserProfilePage({super.key});
 
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();

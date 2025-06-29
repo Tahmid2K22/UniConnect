@@ -7,8 +7,7 @@ class TaskDetailsPage extends StatefulWidget {
   final TodoTask task;
   final int taskKey; // Hive key for the task
 
-  const TaskDetailsPage({Key? key, required this.task, required this.taskKey})
-    : super(key: key);
+  const TaskDetailsPage({super.key, required this.task, required this.taskKey});
 
   @override
   State<TaskDetailsPage> createState() => _TaskDetailsPageState();
@@ -73,13 +72,13 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
             style: TextButton.styleFrom(foregroundColor: Colors.white70),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
             style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -313,7 +312,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 ),
               ),
               TextButton(
-                child: const Text('Pick Date'),
                 style: TextButton.styleFrom(foregroundColor: Colors.cyanAccent),
                 onPressed: () async {
                   final picked = await showDatePicker(
@@ -324,6 +322,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                   );
                   if (picked != null) setState(() => dueDate = picked);
                 },
+                child: const Text('Pick Date'),
               ),
             ],
           ),

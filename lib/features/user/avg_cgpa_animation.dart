@@ -4,8 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AnimatedGradientCGPANumber extends StatefulWidget {
   final double avgCgpa;
-  const AnimatedGradientCGPANumber({Key? key, required this.avgCgpa})
-    : super(key: key);
+  const AnimatedGradientCGPANumber({super.key, required this.avgCgpa});
 
   @override
   State<AnimatedGradientCGPANumber> createState() =>

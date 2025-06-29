@@ -5,6 +5,7 @@ import 'package:uni_connect/splash_screen.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
+import 'features/user/user_analytics.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ void main() async {
         '/frontpage': (_) => FrontPage(),
         '/todo': (_) => const TodoPage(),
         '/exam': (_) => const PlaceholderScreen(title: "Exam Details"),
-        '/analytics': (_) => const PlaceholderScreen(title: "Analytics"),
+        '/analytics': (_) => const UserAnalyticsPage(),
         '/notices': (_) => const PlaceholderScreen(title: "Notices"),
       },
     ),

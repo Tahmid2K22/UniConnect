@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 
 class SideNavigation extends StatelessWidget {
-  const SideNavigation({Key? key}) : super(key: key);
+  const SideNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -134,8 +134,7 @@ class _SidebarButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.route,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

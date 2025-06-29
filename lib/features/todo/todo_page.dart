@@ -6,7 +6,7 @@ import 'task_details_page.dart';
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 class TodoPage extends StatefulWidget {
-  const TodoPage({Key? key}) : super(key: key);
+  const TodoPage({super.key});
 
   @override
   State<TodoPage> createState() => _TodoPageState();
@@ -319,9 +319,9 @@ class _TodoPageState extends State<TodoPage> {
   }
 
   void _showAddTaskDialog(BuildContext context) {
-    final _titleController = TextEditingController();
-    final _descController = TextEditingController();
-    DateTime? _selectedDueDate;
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    DateTime? selectedDueDate;
 
     showDialog(
       context: context,
@@ -344,7 +344,7 @@ class _TodoPageState extends State<TodoPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                    controller: _titleController,
+                    controller: titleController,
                     style: GoogleFonts.poppins(color: Colors.white),
                     decoration: const InputDecoration(
                       labelText: 'Title *',
@@ -357,7 +357,7 @@ class _TodoPageState extends State<TodoPage> {
                   ),
                   const SizedBox(height: 8),
                   TextField(
-                    controller: _descController,
+                    controller: descController,
                     style: GoogleFonts.poppins(color: Colors.white70),
                     decoration: const InputDecoration(
                       labelText: 'Description',
@@ -373,9 +373,9 @@ class _TodoPageState extends State<TodoPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          _selectedDueDate == null
+                          selectedDueDate == null
                               ? 'No due date'
-                              : 'Due: ${_selectedDueDate!.toLocal().toString().split(' ')[0]}',
+                              : 'Due: ${selectedDueDate!.toLocal().toString().split(' ')[0]}',
                           style: GoogleFonts.poppins(
                             color: Colors.white70,
                             fontSize: 13,
@@ -383,7 +383,6 @@ class _TodoPageState extends State<TodoPage> {
                         ),
                       ),
                       TextButton(
-                        child: const Text('Pick Date'),
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.cyanAccent,
                         ),
@@ -396,10 +395,11 @@ class _TodoPageState extends State<TodoPage> {
                           );
                           if (picked != null) {
                             setState(() {
-                              _selectedDueDate = picked;
+                              selectedDueDate = picked;
                             });
                           }
                         },
+                        child: const Text('Pick Date'),
                       ),
                     ],
                   ),
@@ -408,9 +408,9 @@ class _TodoPageState extends State<TodoPage> {
             ),
             actions: [
               TextButton(
-                child: const Text('Cancel'),
                 style: TextButton.styleFrom(foregroundColor: Colors.white70),
                 onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -422,14 +422,14 @@ class _TodoPageState extends State<TodoPage> {
                 ),
                 child: const Text('Add'),
                 onPressed: () {
-                  if (_titleController.text.trim().isEmpty) return;
+                  if (titleController.text.trim().isEmpty) return;
                   final newTask = TodoTask(
                     id: DateTime.now().millisecondsSinceEpoch,
-                    title: _titleController.text.trim(),
-                    description: _descController.text.trim().isEmpty
+                    title: titleController.text.trim(),
+                    description: descController.text.trim().isEmpty
                         ? null
-                        : _descController.text.trim(),
-                    dueDate: _selectedDueDate,
+                        : descController.text.trim(),
+                    dueDate: selectedDueDate,
                     isDone: false,
                   );
                   todoBox.add(newTask);
