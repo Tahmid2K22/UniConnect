@@ -6,6 +6,8 @@ import 'features/todo/todo_task.dart';
 import 'features/navigation/side_navigation.dart';
 import 'package:intl/intl.dart' as intl;
 import 'features/routine/collect_data.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 // Front page layout
 class FrontPage extends StatefulWidget {
@@ -267,29 +269,63 @@ class _FrontPageState extends State<FrontPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _sectionTitle("Upcoming Exam"),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/exam');
+                            _sectionTitle("Upcoming Exams"),
+                            FutureBuilder<Map<String, dynamic>>(
+                              future: loadExamJson(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                final examsRaw =
+                                    snapshot.data!['upcoming_exams'];
+                                if (examsRaw == null || examsRaw is! List) {
+                                  return const Text('No exams found.');
+                                }
+                                final List<Map<String, dynamic>> exams =
+                                    examsRaw
+                                        .map<Map<String, dynamic>>(
+                                          (e) => Map<String, dynamic>.from(e),
+                                        )
+                                        .toList();
+                                return Column(
+                                  children: exams.map((exam) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.pushNamed(context, '/exam');
+                                      },
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: Container(
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 6,
+                                          ),
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: _glassCard(),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                exam['title'],
+                                                style: _sectionTextStyle,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                exam['date'],
+                                                style: const TextStyle(
+                                                  color: Colors.white70,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ).animate().fadeIn().slideX(begin: 0.2),
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
                               },
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: _glassCard(),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      "OS Midterm",
-                                      style: _sectionTextStyle,
-                                    ),
-                                    SizedBox(height: 6),
-                                    Text(
-                                      "June 28, 9:00 AM",
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                  ],
-                                ),
-                              ).animate().fadeIn().slideX(begin: 0.2),
                             ),
                           ],
                         ),
@@ -343,67 +379,68 @@ class _FrontPageState extends State<FrontPage>
                   const SizedBox(height: 30),
 
                   // 🔵 Recent Notices
-                  _sectionTitle(
-                    "Recent Notices",
-                  ).animate().fadeIn().moveY(begin: -10),
-
-                  ...[
-                    {
-                      "title": "Semester Registration Deadline",
-                      "desc":
-                          "Last date to complete your semester registration is June 30.",
-                      "time": "2h ago",
-                    },
-                    {
-                      "title": "Midterm Routine Published",
-                      "desc":
-                          "Midterm exam routine has been released on the official website.",
-                      "time": "5h ago",
-                    },
-                    {
-                      "title": "Club Fair 2025",
-                      "desc":
-                          "Join the Inter-University Club Fair this Friday in the auditorium.",
-                      "time": "1d ago",
-                    },
-                  ].map((notice) {
-                    return GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/notices'),
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        padding: const EdgeInsets.all(14),
-                        decoration: _glassCard(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              notice["title"]!,
-                              style: _sectionTextStyle.copyWith(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                  _sectionTitle("Recent Notices"),
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: loadNoticesJson(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final noticesRaw = snapshot.data!['notices'];
+                      if (noticesRaw == null || noticesRaw is! List) {
+                        return const Text('No notices found.');
+                      }
+                      final List<Map<String, dynamic>> notices = noticesRaw
+                          .map<Map<String, dynamic>>(
+                            (e) => Map<String, dynamic>.from(e),
+                          )
+                          .toList();
+                      return Column(
+                        children: notices.map((notice) {
+                          return GestureDetector(
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/notices'),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                padding: const EdgeInsets.all(14),
+                                decoration: _glassCard(),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      notice["title"],
+                                      style: _sectionTextStyle.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      notice["desc"],
+                                      style: const TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      notice["time"],
+                                      style: const TextStyle(
+                                        color: Colors.white30,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ).animate().fadeIn().slideX(begin: -0.2),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              notice["desc"]!,
-                              style: const TextStyle(
-                                color: Colors.white60,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              notice["time"]!,
-                              style: const TextStyle(
-                                color: Colors.white30,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ).animate().fadeIn().slideX(begin: -0.2),
-                    );
-                  }),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
 
                   const SizedBox(height: 40),
                 ],
@@ -514,6 +551,16 @@ class _FrontPageState extends State<FrontPage>
       });
     }
   }
+
+  Future<Map<String, dynamic>> loadExamJson() async {
+    final String response = await rootBundle.loadString('assets/exams.json');
+    return json.decode(response);
+  }
+
+  Future<Map<String, dynamic>> loadNoticesJson() async {
+    final String response = await rootBundle.loadString('assets/notices.json');
+    return json.decode(response);
+  }
 }
 
 // Custom Gradiant Transform Class
@@ -537,10 +584,11 @@ class DataModel {
 }
 
 List<DataModel> getTodayNextClass(List<List<String>> sectionData) {
-  if (sectionData.isEmpty)
+  if (sectionData.isEmpty) {
     return [
       DataModel(period: 'No data', data: 'No classes scheduled', endTime: ''),
     ];
+  }
 
   final now = DateTime.now();
   final weekdays = [
@@ -560,8 +608,9 @@ List<DataModel> getTodayNextClass(List<List<String>> sectionData) {
       orElse: () => [],
     );
 
-    if (todayRow.isEmpty)
+    if (todayRow.isEmpty) {
       return [DataModel(period: 'No classes', data: 'Rest up!', endTime: '')];
+    }
 
     for (int i = 1; i < sectionData[0].length; i++) {
       final period = sectionData[0][i];

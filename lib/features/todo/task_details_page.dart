@@ -1,3 +1,5 @@
+// TaskDetailsPage.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -5,9 +7,15 @@ import 'todo_task.dart';
 
 class TaskDetailsPage extends StatefulWidget {
   final TodoTask task;
-  final int taskKey; // Hive key for the task
+  final int taskKey;
+  final bool isFinishedTask;
 
-  const TaskDetailsPage({super.key, required this.task, required this.taskKey});
+  const TaskDetailsPage({
+    super.key,
+    required this.task,
+    required this.taskKey,
+    required this.isFinishedTask,
+  });
 
   @override
   State<TaskDetailsPage> createState() => _TaskDetailsPageState();
@@ -51,41 +59,67 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     setState(() => isEditing = false);
   }
 
-  void _deleteTask() async {
-    final box = Hive.box<TodoTask>('todoBox');
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.deepPurple.shade900.withValues(alpha: 0.92),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text(
-          'Delete Task',
-          style: GoogleFonts.poppins(
-            color: Colors.cyanAccent,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete this task?',
-          style: GoogleFonts.poppins(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            style: TextButton.styleFrom(foregroundColor: Colors.white70),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-    if (confirm == true) {
+  Future<void> _deleteTask() async {
+    bool canDelete = true;
+
+    if (widget.task.isDone && widget.task.completedAt != null) {
+      final now = DateTime.now();
+      final daysSinceCompletion = now
+          .difference(widget.task.completedAt!)
+          .inDays;
+      if (daysSinceCompletion <= 30) {
+        canDelete =
+            await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: Colors.deepPurple.shade900.withAlpha(235),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                title: Text(
+                  'Warning',
+                  style: GoogleFonts.poppins(
+                    color: Colors.cyanAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: Text(
+                  'This task was completed within the last 30 days.\n'
+                  'Deleting it will affect your 30-day progression data.\n'
+                  'Are you sure you want to delete it?',
+                  style: GoogleFonts.poppins(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.cyanAccent,
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                    ),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            ) ??
+            false;
+      }
+    }
+
+    if (canDelete) {
+      final box = Hive.box<TodoTask>('todoBox');
       await box.delete(widget.taskKey);
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.pop(
+          context,
+          widget.isFinishedTask ? 'deleted_finished' : 'deleted_todo',
+        );
+      }
     }
   }
 
@@ -159,19 +193,19 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
+        color: Colors.white.withOpacity(0.09),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: task.isDone
-              ? Colors.green.withValues(alpha: 0.5)
+              ? Colors.green.withOpacity(0.5)
               : isOverdue
-              ? Colors.redAccent.withValues(alpha: 0.5)
+              ? Colors.redAccent.withOpacity(0.5)
               : Colors.white24,
           width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -209,7 +243,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               Icon(
                 Icons.calendar_today,
                 size: 18,
-                color: Colors.cyanAccent.withValues(alpha: 0.8),
+                color: Colors.cyanAccent.withOpacity(0.8),
               ),
               const SizedBox(width: 7),
               Text(
@@ -254,15 +288,15 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
+        color: Colors.white.withOpacity(0.09),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.cyanAccent.withValues(alpha: 0.5),
+          color: Colors.cyanAccent.withOpacity(0.5),
           width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withOpacity(0.15),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),

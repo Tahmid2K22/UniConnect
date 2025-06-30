@@ -87,6 +87,8 @@ flutter:
     - assets/ct_marks_demo.json
     - assets/avg_ct_marks_demo.json
     - assets/batchmate_cgpa_demo.json
+    - assets/exams.json
+    - assets/notices.json
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

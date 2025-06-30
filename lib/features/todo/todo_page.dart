@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'todo_task.dart';
 import 'task_details_page.dart';
 import 'package:uni_connect/features/navigation/side_navigation.dart';
+import 'finished_tasks_page.dart';
+import 'package:uni_connect/features/navigation/transition.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -36,10 +38,9 @@ class _TodoPageState extends State<TodoPage> {
   }
 
   void _refreshTasks({bool initial = false}) {
-    final boxTasks = todoBox.values.toList();
+    final boxTasks = todoBox.values.where((t) => !t.isDone).toList();
     boxTasks.sort(_compareTasks);
 
-    // If initial, populate AnimatedList
     if (initial) {
       _tasks = List.from(boxTasks);
       for (int i = 0; i < _tasks.length; i++) {
@@ -56,10 +57,11 @@ class _TodoPageState extends State<TodoPage> {
         final removedTask = _tasks.removeAt(i);
         _listKey.currentState?.removeItem(
           i,
-          (context, animation) => SizeTransition(
-            sizeFactor: animation,
+          (context, animation) => FadeTransition(
+            opacity: animation,
             child: _buildTaskTile(removedTask, i, _isOverdue(removedTask)),
           ),
+          duration: const Duration(milliseconds: 400),
         );
       }
     }
@@ -68,7 +70,10 @@ class _TodoPageState extends State<TodoPage> {
     for (int i = 0; i < boxTasks.length; i++) {
       if (i >= _tasks.length || _tasks[i] != boxTasks[i]) {
         _tasks.insert(i, boxTasks[i]);
-        _listKey.currentState?.insertItem(i);
+        _listKey.currentState?.insertItem(
+          i,
+          duration: const Duration(milliseconds: 400),
+        );
       }
     }
 
@@ -85,38 +90,37 @@ class _TodoPageState extends State<TodoPage> {
   }
 
   void _onCheckboxChanged(bool? val, int index) {
-    final oldTask = _tasks[index];
-    setState(() {
-      oldTask.isDone = val ?? false;
-      if (oldTask.isDone) {
-        oldTask.completedAt = DateTime.now();
-      } else {
-        oldTask.completedAt = null;
-      }
-      oldTask.save();
+    final removedTask = _tasks[index];
+    removedTask.isDone = val ?? false;
+    if (removedTask.isDone) {
+      removedTask.completedAt = DateTime.now();
+      removedTask.save();
 
-      // Remove from old position
-      final removedTask = _tasks.removeAt(index);
+      // Animate fade-out, then remove from the list
+      // For deletions (removals), use this in removeItem:
+
       _listKey.currentState?.removeItem(
         index,
         (context, animation) => SizeTransition(
           sizeFactor: animation,
-          child: _buildTaskTile(removedTask, index, _isOverdue(removedTask)),
+          axis: Axis.vertical,
+          axisAlignment: 0.0,
+          child: _buildTaskTile(
+            removedTask,
+            0,
+            _isOverdue(removedTask),
+          ), // Use 0 or any fixed number here
         ),
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
       );
 
-      // Find new sorted position
-      final newIndex = _tasks.indexWhere(
-        (t) => _compareTasks(removedTask, t) < 0,
-      );
-      final insertAt = newIndex == -1 ? _tasks.length : newIndex;
-      _tasks.insert(insertAt, removedTask);
-      _listKey.currentState?.insertItem(
-        insertAt,
-        duration: const Duration(milliseconds: 300),
-      );
-    });
+      setState(() {
+        _tasks.removeAt(index);
+      });
+    } else {
+      removedTask.completedAt = null;
+      removedTask.save();
+    }
   }
 
   bool _isOverdue(TodoTask task) =>
@@ -134,7 +138,11 @@ class _TodoPageState extends State<TodoPage> {
         if (key != null) {
           await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => TaskDetailsPage(task: task, taskKey: key),
+              builder: (_) => TaskDetailsPage(
+                task: task,
+                taskKey: key,
+                isFinishedTask: false,
+              ),
             ),
           );
         }
@@ -265,23 +273,39 @@ class _TodoPageState extends State<TodoPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'To-Do List',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
+                  child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    iconTheme: const IconThemeData(color: Colors.white),
+                    title: Text(
+                      'To-Do List',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
                       ),
-                      IconButton(
-                        icon: Icon(Icons.repeat, color: Colors.cyanAccent),
-                        tooltip: 'Manage Daily Tasks',
-                        onPressed:
-                            _showDailyTasksDialog, // Implement this function below
+                    ),
+                    actions: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.repeat, color: Colors.cyanAccent),
+                            tooltip: 'Manage Daily Tasks',
+                            onPressed: _showDailyTasksDialog,
+                          ),
+                          SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(Icons.history, color: Colors.cyanAccent),
+                            tooltip: 'View Finished Tasks',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                NicePageRoute(page: const FinishedTasksPage()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -312,6 +336,8 @@ class _TodoPageState extends State<TodoPage> {
                             final isOverdue = _isOverdue(task);
                             return SizeTransition(
                               sizeFactor: animation,
+                              axis: Axis.vertical,
+                              axisAlignment: 0.0,
                               child: _buildTaskTile(task, index, isOverdue),
                             );
                           },

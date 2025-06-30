@@ -1,39 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
-class SideNavigation extends StatelessWidget {
+Future<Map<String, dynamic>> loadProfile() async {
+  final String jsonString = await rootBundle.loadString(
+    'assets/user_profile_demo.json',
+  );
+  return json.decode(jsonString);
+}
+
+class SideNavigation extends StatefulWidget {
   const SideNavigation({super.key});
 
   @override
+  State<SideNavigation> createState() => _SideNavigationState();
+}
+
+class _SideNavigationState extends State<SideNavigation> {
+  late Future<Map<String, dynamic>> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = loadProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Profile info (replace with actual user data or pass as parameters)
     final profilePic = CircleAvatar(
       radius: 32,
       backgroundImage: AssetImage('assets/profile/profile.jpg'),
-    );
-    final profileInfo = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Rafsan Riasat",
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        SizedBox(height: 2),
-        Text("KUET", style: TextStyle(color: Colors.white70, fontSize: 13)),
-        Text(
-          "CSE Dept.",
-          style: TextStyle(color: Colors.white54, fontSize: 12),
-        ),
-        Text(
-          "Roll: 2207006",
-          style: TextStyle(color: Colors.white38, fontSize: 12),
-        ),
-      ],
     );
 
     final navItems = [
@@ -84,12 +82,66 @@ class SideNavigation extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Row(
-                  children: [
-                    profilePic,
-                    SizedBox(width: 14),
-                    Expanded(child: profileInfo),
-                  ],
+                child: FutureBuilder<Map<String, dynamic>>(
+                  future: _profileFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Row(
+                        children: [
+                          profilePic,
+                          SizedBox(width: 14),
+                          Expanded(child: CircularProgressIndicator()),
+                        ],
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      final profile = snapshot.data!;
+                      return Row(
+                        children: [
+                          profilePic,
+                          SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  profile['name'],
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  profile['institution'],
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                Text(
+                                  '${profile['department']} Dept.',
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                Text(
+                                  'Roll: ${profile['roll_number']}',
+                                  style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ),
             ),

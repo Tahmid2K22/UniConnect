@@ -7,6 +7,7 @@ import 'features/routine/routine_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
+import 'package:uni_connect/features/navigation/transition.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,14 +19,33 @@ void main() async {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
-      routes: {
-        '/profile': (_) => const UserProfilePage(),
-        '/frontpage': (_) => FrontPage(),
-        '/todo': (_) => const TodoPage(),
-        '/routine': (_) => const RoutinePage(),
-        '/exam': (_) => const PlaceholderScreen(title: "Exam Details"),
-        '/analytics': (_) => const UserAnalyticsPage(),
-        '/notices': (_) => const PlaceholderScreen(title: "Notices"),
+      onGenerateRoute: (settings) {
+        // Apply custom transition to all routes
+        switch (settings.name) {
+          case '/profile':
+            return NicePageRoute(page: const UserProfilePage());
+          case '/frontpage':
+            return NicePageRoute(page: FrontPage());
+          case '/todo':
+            return NicePageRoute(page: const TodoPage());
+          case '/routine':
+            return NicePageRoute(page: const RoutinePage());
+          case '/exam':
+            return NicePageRoute(
+              page: const PlaceholderScreen(title: "Exam Details"),
+            );
+          case '/analytics':
+            return NicePageRoute(page: const UserAnalyticsPage());
+          case '/notices':
+            return NicePageRoute(
+              page: const PlaceholderScreen(title: "Notices"),
+            );
+          default:
+            return MaterialPageRoute(
+              builder: (context) =>
+                  const Scaffold(body: Center(child: Text('Route not found'))),
+            );
+        }
       },
     ),
   );
