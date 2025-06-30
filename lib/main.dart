@@ -3,6 +3,7 @@ import 'package:uni_connect/features/todo/todo_page.dart';
 import 'package:uni_connect/front_page.dart';
 import 'package:uni_connect/splash_screen.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
+import 'features/routine/routine_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
@@ -12,6 +13,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
   await Hive.openBox<TodoTask>('todoBox');
+  await Hive.openBox<TodoTask>('dailyTaskBox');
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -20,6 +22,7 @@ void main() async {
         '/profile': (_) => const UserProfilePage(),
         '/frontpage': (_) => FrontPage(),
         '/todo': (_) => const TodoPage(),
+        '/routine': (_) => const RoutinePage(),
         '/exam': (_) => const PlaceholderScreen(title: "Exam Details"),
         '/analytics': (_) => const UserAnalyticsPage(),
         '/notices': (_) => const PlaceholderScreen(title: "Notices"),

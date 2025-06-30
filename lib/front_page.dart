@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/navigation/side_navigation.dart';
+import 'package:intl/intl.dart' as intl;
+import 'features/routine/collect_data.dart';
 
 // Front page layout
 class FrontPage extends StatefulWidget {
@@ -20,10 +22,15 @@ class _FrontPageState extends State<FrontPage>
 
   late AnimationController _controller;
 
+  List<List<String>> sectionAData =
+      []; // Will hold raw routine data for Section A
+  DataModel? nextClass;
+
   // For UniConnect Text animation
   @override
   void initState() {
     super.initState();
+    _loadRoutineData();
 
     _controller = AnimationController(
       vsync: this,
@@ -131,25 +138,56 @@ class _FrontPageState extends State<FrontPage>
                   _sectionTitle(
                     "Up Next",
                   ).animate().fadeIn().moveY(begin: -20, duration: 600.ms),
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.all(16),
-                    decoration: _glassCard(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text("Next Class: DBMS", style: _sectionTextStyle),
-                        SizedBox(height: 6),
-                        Text(
-                          "10:00 AM - 11:30 AM",
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "Room: 302, Building 5",
-                          style: TextStyle(color: Colors.white38),
-                        ),
-                      ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/routine',
+                      ); // Navigate to routine section
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 20),
+                      padding: const EdgeInsets.all(16),
+                      decoration: _glassCard(),
+                      child: nextClass == null
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.cyanAccent,
+                              ),
+                            )
+                          : (nextClass!.period == 'No more classes' ||
+                                nextClass!.period == 'No data' ||
+                                nextClass!.period == 'Error')
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(nextClass!.data, style: _sectionTextStyle),
+                                const SizedBox(height: 6),
+                                Text(
+                                  nextClass!.period,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Next Class: ${nextClass!.data}",
+                                  style: _sectionTextStyle,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  nextClass!.period,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  "Ends: ${nextClass!.endTime}",
+                                  style: const TextStyle(color: Colors.white38),
+                                ),
+                              ],
+                            ),
                     ),
                   ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.3),
 
@@ -450,6 +488,32 @@ class _FrontPageState extends State<FrontPage>
     }
     return stats;
   }
+
+  Future<void> _loadRoutineData() async {
+    try {
+      final results = await CollectData.collectAllData();
+      setState(() {
+        sectionAData = results['sheet1'] ?? [];
+        final nextList = getTodayNextClass(sectionAData);
+        // Always set nextClass, even if the list is empty
+        nextClass = nextList.isNotEmpty
+            ? nextList.first
+            : DataModel(
+                period: 'No data',
+                data: 'No classes scheduled',
+                endTime: '',
+              );
+      });
+    } catch (e) {
+      setState(() {
+        nextClass = DataModel(
+          period: 'Error',
+          data: 'Could not load routine',
+          endTime: '',
+        );
+      });
+    }
+  }
 }
 
 // Custom Gradiant Transform Class
@@ -462,4 +526,71 @@ class SlideGradientTransform extends GradientTransform {
     final double dx = -bounds.width * slidePercent;
     return Matrix4.translationValues(dx, 0, 0);
   }
+}
+
+class DataModel {
+  final String period;
+  final String data;
+  final String endTime;
+
+  DataModel({required this.period, required this.data, required this.endTime});
+}
+
+List<DataModel> getTodayNextClass(List<List<String>> sectionData) {
+  if (sectionData.isEmpty)
+    return [
+      DataModel(period: 'No data', data: 'No classes scheduled', endTime: ''),
+    ];
+
+  final now = DateTime.now();
+  final weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  final today = weekdays[now.weekday - 1];
+
+  try {
+    final todayRow = sectionData.firstWhere(
+      (row) => row.isNotEmpty && row[0] == today,
+      orElse: () => [],
+    );
+
+    if (todayRow.isEmpty)
+      return [DataModel(period: 'No classes', data: 'Rest up!', endTime: '')];
+
+    for (int i = 1; i < sectionData[0].length; i++) {
+      final period = sectionData[0][i];
+      final classTitle = todayRow[i];
+
+      if (classTitle.isEmpty || classTitle == '-') continue;
+
+      final timeRange = RegExp(r'\((.*?)\)').firstMatch(period)?.group(1);
+      if (timeRange == null) continue;
+
+      final endTimeStr = timeRange.split('-')[1].trim();
+      final endTime = intl.DateFormat('hh:mm a').parse(endTimeStr);
+      final endDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        endTime.hour,
+        endTime.minute,
+      );
+
+      if (now.isBefore(endDateTime)) {
+        return [
+          DataModel(period: period, data: classTitle, endTime: endTimeStr),
+        ];
+      }
+    }
+  } catch (e) {
+    debugPrint('Error processing class data: $e');
+  }
+
+  return [DataModel(period: 'No more classes', data: 'Rest up!', endTime: '')];
 }
