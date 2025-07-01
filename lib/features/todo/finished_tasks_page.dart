@@ -45,7 +45,13 @@ class _FinishedTasksPageState extends State<FinishedTasksPage> {
     final task = entry.value;
     final now = DateTime.now();
     final completedAt = task.completedAt ?? DateTime(2000);
-    final daysSinceCompletion = now.difference(completedAt).inDays;
+    final completedDay = DateTime(
+      completedAt.year,
+      completedAt.month,
+      completedAt.day,
+    );
+    final today = DateTime(now.year, now.month, now.day);
+    final daysSinceCompletion = today.difference(completedDay).inDays;
 
     bool canDelete = true;
     if (daysSinceCompletion <= 30) {
@@ -104,17 +110,22 @@ class _FinishedTasksPageState extends State<FinishedTasksPage> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
+
     final now = DateTime.now();
-    final diff = now.difference(date);
+    final today = DateTime(now.year, now.month, now.day);
+    final completedDate = DateTime(date.year, date.month, date.day);
+
+    final diffDays = today.difference(completedDate).inDays;
+
     final timeStr =
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
-    if (diff.inDays == 0) {
+    if (diffDays == 0) {
       return 'Today, $timeStr';
-    } else if (diff.inDays == 1) {
+    } else if (diffDays == 1) {
       return 'Yesterday, $timeStr';
     } else {
-      return '${date.day}/${date.month}/${date.year}, $timeStr';
+      return '$diffDays days ago, $timeStr';
     }
   }
 

@@ -268,13 +268,19 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
   List<int> getCompletionStatsLast30Days() {
     final box = Hive.box<TodoTask>('todoBox');
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day); // strip time
     List<int> stats = List.filled(30, 0);
 
     for (var task in box.values) {
       if (task.completedAt != null) {
-        final daysAgo = now.difference(task.completedAt!).inDays;
+        final completedDay = DateTime(
+          task.completedAt!.year,
+          task.completedAt!.month,
+          task.completedAt!.day,
+        );
+        final daysAgo = today.difference(completedDay).inDays;
         if (daysAgo >= 0 && daysAgo < 30) {
-          stats[29 - daysAgo] += 1; // 0 = 30 days ago, 29 = today
+          stats[29 - daysAgo] += 1;
         }
       }
     }

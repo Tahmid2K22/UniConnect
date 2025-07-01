@@ -64,9 +64,14 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
 
     if (widget.task.isDone && widget.task.completedAt != null) {
       final now = DateTime.now();
-      final daysSinceCompletion = now
-          .difference(widget.task.completedAt!)
-          .inDays;
+      final today = DateTime(now.year, now.month, now.day);
+      final completedDay = DateTime(
+        widget.task.completedAt!.year,
+        widget.task.completedAt!.month,
+        widget.task.completedAt!.day,
+      );
+      final daysSinceCompletion = today.difference(completedDay).inDays;
+
       if (daysSinceCompletion <= 30) {
         canDelete =
             await showDialog<bool>(

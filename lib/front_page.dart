@@ -443,6 +443,35 @@ class _FrontPageState extends State<FrontPage>
                   ),
 
                   const SizedBox(height: 40),
+
+                  //Debug code
+
+                  // ElevatedButton(
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.deepPurple.shade800,
+                  //     foregroundColor: Colors.white,
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //   ),
+                  //   onPressed: () {
+                  //     final box = Hive.box<TodoTask>('todoBox');
+                  //     final fakeTask = TodoTask(
+                  //       id: DateTime.now().millisecondsSinceEpoch,
+                  //       title: "Test Task ${DateTime.now()}",
+                  //       isDone: true,
+                  //       completedAt: DateTime.now().subtract(
+                  //         const Duration(days: 1),
+                  //       ), // 👈 Change days here
+                  //     );
+                  //     box.add(fakeTask);
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       const SnackBar(content: Text('Test task added')),
+                  //     );
+                  //     setState(() {}); // Rebuild graph
+                  //   },
+                  //   child: const Text("Add Test Completed Task (3 Days Ago)"),
+                  // ),
                 ],
               ),
             ),
@@ -513,13 +542,19 @@ class _FrontPageState extends State<FrontPage>
   List<int> getCompletionStatsLast30Days() {
     final box = Hive.box<TodoTask>('todoBox');
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day); // strip time
     List<int> stats = List.filled(30, 0);
 
     for (var task in box.values) {
       if (task.completedAt != null) {
-        final daysAgo = now.difference(task.completedAt!).inDays;
+        final completedDay = DateTime(
+          task.completedAt!.year,
+          task.completedAt!.month,
+          task.completedAt!.day,
+        );
+        final daysAgo = today.difference(completedDay).inDays;
         if (daysAgo >= 0 && daysAgo < 30) {
-          stats[29 - daysAgo] += 1; // 0 = 30 days ago, 29 = today
+          stats[29 - daysAgo] += 1;
         }
       }
     }
