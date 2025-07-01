@@ -96,12 +96,23 @@ class _RoutineTableViewState extends State<RoutineTableView>
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A2E),
         elevation: 10,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Timetable',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.lightBlue,
+        iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
+        title: ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds);
+          },
+          child: const Text(
+            'Timetable',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
       ),
@@ -110,12 +121,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-              Color(0xFF6C3483),
-              Color(0xFF0F3460),
-            ],
+            colors: [Color(0xFF0E0E2C), Color(0xFF0E0E2C)],
           ),
         ),
         child: Center(

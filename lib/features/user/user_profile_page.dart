@@ -43,15 +43,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       child: Scaffold(
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
+        backgroundColor: const Color(0xFF0E0E2C),
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/background/background4.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
           child: userData == null
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(

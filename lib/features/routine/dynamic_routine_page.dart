@@ -140,12 +140,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A1A2E),
-            Color(0xFF16213E),
-            Color(0xFF6C3483),
-            Color(0xFF0F3460),
-          ],
+          colors: [Color(0xFF0E0E2C), Color(0xFF0E0E2C)],
         ),
       ),
       child: Column(

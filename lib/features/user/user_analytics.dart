@@ -78,15 +78,10 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       child: Scaffold(
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
+        backgroundColor: const Color(0xFF0E0E2C),
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/background/background4.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 30),

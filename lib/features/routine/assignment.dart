@@ -12,11 +12,11 @@ class AssignmentPage extends StatelessWidget {
       appBar: AppBar(
         elevation: 10,
         backgroundColor: const Color(0xFF1A1A2E),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
         title: ShaderMask(
           shaderCallback: (Rect bounds) {
             return const LinearGradient(
-              colors: [Color(0xFF6C3483), Color(0xFF00DBDE)],
+              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ).createShader(bounds);
@@ -36,12 +36,7 @@ class AssignmentPage extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF1A1A2E),
-              Color(0xFF16213E),
-              Color(0xFF6C3483),
-              Color(0xFF0F3460),
-            ],
+            colors: [Color(0xFF0E0E2C), Color(0xFF0E0E2C)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

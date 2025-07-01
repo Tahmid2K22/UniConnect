@@ -261,13 +261,8 @@ class _TodoPageState extends State<TodoPage> {
       child: Scaffold(
         key: _scaffoldKey,
         endDrawer: const SideNavigation(),
+        backgroundColor: const Color(0xFF0E0E2C),
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/background/background3.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
           child: SafeArea(
             child: Column(
               children: [
