@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:uni_connect/front_page.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,57 +12,40 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _uniAnimation;
-  late Animation<Offset> _connectAnimation;
+  late AnimationController _popController;
+  late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+
+  bool showText = false;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+    _popController = AnimationController(
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
-    // Uni falls from top with fast start and slow end
-    _uniAnimation =
-        Tween<Offset>(
-          begin: const Offset(0, -5), // Start higher for faster fall
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Interval(0.0, 0.7, curve: Curves.fastOutSlowIn),
-          ),
-        );
-
-    // Connect rises from bottom with fast start and slow end
-    _connectAnimation =
-        Tween<Offset>(
-          begin: const Offset(0, 5), // Start lower for faster rise
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Interval(0.0, 0.7, curve: Curves.fastOutSlowIn),
-          ),
-        );
-
-    // Fade-in effect for both texts
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
-      ),
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _popController, curve: Curves.elasticOut),
     );
 
-    // Start animation
-    _controller.forward();
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _popController, curve: Curves.easeIn));
 
-    // Navigate after delay
-    Future.delayed(const Duration(seconds: 3), () {
+    // Trigger pop-in after splash hits (frame 48 ~1600ms)
+    Future.delayed(const Duration(milliseconds: 1600), () {
+      if (mounted) {
+        _popController.forward();
+        setState(() => showText = true);
+      }
+    });
+
+    // Go to front page after ~3.5s
+    Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) {
         navigateToFrontPage(context);
       }
@@ -70,60 +54,72 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _popController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/background/background1.png'),
-            fit: BoxFit.cover,
+      backgroundColor: const Color(0xFF0e0e2c),
+      body: Stack(
+        children: [
+          // Splash animation (non-looping)
+          Center(
+            child: Lottie.asset(
+              'assets/animations/intro.json',
+              width: 300,
+              height: 300,
+              fit: BoxFit.contain,
+              repeat: false,
+            ),
           ),
-        ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _opacityAnimation.value,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SlideTransition(
-                      position: _uniAnimation,
-                      child: Text(
+
+          // Bouncy UniConnect text
+          if (showText)
+            Center(
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: FadeTransition(
+                  opacity: _opacityAnimation,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
                         'Uni',
                         style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 55,
+                          fontSize: 50,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 20,
+                              color: Colors.white.withOpacity(0.7),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    SlideTransition(
-                      position: _connectAnimation,
-                      child: Text(
+                      const SizedBox(width: 8),
+                      Text(
                         'Connect',
                         style: GoogleFonts.poppins(
-                          color: Colors.cyan,
-                          fontSize: 55,
+                          fontSize: 50,
                           fontWeight: FontWeight.bold,
+                          color: Colors.cyanAccent,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 20,
+                              color: Colors.cyanAccent.withOpacity(0.7),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -133,9 +129,9 @@ void navigateToFrontPage(BuildContext context) {
   Navigator.of(context).pushReplacement(
     PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 700),
-      pageBuilder: (context, animation, secondaryAnimation) => FrontPage(),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          const FrontPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Fade + slide from bottom
         final offsetAnimation = Tween<Offset>(
           begin: const Offset(0, 0.1),
           end: Offset.zero,

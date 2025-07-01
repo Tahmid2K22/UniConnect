@@ -44,7 +44,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
         backgroundColor: const Color(0xFF0E0E2C),
-        body: Container(
+        body: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: userData == null
