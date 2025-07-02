@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'uniconnect-a3831.firebaseapp.com',
     storageBucket: 'uniconnect-a3831.firebasestorage.app',
   );
+
 }
