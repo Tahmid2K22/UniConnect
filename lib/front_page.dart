@@ -379,7 +379,16 @@ class _FrontPageState extends State<FrontPage>
 
                   const SizedBox(height: 30),
 
-                  // 🔵 Recent Notices
+                  //  Recent Notices
+                  //  Currently the data structure of notices is
+                  //  [
+                  //    "id" : some doc id
+                  //    "data" : {
+                  //                "title" : title  
+                  //                "desc" : description 
+                  //                "time" : time 
+                  //             }
+                  //  ] 
                   _sectionTitle("Recent Notices"),
                   FutureBuilder<List<Map<String, dynamic>>>(
                     future: fetchNoticesFromFirestore(),
