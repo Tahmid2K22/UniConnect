@@ -8,9 +8,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
 import 'package:uni_connect/features/navigation/transition.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+  );
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
   await Hive.openBox<TodoTask>('todoBox');

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -378,25 +379,30 @@ class _FrontPageState extends State<FrontPage>
 
                   const SizedBox(height: 30),
 
-                  // 🔵 Recent Notices
+                  //  Recent Notices
+                  //  Currently the data structure of notices is
+                  //  [
+                  //    "id" : some doc id
+                  //    "data" : {
+                  //                "title" : title  
+                  //                "desc" : description 
+                  //                "time" : time 
+                  //             }
+                  //  ] 
                   _sectionTitle("Recent Notices"),
-                  FutureBuilder<Map<String, dynamic>>(
-                    future: loadNoticesJson(),
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchNoticesFromFirestore(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      final noticesRaw = snapshot.data!['notices'];
-                      if (noticesRaw == null || noticesRaw is! List) {
+                      final noticeList = snapshot.data!;
+                      if (noticeList == null || noticeList is! List) {
                         return const Text('No notices found.');
                       }
-                      final List<Map<String, dynamic>> notices = noticesRaw
-                          .map<Map<String, dynamic>>(
-                            (e) => Map<String, dynamic>.from(e),
-                          )
-                          .toList();
+
                       return Column(
-                        children: notices.map((notice) {
+                        children: noticeList.map((notice) {
                           return GestureDetector(
                             onTap: () =>
                                 Navigator.pushNamed(context, '/notices'),
@@ -410,7 +416,7 @@ class _FrontPageState extends State<FrontPage>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      notice["title"],
+                                      notice["data"]["title"],
                                       style: _sectionTextStyle.copyWith(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
@@ -418,7 +424,7 @@ class _FrontPageState extends State<FrontPage>
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      notice["desc"],
+                                      notice["data"]["desc"],
                                       style: const TextStyle(
                                         color: Colors.white60,
                                         fontSize: 13,
@@ -426,7 +432,7 @@ class _FrontPageState extends State<FrontPage>
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      notice["time"],
+                                      notice["data"]["time"],
                                       style: const TextStyle(
                                         color: Colors.white30,
                                         fontSize: 11,
@@ -595,6 +601,16 @@ class _FrontPageState extends State<FrontPage>
   Future<Map<String, dynamic>> loadNoticesJson() async {
     final String response = await rootBundle.loadString('assets/notices.json');
     return json.decode(response);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchNoticesFromFirestore() async {
+    final querySnapshot = await FirebaseFirestore.instance.collection('notices').get();
+    return querySnapshot.docs.map((doc) {
+      return {
+        "id" : doc.id,
+        "data" : doc.data()
+      };
+    }).toList();
   }
 }
 
