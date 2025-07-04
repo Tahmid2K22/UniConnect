@@ -5,12 +5,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/navigation/side_navigation.dart';
-import 'package:intl/intl.dart' as intl;
 import 'features/routine/collect_data.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:uni_connect/widgets/section_title.dart';
+import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
+import 'package:uni_connect/widgets/up_next_card.dart';
+import 'package:uni_connect/widgets/todo_preview_list.dart';
+import 'package:uni_connect/widgets/exam_preview_list.dart';
+import 'package:uni_connect/widgets/notice_preview_list.dart';
+import 'package:uni_connect/utils/front_page_utils.dart';
+import 'package:uni_connect/models/data_model.dart';
 
-// Front page layout
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
 
@@ -18,18 +24,15 @@ class FrontPage extends StatefulWidget {
   State<FrontPage> createState() => _FrontPageState();
 }
 
-// Front Page State
 class _FrontPageState extends State<FrontPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   late AnimationController _controller;
 
-  List<List<String>> sectionAData =
-      []; // Will hold raw routine data for Section A
+  List<List<String>> sectionAData = [];
   DataModel? nextClass;
 
-  // For UniConnect Text animation
   @override
   void initState() {
     super.initState();
@@ -47,26 +50,18 @@ class _FrontPageState extends State<FrontPage>
     super.dispose();
   }
 
-  // Build widget
   @override
   Widget build(BuildContext context) {
-    // Placeholder for Todo-list tasks
-
-    // Directionality to add the side navigation menu
     return Directionality(
       textDirection: TextDirection.ltr,
-
-      // Gesture Detector to open the side navigation menu
       child: GestureDetector(
         onHorizontalDragUpdate: (details) {
-          // Swipe from right to left
           if (details.delta.dx < -10) {
             scaffoldKey.currentState?.openEndDrawer();
           }
         },
-        // Scaffold
         child: Scaffold(
-          key: scaffoldKey, // key to open side navigation menu
+          key: scaffoldKey,
           backgroundColor: const Color(0xFF0E0E2C),
           endDrawer: const SideNavigation(),
           body: SafeArea(
@@ -78,7 +73,6 @@ class _FrontPageState extends State<FrontPage>
                   // 🟣 UniConnect and Hamburger icon
                   Row(
                     children: [
-                      // Animated UniConnect text
                       Expanded(
                         child: AnimatedBuilder(
                           animation: _controller,
@@ -121,8 +115,6 @@ class _FrontPageState extends State<FrontPage>
                           ),
                         ),
                       ),
-
-                      // Hamburger Icon for side navigation bar
                       IconButton(
                         icon: const Icon(
                           Icons.menu,
@@ -135,63 +127,15 @@ class _FrontPageState extends State<FrontPage>
                     ],
                   ),
 
-                  // 🟣 Up Next
                   const SizedBox(height: 10),
 
-                  _sectionTitle(
+                  // 🟣 Up Next
+                  const SectionTitle(
                     "Up Next",
                   ).animate().fadeIn().moveY(begin: -20, duration: 600.ms),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/routine',
-                      ); // Navigate to routine section
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      padding: const EdgeInsets.all(16),
-                      decoration: _glassCard(),
-                      child: nextClass == null
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                color: Colors.cyanAccent,
-                              ),
-                            )
-                          : (nextClass!.period == 'No more classes' ||
-                                nextClass!.period == 'No data' ||
-                                nextClass!.period == 'Error')
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(nextClass!.data, style: _sectionTextStyle),
-                                const SizedBox(height: 6),
-                                Text(
-                                  nextClass!.period,
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Next Class: ${nextClass!.data}",
-                                  style: _sectionTextStyle,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  nextClass!.period,
-                                  style: const TextStyle(color: Colors.white70),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  "Ends: ${nextClass!.endTime}",
-                                  style: const TextStyle(color: Colors.white38),
-                                ),
-                              ],
-                            ),
-                    ),
+                  UpNextCard(
+                    nextClass: nextClass,
+                    onTap: () => Navigator.pushNamed(context, '/routine'),
                   ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.3),
 
                   // 🟢 Todo & Exam summary row
@@ -203,74 +147,30 @@ class _FrontPageState extends State<FrontPage>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _sectionTitle("Todo"),
+                            const SectionTitle("Todo"),
                             ValueListenableBuilder(
                               valueListenable: Hive.box<TodoTask>(
                                 'todoBox',
                               ).listenable(),
                               builder: (context, Box<TodoTask> box, _) {
                                 final tasks = getDueSoonTasks();
-                                if (tasks.isEmpty) {
-                                  return GestureDetector(
-                                    onTap: () =>
-                                        Navigator.pushNamed(context, '/todo'),
-                                    child: Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        vertical: 6,
-                                      ),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: _glassCard(),
-                                      child: const Text(
-                                        "Add a task to get started!",
-                                        style: _sectionTextStyle,
-                                      ),
-                                    ).animate().fadeIn().slideX(begin: -0.2),
-                                  );
-                                }
-                                return Column(
-                                  children: tasks
-                                      .map(
-                                        (task) => GestureDetector(
-                                          onTap: () => Navigator.pushNamed(
-                                            context,
-                                            '/todo',
-                                          ),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 6,
-                                                  ),
-                                              padding: const EdgeInsets.all(12),
-                                              decoration: _glassCard(),
-                                              child: Text(
-                                                task.title +
-                                                    (task.dueDate != null
-                                                        ? " (Due: ${task.dueDate!.toLocal().toString().split(' ')[0]})"
-                                                        : ""),
-                                                style: _sectionTextStyle,
-                                              ),
-                                            ).animate().fadeIn().slideX(begin: -0.2),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
+                                return TodoPreviewList(
+                                  tasks: tasks,
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/todo'),
                                 );
                               },
                             ),
                           ],
                         ),
                       ),
-
                       const SizedBox(width: 20),
-
                       // Upcoming Exam
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _sectionTitle("Upcoming Exams"),
+                            const SectionTitle("Upcoming Exams"),
                             FutureBuilder<Map<String, dynamic>>(
                               future: loadExamJson(),
                               builder: (context, snapshot) {
@@ -281,50 +181,18 @@ class _FrontPageState extends State<FrontPage>
                                 }
                                 final examsRaw =
                                     snapshot.data!['upcoming_exams'];
-                                if (examsRaw == null || examsRaw is! List) {
-                                  return const Text('No exams found.');
-                                }
                                 final List<Map<String, dynamic>> exams =
-                                    examsRaw
-                                        .map<Map<String, dynamic>>(
-                                          (e) => Map<String, dynamic>.from(e),
-                                        )
-                                        .toList();
-                                return Column(
-                                  children: exams.map((exam) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.pushNamed(context, '/exam');
-                                      },
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        child: Container(
-                                          margin: const EdgeInsets.symmetric(
-                                            vertical: 6,
-                                          ),
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: _glassCard(),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                exam['title'],
-                                                style: _sectionTextStyle,
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                exam['date'],
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ).animate().fadeIn().slideX(begin: 0.2),
-                                      ),
-                                    );
-                                  }).toList(),
+                                    examsRaw == null || examsRaw is! List
+                                    ? []
+                                    : examsRaw
+                                          .map<Map<String, dynamic>>(
+                                            (e) => Map<String, dynamic>.from(e),
+                                          )
+                                          .toList();
+                                return ExamPreviewList(
+                                  exams: exams,
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/exam'),
                                 );
                               },
                             ),
@@ -337,59 +205,24 @@ class _FrontPageState extends State<FrontPage>
                   const SizedBox(height: 30),
 
                   // 🟡 Task Graph
-                  _sectionTitle(
+                  const SectionTitle(
                     "Monthly Task Completion",
                   ).animate().fadeIn().moveY(begin: -10),
-
                   ValueListenableBuilder(
                     valueListenable: Hive.box<TodoTask>('todoBox').listenable(),
                     builder: (context, Box<TodoTask> box, _) {
                       final taskStats = getCompletionStatsLast30Days();
                       return GestureDetector(
                         onTap: () => Navigator.pushNamed(context, '/analytics'),
-                        child: Container(
-                          height: 120,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: _glassCard(),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: taskStats.map((count) {
-                              return Expanded(
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  height: 20.0 * count,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Colors.cyan, Colors.blueAccent],
-                                      begin: Alignment.bottomCenter,
-                                      end: Alignment.topCenter,
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ).animate().fadeIn().slideY(begin: 0.3),
-                      );
+                        child: MonthlyTaskCompletionGraph(taskStats: taskStats),
+                      ).animate().fadeIn().slideY(begin: 0.3);
                     },
                   ),
 
                   const SizedBox(height: 30),
 
                   //  Recent Notices
-                  //  Currently the data structure of notices is
-                  //  [
-                  //    "id" : some doc id
-                  //    "data" : {
-                  //                "title" : title  
-                  //                "desc" : description 
-                  //                "time" : time 
-                  //             }
-                  //  ] 
-                  _sectionTitle("Recent Notices"),
+                  const SectionTitle("Recent Notices"),
                   FutureBuilder<List<Map<String, dynamic>>>(
                     future: fetchNoticesFromFirestore(),
                     builder: (context, snapshot) {
@@ -397,87 +230,14 @@ class _FrontPageState extends State<FrontPage>
                         return const Center(child: CircularProgressIndicator());
                       }
                       final noticeList = snapshot.data!;
-                      if (noticeList == null || noticeList is! List) {
-                        return const Text('No notices found.');
-                      }
-
-                      return Column(
-                        children: noticeList.map((notice) {
-                          return GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/notices'),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                padding: const EdgeInsets.all(14),
-                                decoration: _glassCard(),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      notice["data"]["title"],
-                                      style: _sectionTextStyle.copyWith(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      notice["data"]["desc"],
-                                      style: const TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      notice["data"]["time"],
-                                      style: const TextStyle(
-                                        color: Colors.white30,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ).animate().fadeIn().slideX(begin: -0.2),
-                            ),
-                          );
-                        }).toList(),
+                      return NoticePreviewList(
+                        notices: noticeList,
+                        onTap: () => Navigator.pushNamed(context, '/notices'),
                       );
                     },
                   ),
 
                   const SizedBox(height: 40),
-
-                  //Debug code
-
-                  // ElevatedButton(
-                  //   style: ElevatedButton.styleFrom(
-                  //     backgroundColor: Colors.deepPurple.shade800,
-                  //     foregroundColor: Colors.white,
-                  //     shape: RoundedRectangleBorder(
-                  //       borderRadius: BorderRadius.circular(12),
-                  //     ),
-                  //   ),
-                  //   onPressed: () {
-                  //     final box = Hive.box<TodoTask>('todoBox');
-                  //     final fakeTask = TodoTask(
-                  //       id: DateTime.now().millisecondsSinceEpoch,
-                  //       title: "Test Task ${DateTime.now()}",
-                  //       isDone: true,
-                  //       completedAt: DateTime.now().subtract(
-                  //         const Duration(days: 1),
-                  //       ), // 👈 Change days here
-                  //     );
-                  //     box.add(fakeTask);
-                  //     ScaffoldMessenger.of(context).showSnackBar(
-                  //       const SnackBar(content: Text('Test task added')),
-                  //     );
-                  //     setState(() {}); // Rebuild graph
-                  //   },
-                  //   child: const Text("Add Test Completed Task (3 Days Ago)"),
-                  // ),
                 ],
               ),
             ),
@@ -487,85 +247,7 @@ class _FrontPageState extends State<FrontPage>
     );
   }
 
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10, top: 10),
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  static const TextStyle _sectionTextStyle = TextStyle(
-    fontSize: 16,
-    color: Colors.white,
-    fontWeight: FontWeight.w500,
-  );
-
-  BoxDecoration _glassCard() {
-    return BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.05),
-      borderRadius: BorderRadius.circular(15),
-      border: Border.all(color: Colors.white12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 10,
-          offset: const Offset(2, 4),
-        ),
-      ],
-    );
-  }
-
-  List<TodoTask> getAllTasks() {
-    final box = Hive.box<TodoTask>('todoBox');
-    return box.values.toList();
-  }
-
-  List<TodoTask> getDueSoonTasks() {
-    final tasks = getAllTasks().where((task) => !task.isDone).toList();
-
-    // Tasks with due dates, sorted by soonest
-    final withDueDate = tasks.where((t) => t.dueDate != null).toList()
-      ..sort((a, b) => a.dueDate!.compareTo(b.dueDate!));
-
-    // Tasks without due dates
-    final withoutDueDate = tasks.where((t) => t.dueDate == null).toList()
-      ..sort((a, b) => a.title.compareTo(b.title));
-
-    // Take up to 3 tasks: due soon first, then any others
-    return [
-      ...withDueDate.take(3),
-      ...withoutDueDate.take(3 - withDueDate.length),
-    ];
-  }
-
-  List<int> getCompletionStatsLast30Days() {
-    final box = Hive.box<TodoTask>('todoBox');
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day); // strip time
-    List<int> stats = List.filled(30, 0);
-
-    for (var task in box.values) {
-      if (task.completedAt != null) {
-        final completedDay = DateTime(
-          task.completedAt!.year,
-          task.completedAt!.month,
-          task.completedAt!.day,
-        );
-        final daysAgo = today.difference(completedDay).inDays;
-        if (daysAgo >= 0 && daysAgo < 30) {
-          stats[29 - daysAgo] += 1;
-        }
-      }
-    }
-    return stats;
-  }
+  // Load Data Start -------------------------------------------------------------------------------------------------------------------
 
   Future<void> _loadRoutineData() async {
     try {
@@ -573,7 +255,6 @@ class _FrontPageState extends State<FrontPage>
       setState(() {
         sectionAData = results['sheet1'] ?? [];
         final nextList = getTodayNextClass(sectionAData);
-        // Always set nextClass, even if the list is empty
         nextClass = nextList.isNotEmpty
             ? nextList.first
             : DataModel(
@@ -598,23 +279,18 @@ class _FrontPageState extends State<FrontPage>
     return json.decode(response);
   }
 
-  Future<Map<String, dynamic>> loadNoticesJson() async {
-    final String response = await rootBundle.loadString('assets/notices.json');
-    return json.decode(response);
-  }
-
   Future<List<Map<String, dynamic>>> fetchNoticesFromFirestore() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('notices').get();
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('notices')
+        .get();
     return querySnapshot.docs.map((doc) {
-      return {
-        "id" : doc.id,
-        "data" : doc.data()
-      };
+      return {"id": doc.id, "data": doc.data()};
     }).toList();
   }
+  // Load Data End -------------------------------------------------------------------------------------------------------------------
 }
 
-// Custom Gradiant Transform Class
+// Custom Gradient Transform Class (keep as is)
 class SlideGradientTransform extends GradientTransform {
   final double slidePercent;
   const SlideGradientTransform(this.slidePercent);
@@ -624,73 +300,4 @@ class SlideGradientTransform extends GradientTransform {
     final double dx = -bounds.width * slidePercent;
     return Matrix4.translationValues(dx, 0, 0);
   }
-}
-
-class DataModel {
-  final String period;
-  final String data;
-  final String endTime;
-
-  DataModel({required this.period, required this.data, required this.endTime});
-}
-
-List<DataModel> getTodayNextClass(List<List<String>> sectionData) {
-  if (sectionData.isEmpty) {
-    return [
-      DataModel(period: 'No data', data: 'No classes scheduled', endTime: ''),
-    ];
-  }
-
-  final now = DateTime.now();
-  final weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-  final today = weekdays[now.weekday - 1];
-
-  try {
-    final todayRow = sectionData.firstWhere(
-      (row) => row.isNotEmpty && row[0] == today,
-      orElse: () => [],
-    );
-
-    if (todayRow.isEmpty) {
-      return [DataModel(period: 'No classes', data: 'Rest up!', endTime: '')];
-    }
-
-    for (int i = 1; i < sectionData[0].length; i++) {
-      final period = sectionData[0][i];
-      final classTitle = todayRow[i];
-
-      if (classTitle.isEmpty || classTitle == '-') continue;
-
-      final timeRange = RegExp(r'\((.*?)\)').firstMatch(period)?.group(1);
-      if (timeRange == null) continue;
-
-      final endTimeStr = timeRange.split('-')[1].trim();
-      final endTime = intl.DateFormat('hh:mm a').parse(endTimeStr);
-      final endDateTime = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        endTime.hour,
-        endTime.minute,
-      );
-
-      if (now.isBefore(endDateTime)) {
-        return [
-          DataModel(period: period, data: classTitle, endTime: endTimeStr),
-        ];
-      }
-    }
-  } catch (e) {
-    debugPrint('Error processing class data: $e');
-  }
-
-  return [DataModel(period: 'No more classes', data: 'Rest up!', endTime: '')];
 }

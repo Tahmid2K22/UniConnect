@@ -1,15 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Data model for a routine entry
-class DataModel {
-  final String period;
-  final String data;
-  final String endTime;
-
-  DataModel({required this.period, required this.data, required this.endTime});
-}
-
 /// Fetches all routine and assignment data from your Google Apps Script endpoint.
 /// Expects a JSON structure like:
 /// {
@@ -26,9 +17,7 @@ class CollectData {
     if (response.statusCode == 200) {
       print('Raw response: ${response.body}');
       final data = json.decode(response.body) as Map<String, dynamic>;
-      // Debug: print keys
       print('Data keys: ${data.keys}');
-      // Convert all sheet data to List<List<String>>
       return data.map(
         (key, value) => MapEntry(
           key,
