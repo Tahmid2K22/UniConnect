@@ -171,26 +171,17 @@ class _FrontPageState extends State<FrontPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SectionTitle("Upcoming Exams"),
-                            FutureBuilder<Map<String, dynamic>>(
-                              future: loadExamJson(),
+                            FutureBuilder<List<Map<String, dynamic>>>(
+                              future: fetchExamNoticesFromFirestore(),
                               builder: (context, snapshot) {
                                 if (!snapshot.hasData) {
                                   return const Center(
                                     child: CircularProgressIndicator(),
                                   );
                                 }
-                                final examsRaw =
-                                    snapshot.data!['upcoming_exams'];
-                                final List<Map<String, dynamic>> exams =
-                                    examsRaw == null || examsRaw is! List
-                                    ? []
-                                    : examsRaw
-                                          .map<Map<String, dynamic>>(
-                                            (e) => Map<String, dynamic>.from(e),
-                                          )
-                                          .toList();
+                                final examsList = snapshot.data!;
                                 return ExamPreviewList(
-                                  exams: exams,
+                                  exams: examsList,
                                   onTap: () =>
                                       Navigator.pushNamed(context, '/exam'),
                                 );
@@ -277,6 +268,15 @@ class _FrontPageState extends State<FrontPage>
   Future<Map<String, dynamic>> loadExamJson() async {
     final String response = await rootBundle.loadString('assets/exams.json');
     return json.decode(response);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchExamNoticesFromFirestore() async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('exams')
+        .get();
+    return querySnapshot.docs.map((doc) {
+      return {"id": doc.id, "data": doc.data()};
+    }).toList();
   }
 
   Future<List<Map<String, dynamic>>> fetchNoticesFromFirestore() async {
