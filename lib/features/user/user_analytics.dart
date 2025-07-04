@@ -41,69 +41,6 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
     loadBatchmatesCgpa();
   }
 
-  // Load Data Start -------------------------------------------------------------------------------------------------------------------
-
-  Future<void> loadCtMarks() async {
-    final jsonString = await rootBundle.loadString('assets/ct_marks_demo.json');
-    setState(() {
-      ctMarksData = json.decode(jsonString);
-    });
-  }
-
-  Future<void> loadProfile() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/user_profile_demo.json',
-    );
-    setState(() {
-      userData = json.decode(jsonString);
-    });
-  }
-
-  Future<void> loadCtMarksAverage() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/avg_ct_marks_demo.json',
-    );
-    setState(() {
-      ctMarksAverageData = json.decode(jsonString);
-    });
-  }
-
-  Future<void> loadBatchmatesCgpa() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/batchmate_cgpa_demo.json',
-    );
-    setState(() {
-      batchmatesCgpaData = List<Map<String, dynamic>>.from(
-        json.decode(jsonString),
-      );
-    });
-  }
-
-  // Load Data End -------------------------------------------------------------------------------------------------------------------
-
-  // 30-day completion stats
-  List<int> getCompletionStatsLast30Days() {
-    final box = Hive.box<TodoTask>('todoBox');
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day); // strip time
-    List<int> stats = List.filled(30, 0);
-
-    for (var task in box.values) {
-      if (task.completedAt != null) {
-        final completedDay = DateTime(
-          task.completedAt!.year,
-          task.completedAt!.month,
-          task.completedAt!.day,
-        );
-        final daysAgo = today.difference(completedDay).inDays;
-        if (daysAgo >= 0 && daysAgo < 30) {
-          stats[29 - daysAgo] += 1;
-        }
-      }
-    }
-    return stats;
-  }
-
   @override
   Widget build(BuildContext context) {
     final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -266,8 +203,9 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                           userRoll,
                         );
                         final total = ranking.length;
-                        if (userPosition == null)
+                        if (userPosition == null) {
                           return const SizedBox.shrink();
+                        }
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
@@ -289,5 +227,68 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
         ),
       ),
     );
+  }
+
+  // Load Data Start -------------------------------------------------------------------------------------------------------------------
+
+  Future<void> loadCtMarks() async {
+    final jsonString = await rootBundle.loadString('assets/ct_marks_demo.json');
+    setState(() {
+      ctMarksData = json.decode(jsonString);
+    });
+  }
+
+  Future<void> loadProfile() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/user_profile_demo.json',
+    );
+    setState(() {
+      userData = json.decode(jsonString);
+    });
+  }
+
+  Future<void> loadCtMarksAverage() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/avg_ct_marks_demo.json',
+    );
+    setState(() {
+      ctMarksAverageData = json.decode(jsonString);
+    });
+  }
+
+  Future<void> loadBatchmatesCgpa() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/batchmate_cgpa_demo.json',
+    );
+    setState(() {
+      batchmatesCgpaData = List<Map<String, dynamic>>.from(
+        json.decode(jsonString),
+      );
+    });
+  }
+
+  // Load Data End -------------------------------------------------------------------------------------------------------------------
+
+  // 30-day completion stats
+  List<int> getCompletionStatsLast30Days() {
+    final box = Hive.box<TodoTask>('todoBox');
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day); // strip time
+    List<int> stats = List.filled(30, 0);
+
+    for (var task in box.values) {
+      if (task.completedAt != null) {
+        final completedDay = DateTime(
+          task.completedAt!.year,
+          task.completedAt!.month,
+          task.completedAt!.day,
+        );
+        final daysAgo = today.difference(completedDay).inDays;
+        if (daysAgo >= 0 && daysAgo < 30) {
+          stats[29 - daysAgo] += 1;
+        }
+      }
+    }
+    return stats;
   }
 }

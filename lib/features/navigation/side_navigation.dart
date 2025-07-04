@@ -4,12 +4,16 @@ import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
+// Load Data Start -------------------------------------------------------------------------------------------------------------------
+
 Future<Map<String, dynamic>> loadProfile() async {
   final String jsonString = await rootBundle.loadString(
     'assets/user_profile_demo.json',
   );
   return json.decode(jsonString);
 }
+
+// Load Data End -------------------------------------------------------------------------------------------------------------------
 
 class SideNavigation extends StatefulWidget {
   const SideNavigation({super.key});
@@ -177,6 +181,7 @@ class _SideNavigationState extends State<SideNavigation> {
   }
 }
 
+// Side Bar Buttons
 class _SidebarButton extends StatelessWidget {
   final IconData icon;
   final String label;

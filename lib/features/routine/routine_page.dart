@@ -37,32 +37,6 @@ class _RoutinePageState extends State<RoutinePage>
     _loadData();
   }
 
-  Future<void> _loadData() async {
-    try {
-      final results = await CollectData.collectAllData();
-      if (!mounted) return;
-
-      setState(() {
-        final sheet1 = results['sheet1'] ?? [];
-        final sheet2 = results['sheet2'] ?? [];
-        final sheet3 = results['sheet3'] ?? [];
-
-        pages = [
-          Routine(sectionAData: sheet1, sectionBData: sheet2),
-          RoutineTableView(sectionA: sheet1, sectionB: sheet2),
-          AssignmentPage(assignments: sheet3),
-        ];
-        _isLoading = false;
-      });
-      _controller.forward();
-    } catch (e) {
-      setState(() {
-        _error = 'Failed to load data: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   void dispose() {
     _controller.dispose();
@@ -82,11 +56,126 @@ class _RoutinePageState extends State<RoutinePage>
         endDrawer: const SideNavigation(),
         backgroundColor: const Color(0xFF0F3460),
         body: _buildBody(),
-        bottomNavigationBar: _buildNavBar(),
+        bottomNavigationBar: GestureDetector(
+          onDoubleTap: _showRefreshDialog,
+          child: _buildNavBar(),
+        ),
       ),
     );
   }
 
+  //Load Routine Data Start -------------------------------------------------------------------------------------------
+
+  Future<void> _loadData({bool forceRefresh = false}) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      Map<String, dynamic>? results;
+      if (!forceRefresh) {
+        results = await RoutineCache.loadRoutine();
+      }
+      if (results == null) {
+        // No cache or user requested refresh
+        results = await CollectData.collectAllData();
+        await RoutineCache.saveRoutine(results);
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        final sheet1 = results!['sheet1'] ?? [];
+        final sheet2 = results['sheet2'] ?? [];
+        final sheet3 = results['sheet3'] ?? [];
+
+        pages = [
+          Routine(sectionAData: sheet1, sectionBData: sheet2),
+          RoutineTableView(sectionA: sheet1, sectionB: sheet2),
+          AssignmentPage(assignments: sheet3),
+        ];
+        _isLoading = false;
+      });
+      _controller.forward();
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to load data: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  //Load Routine Data End -------------------------------------------------------------------------------------------
+
+  //Double tap for refresh
+
+  void _showRefreshDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.cyanAccent.withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+        title: ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds);
+          },
+          child: const Text(
+            'Refresh Routine',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+        content: const Text(
+          'Do you want to refresh the routine data?',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Colors.white54,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
+              ),
+            ),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.cyanAccent,
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+              _loadData(forceRefresh: true);
+            },
+            child: const Text('Refresh'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  //Body utils
   Widget _buildBody() {
     if (_isLoading) {
       return Center(
@@ -128,23 +217,6 @@ class _RoutinePageState extends State<RoutinePage>
                 style: const TextStyle(color: Colors.white70, fontSize: 18),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyanAccent.withValues(alpha: 0.2),
-                  foregroundColor: Colors.cyanAccent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 15,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(Icons.refresh),
-                label: const Text("TRY AGAIN"),
-                onPressed: _loadData,
-              ),
             ],
           ),
         ),
@@ -154,6 +226,7 @@ class _RoutinePageState extends State<RoutinePage>
     return FadeTransition(opacity: _fadeAnimation, child: pages[_page]);
   }
 
+  // Navbar utils
   Widget _buildNavBar() {
     return CurvedNavigationBar(
       index: _page,
@@ -176,6 +249,8 @@ class _RoutinePageState extends State<RoutinePage>
     );
   }
 
+  //Navbar item utils
+
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isActive = _page == index;
     return Column(
@@ -187,13 +262,19 @@ class _RoutinePageState extends State<RoutinePage>
           color: isActive ? Colors.cyanAccent : Colors.white70,
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.cyanAccent : Colors.white70,
-            fontSize: 12,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-          ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: !isActive
+              ? Text(
+                  label,
+                  key: ValueKey(label),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey('empty')),
         ),
       ],
     );

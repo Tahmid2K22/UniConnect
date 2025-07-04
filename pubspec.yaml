@@ -44,6 +44,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.15.0
   cloud_firestore: ^5.6.10
+  ticker: ^0.3.1
+  marquee: ^2.3.0
   
 
 dev_dependencies:

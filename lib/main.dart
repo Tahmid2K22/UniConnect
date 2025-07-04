@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:uni_connect/features/exams/exams.dart';
+import 'package:uni_connect/features/notices/notices.dart';
 import 'package:uni_connect/features/todo/todo_page.dart';
-import 'package:uni_connect/front_page.dart';
-import 'package:uni_connect/splash_screen.dart';
+import 'package:uni_connect/features/frontpage/front_page.dart';
+import 'package:uni_connect/features/splashscreen/splash_screen.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,13 +11,12 @@ import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'firebase/firebase_options.dart';
+//import 'package:uni_connect/test_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
   await Hive.openBox<TodoTask>('todoBox');
@@ -24,6 +25,7 @@ void main() async {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
+      //home: FocusFrontPage(),
       onGenerateRoute: (settings) {
         // Apply custom transition to all routes
         switch (settings.name) {
@@ -36,15 +38,11 @@ void main() async {
           case '/routine':
             return NicePageRoute(page: const RoutinePage());
           case '/exam':
-            return NicePageRoute(
-              page: const PlaceholderScreen(title: "Exam Details"),
-            );
+            return NicePageRoute(page: const ExamsPage());
           case '/analytics':
             return NicePageRoute(page: const UserAnalyticsPage());
           case '/notices':
-            return NicePageRoute(
-              page: const PlaceholderScreen(title: "Notices"),
-            );
+            return NicePageRoute(page: const NoticesPage());
           default:
             return MaterialPageRoute(
               builder: (context) =>

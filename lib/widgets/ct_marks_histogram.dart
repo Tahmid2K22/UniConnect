@@ -110,7 +110,8 @@ class CtMarksHistogram extends StatelessWidget {
               barTouchData: BarTouchData(
                 enabled: true,
                 touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (group) => Colors.black.withOpacity(0.92),
+                  getTooltipColor: (group) =>
+                      Colors.black.withValues(alpha: 0.92),
                   tooltipBorderRadius: BorderRadius.circular(18),
                   tooltipMargin: 12,
                   fitInsideHorizontally: true,

@@ -52,6 +52,65 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 10,
+        backgroundColor: const Color(0xFF1A1A2E),
+        iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
+        title: ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds);
+          },
+          child: const Text(
+            'Today\'s Schedule',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0E0E2C), Color(0xFF0E0E2C)],
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 25),
+            _buildSectionSelector(),
+            const SizedBox(height: 25),
+            Expanded(
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: _displayData.isEmpty
+                        ? _buildEmptyState()
+                        : _buildClassCard(),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _loadSection() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -70,6 +129,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     _controller.forward();
   }
 
+  // Get next class of today
   List<DataModel> _getTodayNextClass(List<List<String>> sectionData) {
     if (sectionData.isEmpty) {
       return [
@@ -133,39 +193,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     ];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0E0E2C), Color(0xFF0E0E2C)],
-        ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 25),
-          _buildSectionSelector(),
-          const SizedBox(height: 25),
-          Expanded(
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: _displayData.isEmpty
-                      ? _buildEmptyState()
-                      : _buildClassCard(),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // Section Selector
   Widget _buildSectionSelector() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 30),
@@ -218,6 +246,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Class Card build utils
   Widget _buildClassCard() {
     final item = _displayData.first;
     return Center(
@@ -322,6 +351,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Full Schedule
   void _showFullScheduleDialog(BuildContext context) {
     final sectionData = _selectedSection == "Section A"
         ? widget.sectionAData
@@ -522,6 +552,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Empty Space utils
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -555,6 +586,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
   }
 }
 
+// Glass card utils
 class GlassCard extends StatelessWidget {
   final Widget child;
   const GlassCard({super.key, required this.child});

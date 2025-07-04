@@ -21,19 +21,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     loadProfile();
   }
 
-  // Load Data Start -------------------------------------------------------------------------------------------------------------------
-
-  Future<void> loadProfile() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/user_profile_demo.json',
-    );
-    setState(() {
-      userData = json.decode(jsonString);
-    });
-  }
-
-  // Load Data End -------------------------------------------------------------------------------------------------------------------
-
   @override
   Widget build(BuildContext context) {
     final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -124,4 +111,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ),
     );
   }
+
+  // Load Data Start -------------------------------------------------------------------------------------------------------------------
+
+  Future<void> loadProfile() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/user_profile_demo.json',
+    );
+    setState(() {
+      userData = json.decode(jsonString);
+    });
+  }
+
+  // Load Data End -------------------------------------------------------------------------------------------------------------------
 }
