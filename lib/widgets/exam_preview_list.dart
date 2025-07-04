@@ -24,7 +24,7 @@ class ExamPreviewList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    exam['title'],
+                    exam["data"]["title"],
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
@@ -33,7 +33,7 @@ class ExamPreviewList extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    exam['date'],
+                    exam["data"]["date"],
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ],
