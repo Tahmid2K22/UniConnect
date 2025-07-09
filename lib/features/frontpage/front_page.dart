@@ -274,19 +274,16 @@ class _FrontPageState extends State<FrontPage>
                           onTap: () => Navigator.pushNamed(context, '/notices'),
                           child: SizedBox(
                             height: 110,
-                            child: AbsorbPointer(
-                              // Prevents inner cards from handling taps
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: noticeList.map((notice) {
-                                  final data = notice['data'] ?? {};
-                                  return _NoticeCard(
-                                    title: data['title'] ?? "",
-                                    desc: data['desc'] ?? "",
-                                    time: data['time'] ?? "",
-                                  );
-                                }).toList(),
-                              ),
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: noticeList.map((notice) {
+                                final data = notice['data'] ?? {};
+                                return _NoticeCard(
+                                  title: data['title'] ?? "",
+                                  desc: data['desc'] ?? "",
+                                  time: data['time'] ?? "",
+                                );
+                              }).toList(),
                             ),
                           ),
                         );
