@@ -1,0 +1,31 @@
+{
+  "batchmates": [
+    {
+      "name": "Rafsan Riasat",
+      "university": "KUET",
+      "department": "CSE",
+      "roll": "2207006",
+      "email": "rafsan@kuet.ac.bd",
+      "blood_group": "A+",
+      "phone": "+8801712345678",
+      "profile_pic": "assets/batchmates/rafsan.jpg",
+      "github": "https://github.com/rafsanri",
+      "facebook": "https://facebook.com/rafsanri",
+      "linkedin": "https://linkedin.com/in/rafsanri"
+    },
+    {
+      "name": "Nusrat Jahan",
+      "university": "KUET",
+      "department": "CSE",
+      "roll": "2207012",
+      "email": "nusrat@kuet.ac.bd",
+      "blood_group": "O-",
+      "phone": "+8801812345678",
+      "profile_pic": "assets/batchmates/nusrat.jpg",
+      "github": "https://github.com/nusratj",
+      "facebook": "https://facebook.com/nusratj",
+      "linkedin": "https://linkedin.com/in/nusratj"
+    }
+   
+  ]
+}

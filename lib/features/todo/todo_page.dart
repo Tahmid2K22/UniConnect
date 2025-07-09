@@ -37,6 +37,132 @@ class _TodoPageState extends State<TodoPage> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onHorizontalDragUpdate: (details) {
+        if (details.delta.dx < -10) {
+          _scaffoldKey.currentState?.openEndDrawer();
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        endDrawer: const SideNavigation(),
+        backgroundColor: const Color(0xFF0E0E2C),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                child: AppBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  title: Text(
+                    'To-Do List',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  actions: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.repeat, color: Colors.cyanAccent),
+                          tooltip: 'Manage Daily Tasks',
+                          onPressed: _showDailyTasksDialog,
+                        ),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(Icons.history, color: Colors.cyanAccent),
+                          tooltip: 'View Finished Tasks',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              NicePageRoute(page: const FinishedTasksPage()),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: _tasks.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No tasks yet!\nTap + to add one.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white70,
+                            fontSize: 18,
+                          ),
+                        ),
+                      )
+                    : AnimatedList(
+                        key: _listKey,
+                        initialItemCount: _tasks.length,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 6,
+                        ),
+                        itemBuilder: (context, index, animation) {
+                          if (index >= _tasks.length) return const SizedBox();
+                          final task = _tasks[index];
+                          final isOverdue = _isOverdue(task);
+                          return SizeTransition(
+                            sizeFactor: animation,
+                            axis: Axis.vertical,
+                            axisAlignment: 0.0,
+                            child: _buildTaskTile(task, index, isOverdue),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+
+        floatingActionButton: Stack(
+          children: [
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 80.0, right: 18.0),
+                child: FloatingActionButton(
+                  heroTag: 'addDailyTasks',
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.cyanAccent,
+                  onPressed: _addDailyTasksToTodo,
+                  tooltip: 'Add Daily Tasks', // Implement this function below
+                  child: Icon(Icons.playlist_add_check),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 18.0, right: 18.0),
+                child: FloatingActionButton(
+                  heroTag: 'addTask',
+                  backgroundColor: Colors.cyanAccent,
+                  foregroundColor: Colors.deepPurple,
+                  onPressed: () => _showAddTaskDialog(context),
+                  child: Icon(Icons.add, size: 32),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _refreshTasks({bool initial = false}) {
     final boxTasks = todoBox.values.where((t) => !t.isDone).toList();
     boxTasks.sort(_compareTasks);
@@ -242,133 +368,6 @@ class _TodoPageState extends State<TodoPage> {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
-          _scaffoldKey.currentState?.openEndDrawer();
-        }
-      },
-      child: Scaffold(
-        key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF0E0E2C),
-        body: Container(
-          child: SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                  child: AppBar(
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    iconTheme: const IconThemeData(color: Colors.white),
-                    title: Text(
-                      'To-Do List',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    actions: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.repeat, color: Colors.cyanAccent),
-                            tooltip: 'Manage Daily Tasks',
-                            onPressed: _showDailyTasksDialog,
-                          ),
-                          SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(Icons.history, color: Colors.cyanAccent),
-                            tooltip: 'View Finished Tasks',
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                NicePageRoute(page: const FinishedTasksPage()),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: _tasks.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No tasks yet!\nTap + to add one.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              color: Colors.white70,
-                              fontSize: 18,
-                            ),
-                          ),
-                        )
-                      : AnimatedList(
-                          key: _listKey,
-                          initialItemCount: _tasks.length,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 6,
-                          ),
-                          itemBuilder: (context, index, animation) {
-                            if (index >= _tasks.length) return const SizedBox();
-                            final task = _tasks[index];
-                            final isOverdue = _isOverdue(task);
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              axis: Axis.vertical,
-                              axisAlignment: 0.0,
-                              child: _buildTaskTile(task, index, isOverdue),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        floatingActionButton: Stack(
-          children: [
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 80.0, right: 18.0),
-                child: FloatingActionButton(
-                  heroTag: 'addDailyTasks',
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.cyanAccent,
-                  onPressed: _addDailyTasksToTodo,
-                  tooltip: 'Add Daily Tasks', // Implement this function below
-                  child: Icon(Icons.playlist_add_check),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 18.0, right: 18.0),
-                child: FloatingActionButton(
-                  heroTag: 'addTask',
-                  backgroundColor: Colors.cyanAccent,
-                  foregroundColor: Colors.deepPurple,
-                  onPressed: () => _showAddTaskDialog(context),
-                  child: Icon(Icons.add, size: 32),
-                ),
               ),
             ),
           ],

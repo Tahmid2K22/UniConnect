@@ -44,6 +44,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   firebase_core: ^3.15.0
   cloud_firestore: ^5.6.10
+  ticker: ^0.3.1
+  marquee: ^2.3.0
+  url_launcher: ^6.3.1
+  font_awesome_flutter: ^10.8.0
   
 
 dev_dependencies:
@@ -90,6 +94,8 @@ flutter:
     - assets/ct_marks_demo.json
     - assets/avg_ct_marks_demo.json
     - assets/batchmate_cgpa_demo.json
+    - assets/batchmates.json
+    - assets/teachers.json
     - assets/exams.json
     - assets/notices.json
     - assets/animations/

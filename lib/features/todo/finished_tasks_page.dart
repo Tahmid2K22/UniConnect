@@ -30,105 +30,6 @@ class _FinishedTasksPageState extends State<FinishedTasksPage> {
     super.dispose();
   }
 
-  void _loadFinishedTasks() {
-    final allEntries = todoBox.toMap().entries.toList();
-    final newList = allEntries.where((entry) => entry.value.isDone).toList();
-    setState(() {
-      finishedTasks = newList;
-      // Force AnimatedList to rebuild after external deletion
-      _listKey = GlobalKey<AnimatedListState>();
-    });
-  }
-
-  Future<void> _deleteTaskWithWarning(int index) async {
-    final entry = finishedTasks[index];
-    final task = entry.value;
-    final now = DateTime.now();
-    final completedAt = task.completedAt ?? DateTime(2000);
-    final completedDay = DateTime(
-      completedAt.year,
-      completedAt.month,
-      completedAt.day,
-    );
-    final today = DateTime(now.year, now.month, now.day);
-    final daysSinceCompletion = today.difference(completedDay).inDays;
-
-    bool canDelete = true;
-    if (daysSinceCompletion <= 30) {
-      canDelete =
-          await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: const Color(0xFF222244),
-              title: Text(
-                'Warning',
-                style: GoogleFonts.poppins(color: Colors.cyanAccent),
-              ),
-              content: Text(
-                'This task was completed within the last 30 days.\n'
-                'Deleting it will affect your 30-day progression data.\n'
-                'Are you sure you want to delete it?',
-                style: GoogleFonts.poppins(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(
-                    'Cancel',
-                    style: GoogleFonts.poppins(color: Colors.cyanAccent),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(
-                    'Delete',
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-    }
-
-    if (canDelete) {
-      final removedItem = finishedTasks.removeAt(index);
-      _listKey.currentState?.removeItem(
-        index,
-        (context, animation) => _buildTaskItem(removedItem, index, animation),
-        duration: Duration(milliseconds: 500),
-      );
-      await todoBox.delete(entry.key);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Task deleted')));
-    }
-  }
-
-  String _formatDate(DateTime? date) {
-    if (date == null) return '';
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final completedDate = DateTime(date.year, date.month, date.day);
-
-    final diffDays = today.difference(completedDate).inDays;
-
-    final timeStr =
-        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-
-    if (diffDays == 0) {
-      return 'Today, $timeStr';
-    } else if (diffDays == 1) {
-      return 'Yesterday, $timeStr';
-    } else {
-      return '$diffDays days ago, $timeStr';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final gradient = LinearGradient(
@@ -202,6 +103,112 @@ class _FinishedTasksPageState extends State<FinishedTasksPage> {
     );
   }
 
+  //Load finished tasks start ----------------------------------------------------------------------------------------------
+
+  void _loadFinishedTasks() {
+    final allEntries = todoBox.toMap().entries.toList();
+    final newList = allEntries.where((entry) => entry.value.isDone).toList();
+    setState(() {
+      finishedTasks = newList;
+      // Force AnimatedList to rebuild after external deletion
+      _listKey = GlobalKey<AnimatedListState>();
+    });
+  }
+
+  //Load finished tasks end ----------------------------------------------------------------------------------------------
+
+  //Delete task utils
+  Future<void> _deleteTaskWithWarning(int index) async {
+    final entry = finishedTasks[index];
+    final task = entry.value;
+    final now = DateTime.now();
+    final completedAt = task.completedAt ?? DateTime(2000);
+    final completedDay = DateTime(
+      completedAt.year,
+      completedAt.month,
+      completedAt.day,
+    );
+    final today = DateTime(now.year, now.month, now.day);
+    final daysSinceCompletion = today.difference(completedDay).inDays;
+
+    bool canDelete = true;
+    if (daysSinceCompletion <= 30) {
+      canDelete =
+          await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFF222244),
+              title: Text(
+                'Warning',
+                style: GoogleFonts.poppins(color: Colors.cyanAccent),
+              ),
+              content: Text(
+                'This task was completed within the last 30 days.\n'
+                'Deleting it will affect your 30-day progression data.\n'
+                'Are you sure you want to delete it?',
+                style: GoogleFonts.poppins(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(color: Colors.cyanAccent),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    'Delete',
+                    style: GoogleFonts.poppins(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+    }
+
+    if (canDelete) {
+      final removedItem = finishedTasks.removeAt(index);
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) => _buildTaskItem(removedItem, index, animation),
+        duration: Duration(milliseconds: 500),
+      );
+      await todoBox.delete(entry.key);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Task deleted')));
+    }
+  }
+
+  //Data format utils
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final completedDate = DateTime(date.year, date.month, date.day);
+
+    final diffDays = today.difference(completedDate).inDays;
+
+    final timeStr =
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
+    if (diffDays == 0) {
+      return 'Today, $timeStr';
+    } else if (diffDays == 1) {
+      return 'Yesterday, $timeStr';
+    } else {
+      return '$diffDays days ago, $timeStr';
+    }
+  }
+
+  //Build task items utils
   Widget _buildTaskItem(
     MapEntry<dynamic, TodoTask> entry,
     int index,

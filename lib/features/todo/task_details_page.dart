@@ -42,6 +42,65 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     super.dispose();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final task = Hive.box<TodoTask>('todoBox').get(widget.taskKey)!;
+    final isOverdue =
+        !task.isDone &&
+        task.dueDate != null &&
+        task.dueDate!.isBefore(DateTime.now());
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          isEditing ? 'Edit Task' : 'Task Details',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          if (!isEditing)
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.cyanAccent),
+              onPressed: () => setState(() => isEditing = true),
+              tooltip: "Edit Task",
+            ),
+          if (!isEditing)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
+              onPressed: _deleteTask,
+              tooltip: "Delete Task",
+            ),
+        ],
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0E0E2C), Color(0xFF3A1C71)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            child: isEditing
+                ? _buildEditCard(context)
+                : _buildDetailsCard(context, task, isOverdue),
+          ),
+        ),
+      ),
+    );
+  }
+
+  //Save edit utils
   void _saveChanges() {
     final box = Hive.box<TodoTask>('todoBox');
     final updatedTask = TodoTask(
@@ -59,6 +118,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     setState(() => isEditing = false);
   }
 
+  //Delete task utils
   Future<void> _deleteTask() async {
     bool canDelete = true;
 
@@ -128,64 +188,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final task = Hive.box<TodoTask>('todoBox').get(widget.taskKey)!;
-    final isOverdue =
-        !task.isDone &&
-        task.dueDate != null &&
-        task.dueDate!.isBefore(DateTime.now());
-
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          isEditing ? 'Edit Task' : 'Task Details',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          if (!isEditing)
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.cyanAccent),
-              onPressed: () => setState(() => isEditing = true),
-              tooltip: "Edit Task",
-            ),
-          if (!isEditing)
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.redAccent),
-              onPressed: _deleteTask,
-              tooltip: "Delete Task",
-            ),
-        ],
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0E0E2C), Color(0xFF3A1C71)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            child: isEditing
-                ? _buildEditCard(context)
-                : _buildDetailsCard(context, task, isOverdue),
-          ),
-        ),
-      ),
-    );
-  }
-
+  //Details card utils
   Widget _buildDetailsCard(
     BuildContext context,
     TodoTask task,
@@ -198,19 +201,19 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.09),
+        color: Colors.white.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: task.isDone
-              ? Colors.green.withOpacity(0.5)
+              ? Colors.green.withValues(alpha: 0.5)
               : isOverdue
-              ? Colors.redAccent.withOpacity(0.5)
+              ? Colors.redAccent.withValues(alpha: 0.5)
               : Colors.white24,
           width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -248,7 +251,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               Icon(
                 Icons.calendar_today,
                 size: 18,
-                color: Colors.cyanAccent.withOpacity(0.8),
+                color: Colors.cyanAccent.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 7),
               Text(
@@ -285,6 +288,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     );
   }
 
+  //Edit card utils
   Widget _buildEditCard(BuildContext context) {
     return Container(
       key: const ValueKey('edit'),
@@ -293,15 +297,15 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.09),
+        color: Colors.white.withValues(alpha: 0.09),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.cyanAccent.withOpacity(0.5),
+          color: Colors.cyanAccent.withValues(alpha: 0.5),
           width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),

@@ -49,36 +49,6 @@ class _RoutineTableViewState extends State<RoutineTableView>
     super.dispose();
   }
 
-  Future<void> _loadSection() async {
-    final prefs = await SharedPreferences.getInstance();
-    final section = prefs.getString('section') ?? 'Section B';
-    setState(() {
-      _currentSection = section;
-      _rows = _currentSection == 'Section A'
-          ? _generateRows(widget.sectionA)
-          : _generateRows(widget.sectionB);
-    });
-    _controller.forward();
-  }
-
-  List<DataRow> _generateRows(List<List<String>> data) {
-    return List.generate(data.length, (index) {
-      return DataRow(
-        cells: List.generate(data[index].length, (cellIndex) {
-          return DataCell(
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: AnimatedText(
-                text: data[index][cellIndex],
-                style: const TextStyle(color: Colors.white70),
-              ),
-            ),
-          );
-        }),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final hasData = widget.sectionA.isNotEmpty && widget.sectionB.isNotEmpty;
@@ -94,8 +64,8 @@ class _RoutineTableViewState extends State<RoutineTableView>
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
         elevation: 10,
+        backgroundColor: const Color(0xFF1A1A2E),
         iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
         title: ShaderMask(
           shaderCallback: (Rect bounds) {
@@ -115,6 +85,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
             ),
           ),
         ),
+        centerTitle: true,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -170,6 +141,42 @@ class _RoutineTableViewState extends State<RoutineTableView>
     );
   }
 
+  //Load Section Data Start -------------------------------------------------------------------------------------------
+
+  Future<void> _loadSection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final section = prefs.getString('section') ?? 'Section B';
+    setState(() {
+      _currentSection = section;
+      _rows = _currentSection == 'Section A'
+          ? _generateRows(widget.sectionA)
+          : _generateRows(widget.sectionB);
+    });
+    _controller.forward();
+  }
+
+  //Load Section Data End -------------------------------------------------------------------------------------------
+
+  // Row Generation
+  List<DataRow> _generateRows(List<List<String>> data) {
+    return List.generate(data.length, (index) {
+      return DataRow(
+        cells: List.generate(data[index].length, (cellIndex) {
+          return DataCell(
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Text(
+                data[index][cellIndex],
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
+        }),
+      );
+    });
+  }
+
+  //Section Selector utils
   Widget _buildSectionSelector() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 30),
@@ -190,7 +197,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
       child: DropdownButton<String>(
         value: _currentSection,
         dropdownColor: const Color(0xFF1A1A2E),
-        icon: Icon(Icons.arrow_drop_down, color: Colors.cyanAccent),
+        icon: const Icon(Icons.arrow_drop_down, color: Colors.cyanAccent),
         iconSize: 32,
         underline: const SizedBox(),
         style: const TextStyle(
@@ -203,7 +210,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
             value: value,
             child: Row(
               children: [
-                Icon(Icons.class_, color: Colors.cyanAccent, size: 20),
+                const Icon(Icons.class_, color: Colors.cyanAccent, size: 20),
                 const SizedBox(width: 12),
                 Text(value),
               ],
@@ -229,6 +236,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
   }
 }
 
+//Glass table utils
 class GlassTable extends StatelessWidget {
   final Widget child;
   const GlassTable({super.key, required this.child});
@@ -272,6 +280,7 @@ class GlassTable extends StatelessWidget {
   }
 }
 
+//Glass header utils
 class GlassHeader extends StatelessWidget {
   final String text;
   const GlassHeader({super.key, required this.text});
@@ -294,55 +303,6 @@ class GlassHeader extends StatelessWidget {
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
-      ),
-    );
-  }
-}
-
-class AnimatedText extends StatefulWidget {
-  final String text;
-  final TextStyle style;
-
-  const AnimatedText({super.key, required this.text, required this.style});
-
-  @override
-  State<AnimatedText> createState() => _AnimatedTextState();
-}
-
-class _AnimatedTextState extends State<AnimatedText>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fade;
-  late Animation<Offset> _slide;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _fade = Tween<double>(begin: 0, end: 1).animate(_controller);
-    _slide = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fade,
-      child: SlideTransition(
-        position: _slide,
-        child: Text(widget.text, style: widget.style),
       ),
     );
   }

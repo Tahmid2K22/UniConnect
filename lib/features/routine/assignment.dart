@@ -22,7 +22,7 @@ class AssignmentPage extends StatelessWidget {
             ).createShader(bounds);
           },
           child: const Text(
-            'Assignments & Projects',
+            'Assignments',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -83,6 +83,7 @@ class AssignmentPage extends StatelessWidget {
   }
 }
 
+// Animation Utils
 class AnimatedAssignmentCard extends StatefulWidget {
   final int index;
   final String title;
@@ -168,6 +169,7 @@ class _AnimatedAssignmentCardState extends State<AnimatedAssignmentCard>
   }
 }
 
+//Glass card utils
 class GlassCard extends StatelessWidget {
   final Widget child;
   const GlassCard({super.key, required this.child});

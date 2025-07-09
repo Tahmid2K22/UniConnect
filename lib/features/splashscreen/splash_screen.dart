@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:uni_connect/front_page.dart';
+import 'package:uni_connect/features/frontpage/front_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen>
                           shadows: [
                             Shadow(
                               blurRadius: 20,
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                             ),
                           ],
                         ),
@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
                           shadows: [
                             Shadow(
                               blurRadius: 20,
-                              color: Colors.cyanAccent.withOpacity(0.7),
+                              color: Colors.cyanAccent.withValues(alpha: 0.7),
                             ),
                           ],
                         ),
@@ -125,6 +125,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
+// Go to front page
 void navigateToFrontPage(BuildContext context) {
   Navigator.of(context).pushReplacement(
     PageRouteBuilder(

@@ -1,0 +1,22 @@
+{
+  "teachers": [
+    {
+      "name": "Dr. A. K. M. Mahbubur Rahman",
+      "university": "KUET",
+      "department": "CSE",
+      "email": "mahbub@cse.kuet.ac.bd",
+      "blood_group": "B+",
+      "phone": "+8801711223344",
+      "profile_pic": "assets/teachers/mahbub.jpg"
+    },
+    {
+      "name": "Prof. Nusrat Jahan",
+      "university": "KUET",
+      "department": "CSE",
+      "email": "nusrat@cse.kuet.ac.bd",
+      "blood_group": "O-",
+      "phone": "+8801811223344",
+      "profile_pic": "assets/teachers/nusrat.jpg"
+    }
+  ]
+}
