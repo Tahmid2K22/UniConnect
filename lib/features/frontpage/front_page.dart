@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
+import 'package:uni_connect/firebase/firestore/database.dart';
 import '../todo/todo_task.dart';
 import '../navigation/side_navigation.dart';
 import '../routine/collect_data.dart';
@@ -475,24 +476,6 @@ class _FrontPageState extends State<FrontPage>
   Future<Map<String, dynamic>> loadExamJson() async {
     final String response = await rootBundle.loadString('assets/exams.json');
     return json.decode(response);
-  }
-
-  Future<List<Map<String, dynamic>>> fetchExamsFromFirestore() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('exams')
-        .get();
-    return querySnapshot.docs.map((doc) {
-      return {"id": doc.id, "data": doc.data()};
-    }).toList();
-  }
-
-  Future<List<Map<String, dynamic>>> fetchNoticesFromFirestore() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('notices')
-        .get();
-    return querySnapshot.docs.map((doc) {
-      return {"id": doc.id, "data": doc.data()};
-    }).toList();
   }
 
   Future<void> _loadProfile() async {

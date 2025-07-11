@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:uni_connect/firebase/firestore/database.dart';
 
 class ExamsPage extends StatefulWidget {
   const ExamsPage({super.key});
@@ -16,7 +17,7 @@ class _ExamsPageState extends State<ExamsPage> {
   @override
   void initState() {
     super.initState();
-    _examsFuture = loadExams();
+    _examsFuture = fetchExamsFromFirestore();
   }
 
   @override
@@ -93,7 +94,7 @@ class _ExamsPageState extends State<ExamsPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "${exam['date']} • ${exam['time']}",
+                      "${exam['date']}",
                       style: GoogleFonts.poppins(
                         color: Colors.white70,
                         fontSize: 14,
@@ -110,8 +111,7 @@ class _ExamsPageState extends State<ExamsPage> {
   }
 
   //Load Exam Data --------------------------------------------------------------------------------------------------
-
-  Future<List<Map<String, dynamic>>> loadExams() async {
+/*   Future<List<Map<String, dynamic>>> loadExams() async {
     final String response = await rootBundle.loadString('assets/exams.json');
     final data = json.decode(response);
     final examsRaw = data['upcoming_exams'];
@@ -119,7 +119,7 @@ class _ExamsPageState extends State<ExamsPage> {
     return examsRaw
         .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
         .toList();
-  }
-
+  } */
+  // Not needed. delete later
   //Load Exam Data --------------------------------------------------------------------------------------------------
 }
