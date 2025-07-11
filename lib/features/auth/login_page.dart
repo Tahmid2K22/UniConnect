@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:uni_connect/firebase/auth/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -128,13 +129,14 @@ class _LoginPageState extends State<LoginPage>
                   children: [
                     OutlinedButton.icon(
                       onPressed: () async {
-                        final userCred = await signInWithGoogle();
-                        if (userCred != null) {
+                        await signInWithGoogle();
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user != null) {
                           Navigator.pushReplacementNamed(context, '/frontpage');
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Sign-in failed. Please try again"),
+                              content: Text('Sign-in failed. Please try again'),
                             ),
                           );
                         }

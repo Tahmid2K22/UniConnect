@@ -3,6 +3,7 @@ import 'package:uni_connect/features/batchmates/batchmates_page.dart';
 import 'package:uni_connect/features/exams/exams.dart';
 import 'package:uni_connect/features/notices/notices.dart';
 import 'package:uni_connect/features/resources/resources.dart';
+import 'package:uni_connect/features/settings/settings.dart';
 import 'package:uni_connect/features/splashscreen/splash_screen.dart';
 import 'package:uni_connect/features/teachers/teachers_page.dart';
 import 'package:uni_connect/features/todo/todo_page.dart';
@@ -56,6 +57,8 @@ void main() async {
             return NicePageRoute(page: const NoticesPage());
           case '/login':
             return NicePageRoute(page: const LoginPage());
+          case '/settings':
+            return NicePageRoute(page: const SettingsPage());
           default:
             return MaterialPageRoute(
               builder: (context) =>
