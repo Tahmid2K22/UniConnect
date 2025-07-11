@@ -12,6 +12,7 @@ import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
 import 'package:intl/intl.dart' as init;
+import 'dart:io';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -30,6 +31,8 @@ class _FrontPageState extends State<FrontPage>
   DataModel? nextClass;
   Map<String, dynamic>? userProfile;
 
+  String? _profileImagePath;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +42,7 @@ class _FrontPageState extends State<FrontPage>
       duration: const Duration(seconds: 5),
     )..repeat(reverse: false);
     _loadProfile();
+    _loadProfileImagePath();
   }
 
   @override
@@ -90,17 +94,17 @@ class _FrontPageState extends State<FrontPage>
                           onTap: () => Navigator.pushNamed(context, "/profile"),
                           child: CircleAvatar(
                             radius: 28,
-                            backgroundImage: userProfile != null
-                                ? AssetImage('assets/profile/profile.jpg')
-                                : null,
-                            backgroundColor: Colors.cyanAccent.withValues(
-                              alpha: 0.2,
-                            ),
+                            backgroundImage: _profileImagePath != null
+                                ? FileImage(File(_profileImagePath!))
+                                : AssetImage('assets/profile/profile.jpg')
+                                      as ImageProvider,
+                            backgroundColor: Colors.cyanAccent.withAlpha(50),
                             child: userProfile == null
                                 ? const CircularProgressIndicator()
                                 : null,
                           ),
                         ),
+
                         const SizedBox(width: 14),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,6 +503,13 @@ class _FrontPageState extends State<FrontPage>
     );
     setState(() {
       userProfile = json.decode(jsonString);
+    });
+  }
+
+  void _loadProfileImagePath() {
+    final box = Hive.box('profileBox');
+    setState(() {
+      _profileImagePath = box.get('profileImagePath');
     });
   }
 

@@ -25,6 +25,7 @@ void main() async {
   Hive.registerAdapter(TodoTaskAdapter());
   await Hive.openBox<TodoTask>('todoBox');
   await Hive.openBox<TodoTask>('dailyTaskBox');
+  await Hive.openBox('profileBox');
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
