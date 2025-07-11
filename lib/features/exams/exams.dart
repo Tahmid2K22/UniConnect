@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:uni_connect/firebase/firestore/database.dart';
 
 class ExamsPage extends StatefulWidget {
@@ -69,7 +67,7 @@ class _ExamsPageState extends State<ExamsPage> {
             padding: const EdgeInsets.all(18),
             itemCount: exams.length,
             itemBuilder: (context, index) {
-              final exam = exams[index];
+              final exam = exams[index]['data'] ?? {};
               return Container(
                 margin: const EdgeInsets.only(bottom: 18),
                 padding: const EdgeInsets.all(16),
@@ -94,7 +92,7 @@ class _ExamsPageState extends State<ExamsPage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "${exam['date']}",
+                      "${exam['date'] ?? ''}${exam['time'] != null ? ' • ${exam['time']}' : ''}",
                       style: GoogleFonts.poppins(
                         color: Colors.white70,
                         fontSize: 14,
@@ -111,7 +109,7 @@ class _ExamsPageState extends State<ExamsPage> {
   }
 
   //Load Exam Data --------------------------------------------------------------------------------------------------
-/*   Future<List<Map<String, dynamic>>> loadExams() async {
+  /*   Future<List<Map<String, dynamic>>> loadExams() async {
     final String response = await rootBundle.loadString('assets/exams.json');
     final data = json.decode(response);
     final examsRaw = data['upcoming_exams'];

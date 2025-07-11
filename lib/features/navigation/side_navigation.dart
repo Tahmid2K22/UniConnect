@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io';
+import 'package:hive/hive.dart';
 
 // Load Data Start -------------------------------------------------------------------------------------------------------------------
 
@@ -25,17 +27,29 @@ class SideNavigation extends StatefulWidget {
 class _SideNavigationState extends State<SideNavigation> {
   late Future<Map<String, dynamic>> _profileFuture;
 
+  String? _profileImagePath;
+
   @override
   void initState() {
     super.initState();
     _profileFuture = loadProfile();
+    _loadProfileImagePath();
+  }
+
+  void _loadProfileImagePath() {
+    final box = Hive.box('profileBox');
+    setState(() {
+      _profileImagePath = box.get('profileImagePath');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final profilePic = CircleAvatar(
       radius: 32,
-      backgroundImage: AssetImage('assets/profile/profile.jpg'),
+      backgroundImage: _profileImagePath != null
+          ? FileImage(File(_profileImagePath!))
+          : AssetImage('assets/profile/profile.jpg') as ImageProvider,
     );
 
     final navItems = [

@@ -25,10 +25,11 @@ void main() async {
   Hive.registerAdapter(TodoTaskAdapter());
   await Hive.openBox<TodoTask>('todoBox');
   await Hive.openBox<TodoTask>('dailyTaskBox');
+  await Hive.openBox('profileBox');
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: LoginPage(),
       //home: LoginPage(),
       onGenerateRoute: (settings) {
         // Apply custom transition to all routes

@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -13,6 +12,7 @@ import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
 import 'package:intl/intl.dart' as init;
+import 'dart:io';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -31,6 +31,8 @@ class _FrontPageState extends State<FrontPage>
   DataModel? nextClass;
   Map<String, dynamic>? userProfile;
 
+  String? _profileImagePath;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +42,7 @@ class _FrontPageState extends State<FrontPage>
       duration: const Duration(seconds: 5),
     )..repeat(reverse: false);
     _loadProfile();
+    _loadProfileImagePath();
   }
 
   @override
@@ -91,17 +94,17 @@ class _FrontPageState extends State<FrontPage>
                           onTap: () => Navigator.pushNamed(context, "/profile"),
                           child: CircleAvatar(
                             radius: 28,
-                            backgroundImage: userProfile != null
-                                ? AssetImage('assets/profile/profile.jpg')
-                                : null,
-                            backgroundColor: Colors.cyanAccent.withValues(
-                              alpha: 0.2,
-                            ),
+                            backgroundImage: _profileImagePath != null
+                                ? FileImage(File(_profileImagePath!))
+                                : AssetImage('assets/profile/profile.jpg')
+                                      as ImageProvider,
+                            backgroundColor: Colors.cyanAccent.withAlpha(50),
                             child: userProfile == null
                                 ? const CircularProgressIndicator()
                                 : null,
                           ),
                         ),
+
                         const SizedBox(width: 14),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +196,7 @@ class _FrontPageState extends State<FrontPage>
                           );
                         }
                         final exams = snapshot.data!;
-  
+
                         final exam = exams.isNotEmpty ? exams.first : null;
 
                         final daysLeft = exam != null
@@ -211,9 +214,10 @@ class _FrontPageState extends State<FrontPage>
                             icon: Icons.event,
                             color: Colors.blueAccent,
                             title: "Upcoming Exam",
-                            titleValue: exam?['data']['title'] ?? "No upcoming exams",
+                            titleValue:
+                                exam?['data']['title'] ?? "No upcoming exams",
                             subtitle: exam != null
-                                ? "${exam['data']['date']}"
+                                ? "${exam['data']['date']} • ${exam['data']['time']}"
                                 : "",
                             trailingWidget: daysLeft != null
                                 ? Text(
@@ -473,17 +477,19 @@ class _FrontPageState extends State<FrontPage>
     }
   }
 
-  Future<Map<String, dynamic>> loadExamJson() async {
-    final String response = await rootBundle.loadString('assets/exams.json');
-    return json.decode(response);
-  }
-
   Future<void> _loadProfile() async {
     final String jsonString = await rootBundle.loadString(
       'assets/user_profile_demo.json',
     );
     setState(() {
       userProfile = json.decode(jsonString);
+    });
+  }
+
+  void _loadProfileImagePath() {
+    final box = Hive.box('profileBox');
+    setState(() {
+      _profileImagePath = box.get('profileImagePath');
     });
   }
 

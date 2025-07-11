@@ -302,7 +302,6 @@ class TeacherSearchDelegate extends SearchDelegate {
         bodySmall: GoogleFonts.poppins(color: Colors.white70),
       ),
       colorScheme: base.colorScheme.copyWith(
-        background: const Color(0xFF181A2A),
         surface: const Color(0xFF181A2A),
         primary: Colors.cyanAccent,
         onPrimary: Colors.cyanAccent,

@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     // Go to front page after ~3.5s
-    Future.delayed(const Duration(milliseconds: 3500), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         navigateToFrontPage(context);
       }
@@ -68,8 +68,8 @@ class _SplashScreenState extends State<SplashScreen>
           Center(
             child: Lottie.asset(
               'assets/animations/intro.json',
-              width: 300,
-              height: 300,
+              width: 400,
+              height: 400,
               fit: BoxFit.contain,
               repeat: false,
             ),
