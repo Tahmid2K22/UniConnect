@@ -1,13 +1,20 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 Future<UserCredential?> signInWithGoogle() async {
   try {
-    final auth = FirebaseAuth.instance;
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return null;
 
-    // Web-only Google sign-in using popup
-    final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
-    return await auth.signInWithPopup(googleProvider);
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    return await FirebaseAuth.instance.signInWithCredential(credential);
   } catch (e) {
     print("Google Sign-In Error: $e");
     return null;
