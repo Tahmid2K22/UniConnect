@@ -51,6 +51,8 @@ dependencies:
   firebase_auth: ^4.16.0
   cloud_firestore: ^4.9.0
   google_sign_in: ^6.2.1
+  intl: ^0.19.0
+  dash_chat_2: ^0.0.21
   
 
 dev_dependencies:
@@ -65,7 +67,6 @@ dev_dependencies:
   connectivity_plus: ^5.0.2
   http: ^1.1.0
   shared_preferences: ^2.2.3
-  intl: ^0.20.2
 
 flutter_launcher_icons:
   android: "launcher_icon"

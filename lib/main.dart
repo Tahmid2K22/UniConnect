@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uni_connect/features/batchmates/batchmates_page.dart';
+import 'package:uni_connect/features/chatbot/chatbot.dart';
 import 'package:uni_connect/features/exams/exams.dart';
 import 'package:uni_connect/features/notices/notices.dart';
 import 'package:uni_connect/features/resources/resources.dart';
@@ -59,6 +60,8 @@ void main() async {
             return NicePageRoute(page: const LoginPage());
           case '/settings':
             return NicePageRoute(page: const SettingsPage());
+          case '/chat':
+            return NicePageRoute(page: const ChatbotPage());
           default:
             return MaterialPageRoute(
               builder: (context) =>

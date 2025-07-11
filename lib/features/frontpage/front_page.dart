@@ -69,8 +69,8 @@ class _FrontPageState extends State<FrontPage>
         },
         child: Scaffold(
           key: scaffoldKey,
-          backgroundColor: const Color(0xFF0E0E2C),
           endDrawer: const SideNavigation(),
+          backgroundColor: const Color(0xFF0E0E2C),
 
           body: SafeArea(
             child: RefreshIndicator(
