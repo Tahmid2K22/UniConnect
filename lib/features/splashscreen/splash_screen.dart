@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:uni_connect/features/frontpage/front_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -45,8 +46,16 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     // Go to front page after ~3.5s
+    // After delay, check auth state and navigate
     Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
+      if (!mounted) return;
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        // Not logged in
+        Navigator.pushReplacementNamed(context, '/login');
+      } else {
+        // Logged in
         navigateToFrontPage(context);
       }
     });
