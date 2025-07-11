@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -197,7 +196,7 @@ class _FrontPageState extends State<FrontPage>
                           );
                         }
                         final exams = snapshot.data!;
-  
+
                         final exam = exams.isNotEmpty ? exams.first : null;
 
                         final daysLeft = exam != null
@@ -215,9 +214,10 @@ class _FrontPageState extends State<FrontPage>
                             icon: Icons.event,
                             color: Colors.blueAccent,
                             title: "Upcoming Exam",
-                            titleValue: exam?['data']['title'] ?? "No upcoming exams",
+                            titleValue:
+                                exam?['data']['title'] ?? "No upcoming exams",
                             subtitle: exam != null
-                                ? "${exam['data']['date']}"
+                                ? "${exam['data']['date']} • ${exam['data']['time']}"
                                 : "",
                             trailingWidget: daysLeft != null
                                 ? Text(
@@ -475,11 +475,6 @@ class _FrontPageState extends State<FrontPage>
         );
       });
     }
-  }
-
-  Future<Map<String, dynamic>> loadExamJson() async {
-    final String response = await rootBundle.loadString('assets/exams.json');
-    return json.decode(response);
   }
 
   Future<void> _loadProfile() async {
