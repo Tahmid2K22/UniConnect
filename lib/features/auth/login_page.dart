@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uni_connect/firebase/auth/auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -222,7 +223,7 @@ class _LoginPageState extends State<LoginPage>
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
-                          // TODO: Add login logic here
+                          // Add login logic here
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurpleAccent,
@@ -274,7 +275,7 @@ class _LoginPageState extends State<LoginPage>
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          // TODO: Add Google Sign-In logic here
+                          signInWithGoogle();
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.deepPurpleAccent,
