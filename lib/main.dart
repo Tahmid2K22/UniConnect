@@ -29,7 +29,7 @@ void main() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: SplashScreen(),
       //home: LoginPage(),
       onGenerateRoute: (settings) {
         // Apply custom transition to all routes
