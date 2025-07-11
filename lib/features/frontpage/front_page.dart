@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
+import 'package:uni_connect/firebase/firestore/database.dart';
 import '../todo/todo_task.dart';
 import '../navigation/side_navigation.dart';
 import '../routine/collect_data.dart';
@@ -186,8 +187,8 @@ class _FrontPageState extends State<FrontPage>
                     const SizedBox(height: 12),
 
                     // Upcoming Exam Card (fetches first upcoming exam)
-                    FutureBuilder<Map<String, dynamic>>(
-                      future: loadExamJson(),
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: fetchExamsFromFirestore(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const SizedBox(
@@ -195,19 +196,12 @@ class _FrontPageState extends State<FrontPage>
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
-                        final examsRaw = snapshot.data!['upcoming_exams'];
-                        final List<Map<String, dynamic>> exams =
-                            examsRaw == null || examsRaw is! List
-                            ? []
-                            : examsRaw
-                                  .map<Map<String, dynamic>>(
-                                    (e) => Map<String, dynamic>.from(e),
-                                  )
-                                  .toList();
+                        final exams = snapshot.data!;
+  
                         final exam = exams.isNotEmpty ? exams.first : null;
 
                         final daysLeft = exam != null
-                            ? _daysUntil(exam['date'] ?? '')
+                            ? _daysUntil(exam['data']['date'] ?? '')
                             : null;
                         final daysLeftText = daysLeft == null
                             ? ''
@@ -221,9 +215,9 @@ class _FrontPageState extends State<FrontPage>
                             icon: Icons.event,
                             color: Colors.blueAccent,
                             title: "Upcoming Exam",
-                            titleValue: exam?['title'] ?? "No upcoming exams",
+                            titleValue: exam?['data']['title'] ?? "No upcoming exams",
                             subtitle: exam != null
-                                ? "${exam['date']} • ${exam['time']}"
+                                ? "${exam['data']['date']}"
                                 : "",
                             trailingWidget: daysLeft != null
                                 ? Text(
@@ -486,15 +480,6 @@ class _FrontPageState extends State<FrontPage>
   Future<Map<String, dynamic>> loadExamJson() async {
     final String response = await rootBundle.loadString('assets/exams.json');
     return json.decode(response);
-  }
-
-  Future<List<Map<String, dynamic>>> fetchNoticesFromFirestore() async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('notices')
-        .get();
-    return querySnapshot.docs.map((doc) {
-      return {"id": doc.id, "data": doc.data()};
-    }).toList();
   }
 
   Future<void> _loadProfile() async {
