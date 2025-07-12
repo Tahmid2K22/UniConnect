@@ -30,44 +30,6 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   bool _isSending = false;
 
-  void _onSend(ChatMessage message) async {
-    setState(() {
-      messages.insert(0, message);
-      _isSending = true;
-    });
-
-    final botReply = await _getBotResponse(message.text);
-
-    if (mounted) {
-      setState(() {
-        messages.insert(
-          0,
-          ChatMessage(text: botReply, user: botUser, createdAt: DateTime.now()),
-        );
-        _isSending = false;
-      });
-    }
-  }
-
-  Future<String> _getBotResponse(String userMessage) async {
-    try {
-      final response = await http.post(
-        Uri.parse('https://alap-zontro.onrender.com/chat'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'query': userMessage}),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        return data['response'] ?? 'No response from bot';
-      } else {
-        return 'Server error: ${response.statusCode} - ${response.reasonPhrase}';
-      }
-    } catch (e) {
-      return 'Connection error: Unable to reach server. Please check your internet connection.';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final backgroundGradient = const LinearGradient(
@@ -222,5 +184,45 @@ class _ChatbotPageState extends State<ChatbotPage> {
         ),
       ),
     );
+  }
+
+  // Message send utility
+  void _onSend(ChatMessage message) async {
+    setState(() {
+      messages.insert(0, message);
+      _isSending = true;
+    });
+
+    final botReply = await _getBotResponse(message.text);
+
+    if (mounted) {
+      setState(() {
+        messages.insert(
+          0,
+          ChatMessage(text: botReply, user: botUser, createdAt: DateTime.now()),
+        );
+        _isSending = false;
+      });
+    }
+  }
+
+  // Get response from AI utility
+  Future<String> _getBotResponse(String userMessage) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://alap-zontro.onrender.com/chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'query': userMessage}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return data['response'] ?? 'No response from bot';
+      } else {
+        return 'Server error: ${response.statusCode} - ${response.reasonPhrase}';
+      }
+    } catch (e) {
+      return 'Connection error: Unable to reach server. Please check your internet connection.';
+    }
   }
 }
