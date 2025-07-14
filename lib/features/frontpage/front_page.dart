@@ -6,13 +6,15 @@ import 'package:uni_connect/firebase/firestore/database.dart';
 import '../todo/todo_task.dart';
 import '../navigation/side_navigation.dart';
 import '../routine/collect_data.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
 import 'package:intl/intl.dart' as init;
 import 'dart:io';
+import 'package:image/image.dart' as img;
+import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -478,23 +480,45 @@ class _FrontPageState extends State<FrontPage>
   }
 
   Future<void> _loadProfile() async {
-    final String jsonString = await rootBundle.loadString(
-      'assets/user_profile_demo.json',
-    );
-    setState(() {
-      userProfile = json.decode(jsonString);
-    });
+    userProfile = await loadUserProfile();
+    setState(() {});
   }
 
   void _loadProfileImagePath() {
-    final box = Hive.box('profileBox');
-    setState(() {
-      _profileImagePath = box.get('profileImagePath');
-    });
+    _profileImagePath = loadLocalProfileImagePath();
+    syncProfilePicIfNeeded(_profileImagePath);
+    setState(() {});
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
 
+  // Call this in initState or wherever you check profile state
+  Future<void> syncProfilePicIfNeeded(String? localPath) async {
+    if (localPath == null) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) return;
+
+    final docRef = FirebaseFirestore.instance
+        .collection('students')
+        .doc(user.email);
+    final doc = await docRef.get();
+
+    if (!doc.exists) return;
+    final data = doc.data();
+    if (data == null ||
+        (data['profile_pic'] == null || data['profile_pic'].isEmpty)) {
+      final file = File(localPath);
+      if (!await file.exists()) return;
+      final bytes = await file.readAsBytes();
+      final image = img.decodeImage(bytes);
+      if (image == null) return;
+      final resized = img.copyResize(image, width: 96, height: 96); // Low-res
+      final jpg = img.encodeJpg(resized, quality: 60);
+      final base64Str = base64Encode(jpg);
+      await docRef.update({'profile_pic': base64Str});
+    }
+  }
   // Exam Utils
 
   int? _daysUntil(String dateStr) {

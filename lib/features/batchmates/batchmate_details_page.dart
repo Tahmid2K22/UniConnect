@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../widgets/get_profile_pic.dart';
 
 class BatchmateDetailsPage extends StatelessWidget {
   final Map<String, dynamic> mate;
@@ -41,9 +42,12 @@ class BatchmateDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CircleAvatar(
-                    backgroundImage: AssetImage(mate['profile_pic']),
+                    backgroundImage: getProfileImageProvider(
+                      mate['profile_pic'],
+                    ),
                     radius: 56,
                   ),
+
                   const SizedBox(height: 20),
                   Text(
                     mate['name'],
@@ -58,7 +62,7 @@ class BatchmateDetailsPage extends StatelessWidget {
                   Text(
                     '${mate['university']} | ${mate['department']}',
                     style: GoogleFonts.poppins(
-                      color: Colors.cyanAccent.withOpacity(0.8),
+                      color: Colors.cyanAccent.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w500,
                       fontSize: 16,
                     ),
@@ -99,7 +103,7 @@ class BatchmateDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Divider(
-                    color: Colors.white.withOpacity(0.10),
+                    color: Colors.white.withValues(alpha: 0.10),
                     thickness: 1.1,
                     height: 32,
                   ),
@@ -119,21 +123,30 @@ class BatchmateDetailsPage extends StatelessWidget {
                         icon: FontAwesomeIcons.github,
                         color: Colors.white,
                         tooltip: 'GitHub',
-                        onPressed: () => _launchUrl(mate['github']),
+                        onPressed: () =>
+                            _launchSocialUrl(context, mate['github'], 'GitHub'),
                       ),
                       const SizedBox(width: 18),
                       _SocialIconButton(
                         icon: FontAwesomeIcons.facebook,
                         color: Colors.blueAccent,
                         tooltip: 'Facebook',
-                        onPressed: () => _launchUrl(mate['facebook']),
+                        onPressed: () => _launchSocialUrl(
+                          context,
+                          mate['facebook'],
+                          'Facebook',
+                        ),
                       ),
                       const SizedBox(width: 18),
                       _SocialIconButton(
                         icon: FontAwesomeIcons.linkedin,
                         color: Colors.blue[700]!,
                         tooltip: 'LinkedIn',
-                        onPressed: () => _launchUrl(mate['linkedin']),
+                        onPressed: () => _launchSocialUrl(
+                          context,
+                          mate['linkedin'],
+                          'LinkedIn',
+                        ),
                       ),
                     ],
                   ),
@@ -157,6 +170,37 @@ class BatchmateDetailsPage extends StatelessWidget {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _launchSocialUrl(
+    BuildContext context,
+    String? url,
+    String platform,
+  ) async {
+    if (url == null || url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$platform account not found'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+    // Ensure URL has a scheme
+    final formattedUrl = url.startsWith('http://') || url.startsWith('https://')
+        ? url
+        : 'https://$url';
+    final uri = Uri.parse(formattedUrl);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open $platform'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     }
   }
 }

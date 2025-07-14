@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 import 'package:uni_connect/widgets/cgpa_chart.dart';
@@ -8,6 +6,11 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hive/hive.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image/image.dart' as img;
+import 'dart:convert';
+import 'package:uni_connect/firebase/firestore/database.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -90,7 +93,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         const SizedBox(height: 14),
                         // Institution
                         Text(
-                          userData!['institution'],
+                          userData!['university'],
                           style: GoogleFonts.poppins(
                             color: Colors.cyanAccent,
                             fontSize: 22,
@@ -126,7 +129,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               _ProfileInfoRow(
                                 icon: Icons.confirmation_number_rounded,
                                 label: 'Roll Number',
-                                value: userData!['roll_number'],
+                                value: userData!['roll'],
                               ),
                               const SizedBox(height: 14),
                               _ProfileInfoRow(
@@ -161,19 +164,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
   // Load User Data Start ----------------------------------------------------------------------------------
 
   Future<void> loadProfile() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/user_profile_demo.json',
-    );
-    setState(() {
-      userData = json.decode(jsonString);
-    });
+    userData = await loadUserProfile();
+    setState(() {});
   }
 
   void _loadProfileImagePath() {
-    final box = Hive.box('profileBox');
-    setState(() {
-      _profileImagePath = box.get('profileImagePath');
-    });
+    _profileImagePath = loadLocalProfileImagePath();
+    setState(() {});
   }
 
   // Load User Data End ----------------------------------------------------------------------------------
@@ -251,12 +248,37 @@ class _UserProfilePageState extends State<UserProfilePage> {
       if (Hive.isBoxOpen('profileBox')) {
         Hive.box('profileBox').put('profileImagePath', savedImage.path);
       }
+
+      await updateProfilePic(savedImage.path);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to change profile picture.')),
       );
     }
+  }
+
+  // Call this after user changes their profile picture
+  Future<void> updateProfilePic(String localPath) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) return;
+
+    final file = File(localPath);
+    if (!await file.exists()) return;
+    final bytes = await file.readAsBytes();
+    final image = img.decodeImage(bytes);
+    if (image == null) return;
+    final resized = img.copyResize(image, width: 120, height: 120); // Low-res
+    final jpg = img.encodeJpg(resized, quality: 60);
+    final base64Str = base64Encode(jpg);
+
+    await FirebaseFirestore.instance
+        .collection('students')
+        .doc(user.email)
+        .update({'profile_pic': base64Str});
+
+    updateCachedProfilePic(base64Str);
+    updateCachedProfileImagePath(localPath);
   }
 }
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'load_batchmates.dart';
+import 'package:uni_connect/firebase/firestore/database.dart';
 import 'batchmate_details_page.dart';
-
 import 'package:uni_connect/features/navigation/side_navigation.dart';
+import '../../widgets/get_profile_pic.dart';
 
 class BatchmatesPage extends StatefulWidget {
   const BatchmatesPage({super.key});
@@ -53,7 +53,7 @@ class _BatchmatesPageState extends State<BatchmatesPage> {
                 final result = await showSearch(
                   context: context,
                   delegate: BatchmateSearchDelegate(
-                    loadBatchmates,
+                    fetchBatchmatesFromFirestore,
                     showGrid,
                     _openDetails,
                   ),
@@ -76,7 +76,7 @@ class _BatchmatesPageState extends State<BatchmatesPage> {
         body: Container(
           decoration: BoxDecoration(gradient: backgroundGradient),
           child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: loadBatchmates(),
+            future: fetchBatchmatesFromFirestore(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -171,7 +171,7 @@ class _BatchmateCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(mate['profile_pic']),
+                  backgroundImage: getProfileImageProvider(mate['profile_pic']),
                   radius: 36,
                 ),
                 const SizedBox(height: 12),
@@ -217,7 +217,7 @@ class _BatchmateCard extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(mate['profile_pic']),
+                  backgroundImage: getProfileImageProvider(mate['profile_pic']),
                   radius: 28,
                 ),
                 const SizedBox(width: 16),
