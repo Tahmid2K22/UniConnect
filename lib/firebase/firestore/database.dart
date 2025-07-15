@@ -51,6 +51,16 @@ Future<List<Map<String, dynamic>>> fetchBatchmatesFromFirestore() async {
   }).toList();
 }
 
+// Load teachers
+Future<List<Map<String, dynamic>>> fetchTeachersFromFirestore() async {
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('teachers')
+      .get();
+  return querySnapshot.docs.map((doc) {
+    return {'id': doc.id, ...doc.data()};
+  }).toList();
+}
+
 // Load exams
 Future<List<Map<String, dynamic>>> fetchExamsFromFirestore() async {
   final querySnapshot = await FirebaseFirestore.instance

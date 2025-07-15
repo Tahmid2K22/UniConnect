@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'load_teachers.dart';
+
+import 'package:uni_connect/firebase/firestore/database.dart';
 import 'teacher_details_page.dart';
 
 import 'package:uni_connect/features/navigation/side_navigation.dart';
@@ -53,7 +54,7 @@ class _TeachersPageState extends State<TeachersPage> {
                 final result = await showSearch(
                   context: context,
                   delegate: TeacherSearchDelegate(
-                    loadTeachers,
+                    fetchTeachersFromFirestore,
                     showGrid,
                     _openDetails,
                   ),
@@ -76,7 +77,7 @@ class _TeachersPageState extends State<TeachersPage> {
         body: Container(
           decoration: BoxDecoration(gradient: backgroundGradient),
           child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: loadTeachers(),
+            future: fetchTeachersFromFirestore(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -156,7 +157,7 @@ class _TeacherCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardColor = Colors.white.withOpacity(0.04);
+    final cardColor = Colors.white.withValues(alpha: 0.04);
     if (isGrid) {
       // Grid style: avatar on top, text below
       return Material(
@@ -171,8 +172,9 @@ class _TeacherCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(teacher['profile_pic']),
-                  radius: 36,
+                  backgroundImage: NetworkImage(teacher['profile_pic']),
+                  radius: 56,
+                  backgroundColor: Colors.white10,
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -185,18 +187,10 @@ class _TeacherCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  teacher['department'],
+                  '${teacher['department']} | ${teacher['university']}',
                   style: GoogleFonts.poppins(
                     color: Colors.white70,
                     fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  teacher['university'],
-                  style: GoogleFonts.poppins(
-                    color: Colors.white54,
-                    fontSize: 12,
                   ),
                 ),
               ],
@@ -217,8 +211,9 @@ class _TeacherCard extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: AssetImage(teacher['profile_pic']),
-                  radius: 28,
+                  backgroundImage: NetworkImage(teacher['profile_pic']),
+                  radius: 56,
+                  backgroundColor: Colors.white10,
                 ),
                 const SizedBox(width: 16),
                 Expanded(

@@ -41,10 +41,11 @@ class TeacherDetailsPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 30),
                 CircleAvatar(
-                  backgroundImage: AssetImage(teacher['profile_pic']),
+                  backgroundImage: NetworkImage(teacher['profile_pic']),
                   radius: 56,
                   backgroundColor: Colors.white10,
                 ),
+
                 const SizedBox(height: 20),
                 Text(
                   teacher['name'],
@@ -59,7 +60,7 @@ class TeacherDetailsPage extends StatelessWidget {
                 Text(
                   '${teacher['university']} | ${teacher['department']}',
                   style: GoogleFonts.poppins(
-                    color: Colors.cyanAccent.withOpacity(0.85),
+                    color: Colors.cyanAccent.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                   ),
@@ -76,9 +77,9 @@ class TeacherDetailsPage extends StatelessWidget {
                         onTap: () => _launchEmail(teacher['email']),
                       ),
                       _InfoRow(
-                        icon: Icons.bloodtype,
-                        label: 'Blood G.',
-                        value: teacher['blood_group'],
+                        icon: Icons.badge,
+                        label: 'Title',
+                        value: teacher['title'],
                       ),
                       _InfoRow(
                         icon: Icons.phone_rounded,

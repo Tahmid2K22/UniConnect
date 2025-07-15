@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage>
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email != null) {
       final doc = await FirebaseFirestore.instance
-          .collection('students') // Change to your user collection
+          .collection('students')
           .doc(user.email)
           .get();
       if (doc.exists) {
