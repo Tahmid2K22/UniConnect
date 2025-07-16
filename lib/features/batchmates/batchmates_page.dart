@@ -81,7 +81,19 @@ class _BatchmatesPageState extends State<BatchmatesPage> {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final batchmates = snapshot.data!;
+              final batchmates = List<Map<String, dynamic>>.from(
+                snapshot.data!,
+              );
+              batchmates.sort((a, b) {
+                final aRoll = int.tryParse(a['roll'].toString());
+                final bRoll = int.tryParse(b['roll'].toString());
+                if (aRoll != null && bRoll != null) {
+                  return aRoll.compareTo(bRoll);
+                } else {
+                  return a['roll'].toString().compareTo(b['roll'].toString());
+                }
+              });
+
               if (showGrid) {
                 return LayoutBuilder(
                   builder: (context, constraints) {
@@ -340,6 +352,16 @@ class BatchmateSearchDelegate extends SearchDelegate {
               ),
             );
           }
+
+          results.sort((a, b) {
+            final aRoll = int.tryParse(a['roll'].toString());
+            final bRoll = int.tryParse(b['roll'].toString());
+            if (aRoll != null && bRoll != null) {
+              return aRoll.compareTo(bRoll);
+            } else {
+              return a['roll'].toString().compareTo(b['roll'].toString());
+            }
+          });
 
           if (isGrid) {
             return GridView.builder(

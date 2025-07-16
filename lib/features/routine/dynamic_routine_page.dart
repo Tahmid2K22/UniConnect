@@ -58,11 +58,16 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
       appBar: AppBar(
         elevation: 10,
         backgroundColor: const Color(0xFF1A1A2E),
-        iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
+        iconTheme: const IconThemeData(
+          color: Color.fromARGB(255, 255, 255, 255),
+        ),
         title: ShaderMask(
           shaderCallback: (Rect bounds) {
             return const LinearGradient(
-              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
+              colors: [
+                Color.fromARGB(255, 255, 255, 255),
+                Color.fromARGB(255, 255, 255, 255),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ).createShader(bounds);
@@ -357,7 +362,6 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
         ? widget.sectionAData
         : widget.sectionBData;
 
-    // Get today's row and headers
     final now = DateTime.now();
     final weekdays = [
       'Monday',
@@ -369,11 +373,22 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
       'Sunday',
     ];
     final today = weekdays[now.weekday - 1];
-    final headers = sectionData.isNotEmpty ? sectionData[0] : [];
+
+    if (sectionData.isEmpty) return;
+
+    final headers = sectionData[0];
     final todayRow = sectionData.firstWhere(
       (row) => row.isNotEmpty && row[0] == today,
       orElse: () => [],
     );
+
+    final List<Map<String, String>> validClasses = [];
+
+    for (int i = 1; i < headers.length; i++) {
+      if (todayRow.length > i && todayRow[i].isNotEmpty && todayRow[i] != '-') {
+        validClasses.add({'period': headers[i], 'classTitle': todayRow[i]});
+      }
+    }
 
     showDialog(
       context: context,
@@ -387,7 +402,6 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.of(context).size.height * 0.75,
               ),
-
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -406,107 +420,83 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      if (headers.isEmpty || todayRow.isEmpty)
+
+                      if (validClasses.isEmpty)
                         const Text(
                           "No schedule found for today.",
                           style: TextStyle(color: Colors.white70, fontSize: 16),
                         )
                       else
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: headers.length - 1,
-                          separatorBuilder: (_, _) =>
-                              const Divider(color: Colors.white12, height: 18),
-                          itemBuilder: (context, idx) {
-                            // idx+1 because first column is the day name
-                            final period = headers[idx + 1];
-                            final classTitle = todayRow.length > idx + 1
-                                ? todayRow[idx + 1]
-                                : '';
-                            if (classTitle == '-' || classTitle.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-
-                            // Highlight current/next class
+                        Column(
+                          children: validClasses.map((entry) {
+                            final period = entry['period']!;
+                            final classTitle = entry['classTitle']!;
                             final timeMatch = RegExp(
                               r'\((.*?)\)',
                             ).firstMatch(period);
-                            bool isCurrent = false;
+                            bool isDone = false;
+
                             if (timeMatch != null) {
                               final timeRange = timeMatch.group(1)!;
-                              final startTimeStr = timeRange
-                                  .split('-')[0]
-                                  .trim();
                               final endTimeStr = timeRange.split('-')[1].trim();
                               try {
-                                final start = DateFormat(
-                                  'hh:mm a',
-                                ).parse(startTimeStr);
-                                final end = DateFormat(
+                                final endTime = DateFormat(
                                   'hh:mm a',
                                 ).parse(endTimeStr);
-                                final startDateTime = DateTime(
-                                  now.year,
-                                  now.month,
-                                  now.day,
-                                  start.hour,
-                                  start.minute,
-                                );
                                 final endDateTime = DateTime(
                                   now.year,
                                   now.month,
                                   now.day,
-                                  end.hour,
-                                  end.minute,
+                                  endTime.hour,
+                                  endTime.minute,
                                 );
-                                if (now.isAfter(startDateTime) &&
-                                    now.isBefore(endDateTime)) {
-                                  isCurrent = true;
-                                }
+                                isDone = now.isAfter(endDateTime);
                               } catch (_) {}
                             }
 
                             return AnimatedContainer(
                               duration: const Duration(milliseconds: 350),
                               curve: Curves.easeInOutCubic,
-                              decoration: BoxDecoration(
-                                color: isCurrent
-                                    ? Colors.cyanAccent.withValues(alpha: 0.12)
-                                    : Colors.white.withValues(alpha: 0.03),
-                                borderRadius: BorderRadius.circular(14),
-                                border: isCurrent
-                                    ? Border.all(
-                                        color: Colors.cyanAccent,
-                                        width: 1.5,
-                                      )
-                                    : null,
-                              ),
+                              margin: const EdgeInsets.symmetric(vertical: 6),
                               padding: const EdgeInsets.symmetric(
                                 vertical: 12,
                                 horizontal: 10,
                               ),
+                              decoration: BoxDecoration(
+                                color: isDone
+                                    ? Colors.white.withOpacity(0.02)
+                                    : Colors.cyanAccent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isDone
+                                      ? Colors.white12
+                                      : Colors.cyanAccent,
+                                  width: 1.2,
+                                ),
+                              ),
                               child: Row(
                                 children: [
                                   Icon(
-                                    isCurrent ? Icons.play_arrow : Icons.circle,
-                                    color: isCurrent
-                                        ? Colors.cyanAccent
-                                        : Colors.white24,
-                                    size: 22,
+                                    isDone
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
+                                    color: isDone
+                                        ? Colors.greenAccent
+                                        : Colors.cyanAccent,
+                                    size: 20,
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       period,
                                       style: TextStyle(
-                                        color: isCurrent
-                                            ? Colors.cyanAccent
-                                            : Colors.white,
-                                        fontWeight: isCurrent
-                                            ? FontWeight.bold
-                                            : FontWeight.w500,
-                                        fontSize: 16,
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        decoration: isDone
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                        decorationColor: Colors.white38,
                                       ),
                                     ),
                                   ),
@@ -515,21 +505,26 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
                                     child: Text(
                                       classTitle,
                                       style: TextStyle(
-                                        color: isCurrent
-                                            ? Colors.cyanAccent
-                                            : Colors.white70,
-                                        fontWeight: isCurrent
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                                        color: isDone
+                                            ? Colors.white38
+                                            : Colors.white,
                                         fontSize: 15,
+                                        fontWeight: isDone
+                                            ? FontWeight.normal
+                                            : FontWeight.bold,
+                                        decoration: isDone
+                                            ? TextDecoration.lineThrough
+                                            : null,
+                                        decorationColor: Colors.white38,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
+
                       const SizedBox(height: 18),
                       TextButton(
                         style: TextButton.styleFrom(

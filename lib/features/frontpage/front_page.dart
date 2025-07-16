@@ -15,6 +15,8 @@ import 'package:image/image.dart' as img;
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uni_connect/widgets/ct_marks_histogram.dart';
+import 'package:uni_connect/widgets/ct_marks_details.dart';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -35,6 +37,8 @@ class _FrontPageState extends State<FrontPage>
 
   String? _profileImagePath;
 
+  Map<String, dynamic>? ctMarksData;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,9 @@ class _FrontPageState extends State<FrontPage>
     )..repeat(reverse: false);
     _loadProfile();
     _loadProfileImagePath();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadCtMarks();
+    });
   }
 
   @override
@@ -72,12 +79,12 @@ class _FrontPageState extends State<FrontPage>
         child: Scaffold(
           key: scaffoldKey,
           endDrawer: const SideNavigation(),
-          backgroundColor: const Color(0xFF0E0E2C),
+          backgroundColor: const Color.fromARGB(255, 11, 11, 34),
 
           body: SafeArea(
             child: RefreshIndicator(
               color: Colors.cyanAccent,
-              backgroundColor: const Color(0xFF0E0E2C),
+              backgroundColor: const Color.fromARGB(255, 11, 11, 34),
               onRefresh: () async {
                 // Call your reload functions here
                 await _loadRoutineData();
@@ -91,23 +98,9 @@ class _FrontPageState extends State<FrontPage>
                   children: [
                     // Top: User Avatar, App Name, Greeting
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, "/profile"),
-                          child: CircleAvatar(
-                            radius: 28,
-                            backgroundImage: _profileImagePath != null
-                                ? FileImage(File(_profileImagePath!))
-                                : AssetImage('assets/profile/profile.jpg')
-                                      as ImageProvider,
-                            backgroundColor: Colors.cyanAccent.withAlpha(50),
-                            child: userProfile == null
-                                ? const CircularProgressIndicator()
-                                : null,
-                          ),
-                        ),
-
-                        const SizedBox(width: 14),
+                        // Left side: UniConnect + Greeting
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -145,17 +138,16 @@ class _FrontPageState extends State<FrontPage>
                               child: Text(
                                 'UniConnect',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 34, // Use your preferred size
+                                  fontSize: 34,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors
-                                      .white, // This is masked by the shader
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-
+                            const SizedBox(height: 4),
                             SizedBox(
-                              height: 28, // or whatever fits your design
-                              width: 200, // or your preferred width
+                              height: 28,
+                              width: 200,
                               child: Marquee(
                                 text:
                                     "${getGreetingMessage()}, ${userProfile?['name'] ?? ''}!",
@@ -172,8 +164,25 @@ class _FrontPageState extends State<FrontPage>
                             ),
                           ],
                         ),
+
+                        // Right side: Profile image
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, "/profile"),
+                          child: CircleAvatar(
+                            radius: 28,
+                            backgroundImage: _profileImagePath != null
+                                ? FileImage(File(_profileImagePath!))
+                                : const AssetImage('assets/profile/profile.jpg')
+                                      as ImageProvider,
+                            backgroundColor: Colors.cyanAccent.withAlpha(50),
+                            child: userProfile == null
+                                ? const CircularProgressIndicator()
+                                : null,
+                          ),
+                        ),
                       ],
                     ),
+
                     const SizedBox(height: 18),
 
                     // Next Class Card
@@ -441,7 +450,31 @@ class _FrontPageState extends State<FrontPage>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 70),
+                    const SizedBox(height: 16),
+                    if (ctMarksData != null) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        "CT Marks Histogram",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      CtMarksHistogram(data: ctMarksData!),
+                      const SizedBox(height: 18),
+                      Text(
+                        "CT Marks Details",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      CtMarksDetails(data: ctMarksData!),
+                    ],
                   ],
                 ),
               ),
@@ -488,6 +521,15 @@ class _FrontPageState extends State<FrontPage>
     _profileImagePath = loadLocalProfileImagePath();
     syncProfilePicIfNeeded(_profileImagePath);
     setState(() {});
+  }
+
+  Future<void> loadCtMarks() async {
+    final jsonString = await DefaultAssetBundle.of(
+      context,
+    ).loadString('assets/ct_marks_demo.json');
+    setState(() {
+      ctMarksData = json.decode(jsonString);
+    });
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
@@ -689,8 +731,9 @@ class _NoticeCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              color: Colors.cyanAccent,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
+              fontSize: 17,
             ),
           ),
           const SizedBox(height: 4),

@@ -75,11 +75,11 @@ class _ResourcesPageState extends State<ResourcesPage>
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.cyanAccent),
+          iconTheme: const IconThemeData(color: Colors.white),
           title: Text(
             'Resources',
             style: GoogleFonts.poppins(
-              color: Colors.cyanAccent,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
               shadows: [
                 Shadow(

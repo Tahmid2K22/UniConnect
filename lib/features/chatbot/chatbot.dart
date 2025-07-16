@@ -33,7 +33,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   @override
   Widget build(BuildContext context) {
     final backgroundGradient = const LinearGradient(
-      colors: [Color(0xFF1A144B), Color(0xFF2B175C), Color(0xFF181A2A)],
+      colors: [Color(0xFF0e0e2c), Color(0xFF0e0e2c), Color(0xFF0e0e2c)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -47,15 +47,19 @@ class _ChatbotPageState extends State<ChatbotPage> {
       child: Scaffold(
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF181A2A),
+        backgroundColor: const Color.fromARGB(255, 56, 56, 109),
         appBar: AppBar(
-          backgroundColor: const Color(0xFF181A2A),
+          iconTheme: IconThemeData(color: Colors.white),
+          backgroundColor: const Color.fromARGB(255, 56, 56, 109),
           elevation: 0,
           centerTitle: true,
           title: ShaderMask(
             shaderCallback: (Rect bounds) {
               return const LinearGradient(
-                colors: [Color(0xFF00FFD0), Color(0xFF7B2FF2)],
+                colors: [
+                  Color.fromARGB(255, 255, 255, 255),
+                  Color.fromARGB(255, 255, 255, 255),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ).createShader(bounds);
@@ -65,8 +69,8 @@ class _ChatbotPageState extends State<ChatbotPage> {
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 26,
-                letterSpacing: 1.2,
+                fontSize: 25,
+                letterSpacing: 1,
               ),
             ),
           ),
@@ -99,7 +103,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                             alpha: 0.15,
                           ),
                           child: Text(
-                            'A',
+                            'আ',
                             style: GoogleFonts.poppins(
                               color: Colors.cyanAccent,
                               fontWeight: FontWeight.bold,

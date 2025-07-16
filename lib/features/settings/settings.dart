@@ -13,11 +13,11 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.cyanAccent),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           'Settings',
           style: GoogleFonts.poppins(
-            color: Colors.cyanAccent,
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -82,7 +82,7 @@ class SettingsPage extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Colors.cyanAccent, Colors.blueAccent],
+                          colors: [Colors.blue, Colors.purple],
                         ),
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
