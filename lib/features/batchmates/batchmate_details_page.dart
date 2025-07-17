@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../widgets/get_profile_pic.dart';
+import '../../widgets/miss_you.dart';
+import '../../utils/social_icon_button.dart';
+import '../../utils/info_row.dart';
 
 class BatchmateDetailsPage extends StatelessWidget {
   final Map<String, dynamic> mate;
@@ -76,18 +81,18 @@ class BatchmateDetailsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  _InfoRow(
+                  InfoRow(
                     icon: Icons.mail_outline,
                     label: 'Email',
                     value: mate['email'],
                     onTap: () => _launchUrl('mailto:${mate['email']}'),
                   ),
-                  _InfoRow(
+                  InfoRow(
                     icon: Icons.bloodtype,
                     label: 'Blood G.',
                     value: mate['blood_group'],
                   ),
-                  _InfoRow(
+                  InfoRow(
                     icon: Icons.phone_rounded,
                     label: 'Phone',
                     value: mate['phone'],
@@ -119,7 +124,7 @@ class BatchmateDetailsPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _SocialIconButton(
+                      SocialIconButton(
                         icon: FontAwesomeIcons.github,
                         color: Colors.white,
                         tooltip: 'GitHub',
@@ -127,7 +132,7 @@ class BatchmateDetailsPage extends StatelessWidget {
                             _launchSocialUrl(context, mate['github'], 'GitHub'),
                       ),
                       const SizedBox(width: 18),
-                      _SocialIconButton(
+                      SocialIconButton(
                         icon: FontAwesomeIcons.facebook,
                         color: Colors.blueAccent,
                         tooltip: 'Facebook',
@@ -138,7 +143,7 @@ class BatchmateDetailsPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 18),
-                      _SocialIconButton(
+                      SocialIconButton(
                         icon: FontAwesomeIcons.linkedin,
                         color: Colors.blue[700]!,
                         tooltip: 'LinkedIn',
@@ -150,6 +155,10 @@ class BatchmateDetailsPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (mate['status'] != 'active') ...[
+                    const SizedBox(height: 30),
+                    WeMissYouBadge(),
+                  ],
                 ],
               ),
             ),
@@ -187,7 +196,6 @@ class BatchmateDetailsPage extends StatelessWidget {
       );
       return;
     }
-    // Ensure URL has a scheme
     final formattedUrl = url.startsWith('http://') || url.startsWith('https://')
         ? url
         : 'https://$url';
@@ -202,85 +210,5 @@ class BatchmateDetailsPage extends StatelessWidget {
         ),
       );
     }
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.trailing,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.cyanAccent, size: 22),
-            const SizedBox(width: 14),
-            SizedBox(
-              width: 100,
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  color: Colors.white70,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                value,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (trailing != null) trailing!,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialIconButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  const _SocialIconButton({
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: FaIcon(icon, color: color, size: 28),
-      tooltip: tooltip,
-      onPressed: onPressed,
-      splashRadius: 24,
-    );
   }
 }

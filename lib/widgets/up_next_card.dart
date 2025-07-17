@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/glass_card.dart';
+import '../utils/glass_card.dart';
 
 class UpNextCard extends StatelessWidget {
   final dynamic nextClass;

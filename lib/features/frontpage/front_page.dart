@@ -1,22 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
-import 'package:uni_connect/firebase/firestore/database.dart';
-import '../todo/todo_task.dart';
-import '../navigation/side_navigation.dart';
-import '../routine/collect_data.dart';
-import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
-import 'package:uni_connect/utils/front_page_utils.dart';
-import 'package:uni_connect/models/data_model.dart';
 import 'package:intl/intl.dart' as init;
 import 'dart:io';
-import 'package:image/image.dart' as img;
 import 'dart:convert';
+import 'package:image/image.dart' as img;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:uni_connect/firebase/firestore/database.dart';
+
+import '../todo/todo_task.dart';
+
+import '../navigation/side_navigation.dart';
+
+import '../routine/collect_data.dart';
+
+import 'package:uni_connect/utils/front_page_utils.dart';
+import 'package:uni_connect/models/data_model.dart';
+
 import 'package:uni_connect/widgets/ct_marks_histogram.dart';
 import 'package:uni_connect/widgets/ct_marks_details.dart';
+import 'package:uni_connect/widgets/load_user_ct_marks.dart';
+import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
+import 'package:uni_connect/utils/todo_card.dart';
+import 'package:uni_connect/utils/notice_card.dart';
+import 'package:uni_connect/utils/dashboard_card.dart';
+import 'package:uni_connect/widgets/today_task.dart';
+
+// Constants (reuse the same box/key as in analytics page)
+const String userCtMarksBox = 'userCtMarksBox';
+const String userCtMarksKey = 'user';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -49,9 +66,6 @@ class _FrontPageState extends State<FrontPage>
     )..repeat(reverse: false);
     _loadProfile();
     _loadProfileImagePath();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      loadCtMarks();
-    });
   }
 
   @override
@@ -86,11 +100,23 @@ class _FrontPageState extends State<FrontPage>
               color: Colors.cyanAccent,
               backgroundColor: const Color.fromARGB(255, 11, 11, 34),
               onRefresh: () async {
-                // Call your reload functions here
+                final profile = await reloadUserProfile();
+                final parsed = parseCtMarksFromProfile(profile);
+
+                // Save new parsed ct marks to Hive cache
+                await cacheUserCtMarks(parsed);
+
+                // ...reload other things as you do
+                await reloadExams();
+                await reloadNotices();
                 await _loadRoutineData();
-                await _loadProfile();
-                setState(() {});
+
+                setState(() {
+                  userProfile = profile;
+                  ctMarksData = parsed; // Now already cached for future loads
+                });
               },
+
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(18),
                 child: Column(
@@ -186,7 +212,7 @@ class _FrontPageState extends State<FrontPage>
                     const SizedBox(height: 18),
 
                     // Next Class Card
-                    _DashboardCard(
+                    DashboardCard(
                       icon: Icons.class_,
                       color: Colors.green,
                       title: "Next Class",
@@ -221,7 +247,7 @@ class _FrontPageState extends State<FrontPage>
 
                         return GestureDetector(
                           onTap: () => Navigator.pushNamed(context, '/exams'),
-                          child: _DashboardCard(
+                          child: DashboardCard(
                             icon: Icons.event,
                             color: Colors.blueAccent,
                             title: "Upcoming Exam",
@@ -287,7 +313,7 @@ class _FrontPageState extends State<FrontPage>
                               scrollDirection: Axis.horizontal,
                               children: noticeList.map((notice) {
                                 final data = notice['data'] ?? {};
-                                return _NoticeCard(
+                                return NoticeCard(
                                   title: data['title'] ?? "",
                                   desc: data['desc'] ?? "",
                                   time: data['time'] ?? "",
@@ -342,7 +368,7 @@ class _FrontPageState extends State<FrontPage>
                                     ) {
                                       setState(() {}); // Refresh home on return
                                     }),
-                                child: _TodoCard(
+                                child: TodoCard(
                                   title: task.title,
                                   due: task.dueDate != null
                                       ? task.dueDate!
@@ -369,7 +395,7 @@ class _FrontPageState extends State<FrontPage>
                         onTap: () => Navigator.pushNamed(context, '/analytics'),
                         child: SizedBox(
                           width: double.infinity,
-                          height: 180, // increased height
+                          height: 180,
                           child: ValueListenableBuilder(
                             valueListenable: Hive.box<TodoTask>(
                               'todoBox',
@@ -487,11 +513,19 @@ class _FrontPageState extends State<FrontPage>
 
   // Load Data Start -------------------------------------------------------------------------------------------------------------------
 
-  Future<void> _loadRoutineData() async {
+  // Front Page
+  Future<void> _loadRoutineData({bool forceRefresh = false}) async {
     try {
-      final results = await CollectData.collectAllData();
+      Map<String, dynamic>? results;
+      if (!forceRefresh) {
+        results = await RoutineCache.loadRoutine();
+      }
+      if (results == null) {
+        results = await CollectData.collectAllData();
+        await RoutineCache.saveRoutine(results);
+      }
       setState(() {
-        sectionAData = results['sheet1'] ?? [];
+        sectionAData = results!['sheet1'] ?? [];
         final nextList = getTodayNextClass(sectionAData);
         nextClass = nextList.isNotEmpty
             ? nextList.first
@@ -513,23 +547,21 @@ class _FrontPageState extends State<FrontPage>
   }
 
   Future<void> _loadProfile() async {
-    userProfile = await loadUserProfile();
-    setState(() {});
+    final profile = await loadUserProfile();
+    // Try to load formatted CT marks from Hive cache
+    final cachedCt = await loadCachedUserCtMarks();
+
+    setState(() {
+      userProfile = profile;
+      // Use cached, fallback to dynamic parse if cache is absent
+      ctMarksData = cachedCt ?? parseCtMarksFromProfile(profile);
+    });
   }
 
   void _loadProfileImagePath() {
     _profileImagePath = loadLocalProfileImagePath();
     syncProfilePicIfNeeded(_profileImagePath);
     setState(() {});
-  }
-
-  Future<void> loadCtMarks() async {
-    final jsonString = await DefaultAssetBundle.of(
-      context,
-    ).loadString('assets/ct_marks_demo.json');
-    setState(() {
-      ctMarksData = json.decode(jsonString);
-    });
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
@@ -610,199 +642,43 @@ class _FrontPageState extends State<FrontPage>
   }
 }
 
-// Get Tasks Data for Today
+Future<Map<String, dynamic>?> loadCachedUserCtMarks() async {
+  final box = await Hive.openBox(userCtMarksBox);
+  final raw = box.get(userCtMarksKey);
 
-Map<String, int> getTodayTaskStats(List<TodoTask> tasks) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
+  if (raw is Map) {
+    final coursesRaw = raw['courses'];
 
-  int createdToday = 0;
-  int completedToday = 0;
+    if (coursesRaw is Map) {
+      final courses = <String, List<List<int>>>{};
 
-  for (final task in tasks) {
-    final created = DateTime(
-      task.createdAt.year,
-      task.createdAt.month,
-      task.createdAt.day,
-    );
-    if (created == today) createdToday += 1;
-    if (task.completedAt != null) {
-      final completed = DateTime(
-        task.completedAt!.year,
-        task.completedAt!.month,
-        task.completedAt!.day,
-      );
-      if (completed == today) completedToday += 1;
+      for (final entry in coursesRaw.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+
+        if (value is List) {
+          final marks = value.map<List<int>>((pair) {
+            if (pair is List && pair.length == 2) {
+              return [
+                int.parse(pair[0].toString()),
+                int.parse(pair[1].toString()),
+              ];
+            }
+            return [0, 0];
+          }).toList();
+
+          courses[key] = marks;
+        }
+      }
+
+      return {'courses': courses};
     }
   }
-  return {'createdToday': createdToday, 'completedToday': completedToday};
+
+  return null;
 }
 
-//Dashboard card
-class _DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String titleValue;
-  final String subtitle;
-  final Widget? trailingWidget;
-  final VoidCallback onTap;
-
-  const _DashboardCard({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.titleValue,
-    required this.subtitle,
-    this.trailingWidget,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white.withValues(alpha: 0.07),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 0,
-      child: ListTile(
-        leading: Icon(icon, color: color, size: 32),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              titleValue,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (subtitle.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  subtitle,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white54,
-                    fontSize: 12,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-          ],
-        ),
-        trailing: trailingWidget,
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-// Notice Card for horizontal scroll
-class _NoticeCard extends StatelessWidget {
-  final String title;
-  final String desc;
-  final String time;
-  const _NoticeCard({
-    required this.title,
-    required this.desc,
-    required this.time,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            desc,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const Spacer(),
-          Text(
-            time,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Todo Card for horizontal scroll
-class _TodoCard extends StatelessWidget {
-  final String title;
-  final String due;
-  const _TodoCard({required this.title, required this.due});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Due: $due",
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const Spacer(),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Icon(Icons.chevron_right, color: Colors.white24, size: 18),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Gradiant effect animation
-class SlideGradientTransform extends GradientTransform {
-  final double slidePercent;
-  const SlideGradientTransform(this.slidePercent);
-
-  @override
-  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
-    final double dx = -bounds.width * slidePercent;
-    return Matrix4.translationValues(dx, 0, 0);
-  }
+Future<void> cacheUserCtMarks(Map<String, dynamic> formattedCtMarks) async {
+  final box = await Hive.openBox(userCtMarksBox);
+  await box.put(userCtMarksKey, formattedCtMarks);
 }

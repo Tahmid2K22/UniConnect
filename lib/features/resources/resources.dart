@@ -1,7 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 class ResourcesPage extends StatefulWidget {

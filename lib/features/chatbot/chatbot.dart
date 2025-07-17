@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -22,7 +23,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
 
   List<ChatMessage> messages = [
     ChatMessage(
-      text: 'Welcome to Alap Zontro for KUET CSE!',
+      text: 'Welcome to আলাপযন্ত্র for KUET CSE!',
       user: ChatUser(id: '2', firstName: 'আলাপযন্ত্র'),
       createdAt: DateTime.now(),
     ),

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:lottie/lottie.dart';
-import 'package:uni_connect/features/frontpage/front_page.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:uni_connect/features/frontpage/front_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

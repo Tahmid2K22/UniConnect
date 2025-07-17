@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'dart:io';
+
 import 'package:uni_connect/firebase/firestore/database.dart';
+
+import 'package:uni_connect/utils/sidebar_button.dart';
 
 class SideNavigation extends StatefulWidget {
   const SideNavigation({super.key});
@@ -162,7 +166,7 @@ class _SideNavigationState extends State<SideNavigation> {
                   columnGap: 18,
                   children: List.generate(
                     navItems.length,
-                    (i) => _SidebarButton(
+                    (i) => SidebarButton(
                       icon: navItems[i]['icon'] as IconData,
                       label: navItems[i]['label'] as String,
                       route: navItems[i]['route'] as String,
@@ -174,55 +178,6 @@ class _SideNavigationState extends State<SideNavigation> {
             // Settings button at bottom right
             settingsButton,
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// Side Bar Buttons
-class _SidebarButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String route;
-
-  const _SidebarButton({
-    required this.icon,
-    required this.label,
-    required this.route,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Material(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, route);
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.cyanAccent, size: 28),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

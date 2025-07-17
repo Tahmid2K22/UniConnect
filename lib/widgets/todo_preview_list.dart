@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../features/todo/todo_task.dart';
-import 'glass_card.dart';
+import '../utils/glass_card.dart';
 
 class TodoPreviewList extends StatelessWidget {
   final List<TodoTask> tasks;

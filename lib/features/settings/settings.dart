@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

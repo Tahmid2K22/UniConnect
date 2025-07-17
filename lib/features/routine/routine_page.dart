@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'collect_data.dart';
-import 'dynamic_routine_page.dart';
+
 import 'static_routine.dart';
 import 'assignment.dart';
+import 'collect_data.dart';
+import 'dynamic_routine_page.dart';
+
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 class RoutinePage extends StatefulWidget {

@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase/firebase_options.dart';
+
+import 'package:uni_connect/features/navigation/transition.dart';
+import 'package:uni_connect/features/auth/login_page.dart';
 import 'package:uni_connect/features/batchmates/batchmates_page.dart';
 import 'package:uni_connect/features/chatbot/chatbot.dart';
 import 'package:uni_connect/features/exams/exams.dart';
@@ -11,14 +19,8 @@ import 'package:uni_connect/features/todo/todo_page.dart';
 import 'package:uni_connect/features/frontpage/front_page.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
-import 'package:uni_connect/features/navigation/transition.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase/firebase_options.dart';
-//import 'package:uni_connect/test_page.dart';
-import 'package:uni_connect/features/auth/login_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,13 +30,17 @@ void main() async {
   await Hive.openBox<TodoTask>('todoBox');
   await Hive.openBox<TodoTask>('dailyTaskBox');
   await Hive.openBox('profileBox');
+  await Hive.openBox('userBox');
+  await Hive.openBox('batchmatesBox');
+  await Hive.openBox('teachersBox');
+  await Hive.openBox('examsBox');
+  await Hive.openBox('noticesBox');
+
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
-      //home: LoginPage(),
       onGenerateRoute: (settings) {
-        // Apply custom transition to all routes
         switch (settings.name) {
           case '/profile':
             return NicePageRoute(page: const UserProfilePage());
@@ -69,21 +75,6 @@ void main() async {
             );
         }
       },
-    ),
-  );
-}
-
-// Placeholder for now
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const PlaceholderScreen({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Colors.black,
-    appBar: AppBar(title: Text(title)),
-    body: const Center(
-      child: Text("Coming soon...", style: TextStyle(color: Colors.white)),
     ),
   );
 }

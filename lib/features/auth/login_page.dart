@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:uni_connect/firebase/auth/auth.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:uni_connect/firebase/auth/auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

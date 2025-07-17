@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:uni_connect/firebase/firestore/database.dart';
 
 class ExamsPage extends StatefulWidget {
@@ -51,78 +52,81 @@ class _ExamsPageState extends State<ExamsPage> {
           ),
         ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _examsFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.cyanAccent),
-            );
-          }
-          final exams = snapshot.data!;
-          if (exams.isEmpty) {
-            return Center(
-              child: Text(
-                "No upcoming exams.",
-                style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
-              ),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(18),
-            itemCount: exams.length,
-            itemBuilder: (context, index) {
-              final exam = exams[index]['data'] ?? {};
-              return Container(
-                margin: const EdgeInsets.only(bottom: 18),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.09),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: Colors.cyanAccent.withValues(alpha: 0.18),
-                    width: 1.1,
+      body: RefreshIndicator(
+        color: Colors.cyanAccent,
+        backgroundColor: const Color(0xFF0E0E2C),
+        onRefresh: () async {
+          final freshExams =
+              await reloadExams(); // replaces cache from Firestore
+          setState(() {
+            _examsFuture = Future.value(
+              freshExams,
+            ); // FutureBuilder sees new data
+          });
+        },
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: _examsFuture,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.cyanAccent),
+              );
+            }
+            final exams = snapshot.data!;
+            if (exams.isEmpty) {
+              return Center(
+                child: Text(
+                  "No upcoming exams.",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white54,
+                    fontSize: 16,
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exam['title'] ?? "",
-                      style: GoogleFonts.poppins(
-                        color: Colors.cyanAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "${exam['date'] ?? ''}${exam['time'] != null ? ' • ${exam['time']}' : ''}",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
               );
-            },
-          );
-        },
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.all(18),
+              itemCount: exams.length,
+              itemBuilder: (context, index) {
+                final exam = exams[index]['data'] ?? {};
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 18),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.09),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.cyanAccent.withValues(alpha: 0.18),
+                      width: 1.1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        exam['title'] ?? "",
+                        style: GoogleFonts.poppins(
+                          color: Colors.cyanAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "${exam['date'] ?? ''}${exam['time'] != null ? ' • ${exam['time']}' : ''}",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
-
-  //Load Exam Data --------------------------------------------------------------------------------------------------
-  /*   Future<List<Map<String, dynamic>>> loadExams() async {
-    final String response = await rootBundle.loadString('assets/exams.json');
-    final data = json.decode(response);
-    final examsRaw = data['upcoming_exams'];
-    if (examsRaw == null || examsRaw is! List) return [];
-    return examsRaw
-        .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
-        .toList();
-  } */
-  // Not needed. delete later
-  //Load Exam Data --------------------------------------------------------------------------------------------------
 }

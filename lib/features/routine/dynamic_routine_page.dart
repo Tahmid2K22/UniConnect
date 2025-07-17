@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+
 import 'dart:ui';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:uni_connect/utils/glass_card_2.dart';
 
 class DataModel {
   final String period;
@@ -464,8 +467,8 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
                               ),
                               decoration: BoxDecoration(
                                 color: isDone
-                                    ? Colors.white.withOpacity(0.02)
-                                    : Colors.cyanAccent.withOpacity(0.1),
+                                    ? Colors.white.withValues(alpha: 0.02)
+                                    : Colors.cyanAccent.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: isDone
@@ -576,50 +579,6 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Glass card utils
-class GlassCard extends StatelessWidget {
-  final Widget child;
-  const GlassCard({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.08),
-            Colors.cyanAccent.withValues(alpha: 0.05),
-            Colors.deepPurple.withValues(alpha: 0.07),
-          ],
-        ),
-        border: Border.all(
-          color: Colors.cyanAccent.withValues(alpha: 0.15),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurpleAccent.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: child,
-        ),
       ),
     );
   }

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
+
 import 'todo_task.dart';
 import 'task_details_page.dart';
-import 'package:uni_connect/features/navigation/side_navigation.dart';
 import 'finished_tasks_page.dart';
+
 import 'package:uni_connect/features/navigation/transition.dart';
+import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
