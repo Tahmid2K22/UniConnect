@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class TodoCard extends StatelessWidget {
   final String title;
   final String due;
-  const TodoCard({required this.title, required this.due});
+  const TodoCard({super.key, required this.title, required this.due});
   @override
   Widget build(BuildContext context) {
     return Container(

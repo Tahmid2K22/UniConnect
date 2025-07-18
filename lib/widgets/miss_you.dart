@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
 class WeMissYouBadge extends StatefulWidget {
-  const WeMissYouBadge();
+  const WeMissYouBadge({super.key});
 
   @override
   State<WeMissYouBadge> createState() => _WeMissYouBadgeState();

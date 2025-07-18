@@ -6,7 +6,7 @@ class TeacherCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isGrid;
 
-  const TeacherCard({
+  const TeacherCard({super.key, 
     required this.teacher,
     required this.onTap,
     this.isGrid = false,

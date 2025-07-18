@@ -7,7 +7,7 @@ class SocialIconButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onPressed;
 
-  const SocialIconButton({
+  const SocialIconButton({super.key, 
     required this.icon,
     required this.color,
     required this.tooltip,

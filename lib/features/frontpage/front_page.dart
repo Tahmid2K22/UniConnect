@@ -3,13 +3,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:marquee/marquee.dart';
-import 'package:intl/intl.dart' as init;
+// import 'package:intl/intl.dart' as init;
 import 'dart:io';
-import 'dart:convert';
-import 'package:image/image.dart' as img;
+//import 'dart:convert';
+//import 'package:image/image.dart' as img;
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
 
@@ -234,6 +234,13 @@ class _FrontPageState extends State<FrontPage>
                         }
                         final exams = snapshot.data!;
 
+                        // Sort exams by days left (soonest first)
+                        exams.sort((a, b) {
+                          final aDays = _daysUntil(a['data']['date'] ?? '');
+                          final bDays = _daysUntil(b['data']['date'] ?? '');
+                          return aDays.compareTo(bDays);
+                        });
+
                         final exam = exams.isNotEmpty ? exams.first : null;
 
                         final daysLeft = exam != null
@@ -242,6 +249,8 @@ class _FrontPageState extends State<FrontPage>
                         final daysLeftText = daysLeft == null
                             ? ''
                             : daysLeft < 0
+                            ? 'Passed'
+                            : daysLeft == 0
                             ? 'Today'
                             : '$daysLeft day${daysLeft == 1 ? '' : 's'} left';
 
@@ -560,52 +569,55 @@ class _FrontPageState extends State<FrontPage>
 
   void _loadProfileImagePath() {
     _profileImagePath = loadLocalProfileImagePath();
-    syncProfilePicIfNeeded(_profileImagePath);
+    // syncProfilePicIfNeeded(_profileImagePath);
     setState(() {});
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
 
   // Call this in initState or wherever you check profile state
-  Future<void> syncProfilePicIfNeeded(String? localPath) async {
-    if (localPath == null) return;
+  // Future<void> syncProfilePicIfNeeded(String? localPath) async {
+  //   if (localPath == null) return;
 
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null || user.email == null) return;
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if (user == null || user.email == null) return;
 
-    final docRef = FirebaseFirestore.instance
-        .collection('students')
-        .doc(user.email);
-    final doc = await docRef.get();
+  //   final docRef = FirebaseFirestore.instance
+  //       .collection('students')
+  //       .doc(user.email);
+  //   final doc = await docRef.get();
 
-    if (!doc.exists) return;
-    final data = doc.data();
-    if (data == null ||
-        (data['profile_pic'] == null || data['profile_pic'].isEmpty)) {
-      final file = File(localPath);
-      if (!await file.exists()) return;
-      final bytes = await file.readAsBytes();
-      final image = img.decodeImage(bytes);
-      if (image == null) return;
-      final resized = img.copyResize(image, width: 96, height: 96); // Low-res
-      final jpg = img.encodeJpg(resized, quality: 60);
-      final base64Str = base64Encode(jpg);
-      await docRef.update({'profile_pic': base64Str});
-    }
-  }
+  //   if (!doc.exists) return;
+  //   final data = doc.data();
+  //   if (data == null ||
+  //       (data['profile_pic'] == null || data['profile_pic'].isEmpty)) {
+  //     final file = File(localPath);
+  //     if (!await file.exists()) return;
+  //     final bytes = await file.readAsBytes();
+  //     final image = img.decodeImage(bytes);
+  //     if (image == null) return;
+  //     final resized = img.copyResize(image, width: 96, height: 96); // Low-res
+  //     final jpg = img.encodeJpg(resized, quality: 60);
+  //     final base64Str = base64Encode(jpg);
+  //     await docRef.update({'profile_pic': base64Str});
+  //   }
+  // }
   // Exam Utils
 
-  int? _daysUntil(String dateStr) {
+  int _daysUntil(String date) {
     try {
-      final examDate = init.DateFormat('yyyy-MM-dd').parse(dateStr);
-      final now = DateTime.now();
-      return examDate.difference(DateTime(now.year, now.month, now.day)).inDays;
-    } catch (_) {
-      return null;
+      DateTime examDate = DateTime.parse(date);
+      DateTime today = DateTime.now();
+      return examDate
+          .difference(DateTime(today.year, today.month, today.day))
+          .inDays;
+    } catch (e) {
+      return 99999; // Arbitrarily large for failed parse, sorts those exams last
     }
   }
 
   Color _daysLeftColor(int daysLeft) {
+    if (daysLeft < 0) return Colors.grey;
     if (daysLeft <= 1) return Colors.redAccent;
     if (daysLeft <= 3) return Colors.orangeAccent;
     return Colors.greenAccent;

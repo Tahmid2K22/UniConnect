@@ -11,7 +11,7 @@ class DashboardCard extends StatelessWidget {
   final Widget? trailingWidget;
   final VoidCallback onTap;
 
-  const DashboardCard({
+  const DashboardCard({super.key, 
     required this.icon,
     required this.color,
     required this.title,

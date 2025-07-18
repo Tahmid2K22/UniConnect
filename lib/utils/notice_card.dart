@@ -5,7 +5,7 @@ class NoticeCard extends StatelessWidget {
   final String title;
   final String desc;
   final String time;
-  const NoticeCard({
+  const NoticeCard({super.key, 
     required this.title,
     required this.desc,
     required this.time,

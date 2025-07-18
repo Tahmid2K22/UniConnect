@@ -7,7 +7,7 @@ class SidebarButton extends StatelessWidget {
   final String label;
   final String route;
 
-  const SidebarButton({
+  const SidebarButton({super.key, 
     required this.icon,
     required this.label,
     required this.route,

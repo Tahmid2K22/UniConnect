@@ -21,7 +21,6 @@ import 'package:uni_connect/utils/ct_comparison_entries.dart';
 import 'package:uni_connect/utils/cgpa_ranking.dart';
 import 'package:uni_connect/utils/user_cgpa_position.dart';
 
-import 'package:hive/hive.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
 

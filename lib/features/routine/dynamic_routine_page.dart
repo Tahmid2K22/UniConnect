@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:uni_connect/utils/glass_card_2.dart';

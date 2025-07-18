@@ -8,7 +8,7 @@ class InfoRow extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const InfoRow({
+  const InfoRow({super.key, 
     required this.icon,
     required this.label,
     required this.value,

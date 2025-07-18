@@ -9,7 +9,7 @@ class ProfileInfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const ProfileInfoRow({
+  const ProfileInfoRow({super.key, 
     required this.icon,
     required this.label,
     required this.value,
@@ -53,7 +53,7 @@ class SocialIconButton extends StatelessWidget {
   final Map<String, dynamic>? userData;
   final Function(String link) onUpdate;
 
-  const SocialIconButton({
+  const SocialIconButton({super.key, 
     required this.icon,
     required this.color,
     required this.platform,

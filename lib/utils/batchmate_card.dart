@@ -8,7 +8,7 @@ class BatchmateCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isGrid;
 
-  const BatchmateCard({
+  const BatchmateCard({super.key, 
     required this.mate,
     required this.onTap,
     this.isGrid = false,

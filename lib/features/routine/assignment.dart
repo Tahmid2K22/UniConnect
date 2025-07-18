@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'package:uni_connect/utils/AnimatedAssignmentCard.dart';
