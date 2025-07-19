@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:marquee/marquee.dart';
+// import 'package:intl/intl.dart' as init;
+//import 'dart:convert';
+//import 'package:image/image.dart' as img;
+
+//import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:uni_connect/firebase/firestore/database.dart';
+
 import '../todo/todo_task.dart';
+
 import '../navigation/side_navigation.dart';
+
 import '../routine/collect_data.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
-import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
+
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
-import 'package:intl/intl.dart' as init;
-import 'dart:io';
+
+import 'package:uni_connect/widgets/ct_marks_histogram.dart';
+import 'package:uni_connect/widgets/ct_marks_details.dart';
+import 'package:uni_connect/widgets/load_user_ct_marks.dart';
+import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
+import 'package:uni_connect/utils/todo_card.dart';
+import 'package:uni_connect/utils/notice_card.dart';
+import 'package:uni_connect/utils/dashboard_card.dart';
+import 'package:uni_connect/widgets/today_task.dart';
+
+// Constants (reuse the same box/key as in analytics page)
+const String userCtMarksBox = 'userCtMarksBox';
+const String userCtMarksKey = 'user';
 
 class FrontPage extends StatefulWidget {
   const FrontPage({super.key});
@@ -31,7 +50,7 @@ class _FrontPageState extends State<FrontPage>
   DataModel? nextClass;
   Map<String, dynamic>? userProfile;
 
-  String? _profileImagePath;
+  Map<String, dynamic>? ctMarksData;
 
   @override
   void initState() {
@@ -42,7 +61,6 @@ class _FrontPageState extends State<FrontPage>
       duration: const Duration(seconds: 5),
     )..repeat(reverse: false);
     _loadProfile();
-    _loadProfileImagePath();
   }
 
   @override
@@ -69,19 +87,32 @@ class _FrontPageState extends State<FrontPage>
         },
         child: Scaffold(
           key: scaffoldKey,
-          backgroundColor: const Color(0xFF0E0E2C),
           endDrawer: const SideNavigation(),
+          backgroundColor: const Color.fromARGB(255, 11, 11, 34),
 
           body: SafeArea(
             child: RefreshIndicator(
               color: Colors.cyanAccent,
-              backgroundColor: const Color(0xFF0E0E2C),
+              backgroundColor: const Color.fromARGB(255, 11, 11, 34),
               onRefresh: () async {
-                // Call your reload functions here
+                final profile = await reloadUserProfile();
+                final parsed = parseCtMarksFromProfile(profile);
+
+                // Save new parsed ct marks to Hive cache
+                await cacheUserCtMarks(parsed);
+
+                // ...reload other things as you do
+                await reloadExams();
+                await reloadNotices();
                 await _loadRoutineData();
-                await _loadProfile();
-                setState(() {});
+                await reloadBatchmates();
+
+                setState(() {
+                  userProfile = profile;
+                  ctMarksData = parsed; // Now already cached for future loads
+                });
               },
+
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(18),
                 child: Column(
@@ -89,93 +120,98 @@ class _FrontPageState extends State<FrontPage>
                   children: [
                     // Top: User Avatar, App Name, Greeting
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, "/profile"),
-                          child: CircleAvatar(
-                            radius: 28,
-                            backgroundImage: _profileImagePath != null
-                                ? FileImage(File(_profileImagePath!))
-                                : AssetImage('assets/profile/profile.jpg')
-                                      as ImageProvider,
-                            backgroundColor: Colors.cyanAccent.withAlpha(50),
-                            child: userProfile == null
-                                ? const CircularProgressIndicator()
-                                : null,
+                        // Add an invisible sized box for symmetry (optional, helps center exactly with trailing icon)
+                        const SizedBox(
+                          width: 48,
+                        ), // Adjust width to match IconButton size for balance
+                        // Centered titles
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Centered, animated gradient UniConnect text
+                              AnimatedBuilder(
+                                animation: _controller,
+                                builder: (context, child) {
+                                  return ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return LinearGradient(
+                                        colors: [
+                                          Colors.cyanAccent,
+                                          Colors.blueAccent,
+                                          Colors.purpleAccent,
+                                          Colors.cyanAccent,
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                        stops: const [0.0, 0.33, 0.66, 1.0],
+                                        tileMode: TileMode.repeated,
+                                        transform: SlideGradientTransform(
+                                          _controller.value,
+                                        ),
+                                      ).createShader(
+                                        Rect.fromLTWH(
+                                          0,
+                                          0,
+                                          bounds.width * 2,
+                                          bounds.height,
+                                        ),
+                                      );
+                                    },
+                                    child: child,
+                                  );
+                                },
+                                child: Text(
+                                  'UniConnect',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ),
+
+                              // Welcome text below, centered
+                              Padding(
+                                padding: const EdgeInsets.only(top: 3.0),
+                                child: Text(
+                                  "Welcome ${extractName(userProfile?['name'])}",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedBuilder(
-                              animation: _controller,
-                              builder: (context, child) {
-                                return ShaderMask(
-                                  shaderCallback: (bounds) {
-                                    return LinearGradient(
-                                      colors: [
-                                        Colors.cyan,
-                                        Colors.blue,
-                                        const Color.fromARGB(255, 192, 56, 216),
-                                        Colors.cyan,
-                                      ],
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      stops: const [0.0, 0.33, 0.66, 1.0],
-                                      tileMode: TileMode.repeated,
-                                      transform: SlideGradientTransform(
-                                        _controller.value,
-                                      ),
-                                    ).createShader(
-                                      Rect.fromLTWH(
-                                        0,
-                                        0,
-                                        bounds.width * 2,
-                                        bounds.height,
-                                      ),
-                                    );
-                                  },
-                                  child: child,
-                                );
-                              },
-                              child: Text(
-                                'UniConnect',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 34, // Use your preferred size
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors
-                                      .white, // This is masked by the shader
-                                ),
-                              ),
+                        // Hamburger menu - right side
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.menu,
+                              color: Colors.cyanAccent,
+                              size: 28,
                             ),
-
-                            SizedBox(
-                              height: 28, // or whatever fits your design
-                              width: 200, // or your preferred width
-                              child: Marquee(
-                                text:
-                                    "${getGreetingMessage()}, ${userProfile?['name'] ?? ''}!",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white70,
-                                  fontSize: 15,
-                                ),
-                                scrollAxis: Axis.horizontal,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                blankSpace: 40.0,
-                                velocity: 50.0,
-                                startPadding: 10.0,
-                              ),
-                            ),
-                          ],
+                            onPressed: () =>
+                                scaffoldKey.currentState?.openEndDrawer(),
+                            splashRadius: 22,
+                          ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 18),
 
                     // Next Class Card
-                    _DashboardCard(
+                    DashboardCard(
                       icon: Icons.class_,
                       color: Colors.green,
                       title: "Next Class",
@@ -197,6 +233,13 @@ class _FrontPageState extends State<FrontPage>
                         }
                         final exams = snapshot.data!;
 
+                        // Sort exams by days left (soonest first)
+                        exams.sort((a, b) {
+                          final aDays = _daysUntil(a['data']['date'] ?? '');
+                          final bDays = _daysUntil(b['data']['date'] ?? '');
+                          return aDays.compareTo(bDays);
+                        });
+
                         final exam = exams.isNotEmpty ? exams.first : null;
 
                         final daysLeft = exam != null
@@ -205,12 +248,14 @@ class _FrontPageState extends State<FrontPage>
                         final daysLeftText = daysLeft == null
                             ? ''
                             : daysLeft < 0
+                            ? 'Passed'
+                            : daysLeft == 0
                             ? 'Today'
                             : '$daysLeft day${daysLeft == 1 ? '' : 's'} left';
 
                         return GestureDetector(
                           onTap: () => Navigator.pushNamed(context, '/exams'),
-                          child: _DashboardCard(
+                          child: DashboardCard(
                             icon: Icons.event,
                             color: Colors.blueAccent,
                             title: "Upcoming Exam",
@@ -276,7 +321,7 @@ class _FrontPageState extends State<FrontPage>
                               scrollDirection: Axis.horizontal,
                               children: noticeList.map((notice) {
                                 final data = notice['data'] ?? {};
-                                return _NoticeCard(
+                                return NoticeCard(
                                   title: data['title'] ?? "",
                                   desc: data['desc'] ?? "",
                                   time: data['time'] ?? "",
@@ -331,7 +376,7 @@ class _FrontPageState extends State<FrontPage>
                                     ) {
                                       setState(() {}); // Refresh home on return
                                     }),
-                                child: _TodoCard(
+                                child: TodoCard(
                                   title: task.title,
                                   due: task.dueDate != null
                                       ? task.dueDate!
@@ -347,6 +392,15 @@ class _FrontPageState extends State<FrontPage>
                       },
                     ),
                     const SizedBox(height: 16),
+                    Text(
+                      "Task Analytics",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
                     // Task Graph (small, as a card)
                     Card(
@@ -358,13 +412,29 @@ class _FrontPageState extends State<FrontPage>
                         onTap: () => Navigator.pushNamed(context, '/analytics'),
                         child: SizedBox(
                           width: double.infinity,
-                          height: 180, // increased height
+                          height: 180,
                           child: ValueListenableBuilder(
                             valueListenable: Hive.box<TodoTask>(
                               'todoBox',
                             ).listenable(),
                             builder: (context, Box<TodoTask> box, _) {
                               final taskStats = getCompletionStatsLast30Days();
+                              // The important check: are ALL counts zero?
+                              final allZero = taskStats.every(
+                                (count) => count == 0,
+                              );
+                              if (allZero) {
+                                return Center(
+                                  child: Text(
+                                    'Complete a task to get started!',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white54,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }
                               return MonthlyTaskCompletionGraph(
                                 taskStats: taskStats,
                               );
@@ -439,7 +509,31 @@ class _FrontPageState extends State<FrontPage>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 70),
+                    const SizedBox(height: 16),
+                    if (ctMarksData != null) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        "CT Marks Histogram",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      CtMarksHistogram(data: ctMarksData!),
+                      const SizedBox(height: 18),
+                      Text(
+                        "CT Marks Details",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      CtMarksDetails(data: ctMarksData!),
+                    ],
                   ],
                 ),
               ),
@@ -452,11 +546,19 @@ class _FrontPageState extends State<FrontPage>
 
   // Load Data Start -------------------------------------------------------------------------------------------------------------------
 
-  Future<void> _loadRoutineData() async {
+  // Front Page
+  Future<void> _loadRoutineData({bool forceRefresh = false}) async {
     try {
-      final results = await CollectData.collectAllData();
+      Map<String, dynamic>? results;
+      if (!forceRefresh) {
+        results = await RoutineCache.loadRoutine();
+      }
+      if (results == null) {
+        results = await CollectData.collectAllData();
+        await RoutineCache.saveRoutine(results);
+      }
       setState(() {
-        sectionAData = results['sheet1'] ?? [];
+        sectionAData = results!['sheet1'] ?? [];
         final nextList = getTodayNextClass(sectionAData);
         nextClass = nextList.isNotEmpty
             ? nextList.first
@@ -478,36 +580,62 @@ class _FrontPageState extends State<FrontPage>
   }
 
   Future<void> _loadProfile() async {
-    final String jsonString = await rootBundle.loadString(
-      'assets/user_profile_demo.json',
-    );
-    setState(() {
-      userProfile = json.decode(jsonString);
-    });
-  }
+    final profile = await loadUserProfile();
+    // Try to load formatted CT marks from Hive cache
+    final cachedCt = await loadCachedUserCtMarks();
 
-  void _loadProfileImagePath() {
-    final box = Hive.box('profileBox');
     setState(() {
-      _profileImagePath = box.get('profileImagePath');
+      userProfile = profile;
+      // Use cached, fallback to dynamic parse if cache is absent
+      ctMarksData = cachedCt ?? parseCtMarksFromProfile(profile);
     });
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
 
+  // Call this in initState or wherever you check profile state
+  // Future<void> syncProfilePicIfNeeded(String? localPath) async {
+  //   if (localPath == null) return;
+
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   if (user == null || user.email == null) return;
+
+  //   final docRef = FirebaseFirestore.instance
+  //       .collection('students')
+  //       .doc(user.email);
+  //   final doc = await docRef.get();
+
+  //   if (!doc.exists) return;
+  //   final data = doc.data();
+  //   if (data == null ||
+  //       (data['profile_pic'] == null || data['profile_pic'].isEmpty)) {
+  //     final file = File(localPath);
+  //     if (!await file.exists()) return;
+  //     final bytes = await file.readAsBytes();
+  //     final image = img.decodeImage(bytes);
+  //     if (image == null) return;
+  //     final resized = img.copyResize(image, width: 96, height: 96); // Low-res
+  //     final jpg = img.encodeJpg(resized, quality: 60);
+  //     final base64Str = base64Encode(jpg);
+  //     await docRef.update({'profile_pic': base64Str});
+  //   }
+  // }
   // Exam Utils
 
-  int? _daysUntil(String dateStr) {
+  int _daysUntil(String date) {
     try {
-      final examDate = init.DateFormat('yyyy-MM-dd').parse(dateStr);
-      final now = DateTime.now();
-      return examDate.difference(DateTime(now.year, now.month, now.day)).inDays;
-    } catch (_) {
-      return null;
+      DateTime examDate = DateTime.parse(date);
+      DateTime today = DateTime.now();
+      return examDate
+          .difference(DateTime(today.year, today.month, today.day))
+          .inDays;
+    } catch (e) {
+      return 99999; // Arbitrarily large for failed parse, sorts those exams last
     }
   }
 
   Color _daysLeftColor(int daysLeft) {
+    if (daysLeft < 0) return Colors.grey;
     if (daysLeft <= 1) return Colors.redAccent;
     if (daysLeft <= 3) return Colors.orangeAccent;
     return Colors.greenAccent;
@@ -515,227 +643,93 @@ class _FrontPageState extends State<FrontPage>
 
   //Greet Message Utils
 
-  String getGreetingMessage() {
-    final now = DateTime.now();
-    final hour = now.hour;
-    final weekday = now.weekday; // Monday=1, Sunday=7 in Dart
+  // String getGreetingMessage() {
+  //   final now = DateTime.now();
+  //   final hour = now.hour;
+  //   final weekday = now.weekday; // Monday=1, Sunday=7 in Dart
 
-    String greeting;
+  //   String greeting;
 
-    if (hour >= 1 && hour < 4) {
-      greeting = "You should be sleeping, what are you up to? ";
-    } else if (hour >= 5 && hour < 12) {
-      greeting = "Good morning";
-    } else if (hour >= 12 && hour < 17) {
-      greeting = "Good afternoon";
-    } else if (hour >= 17 && hour < 21) {
-      greeting = "Good evening";
-    } else {
-      greeting = "Good night";
+  //   if (hour >= 1 && hour < 4) {
+  //     greeting = "You should be sleeping, what are you up to? ";
+  //   } else if (hour >= 5 && hour < 12) {
+  //     greeting = "Good morning";
+  //   } else if (hour >= 12 && hour < 17) {
+  //     greeting = "Good afternoon";
+  //   } else if (hour >= 17 && hour < 21) {
+  //     greeting = "Good evening";
+  //   } else {
+  //     greeting = "Good night";
+  //   }
+
+  //   if ((weekday == 4 || weekday == 5) && !(hour >= 1 && hour < 4)) {
+  //     greeting += ", enjoy your weekend";
+  //   } else if (!(hour >= 1 && hour < 4)) {
+  //     greeting += ", have a nice day";
+  //   }
+
+  //   return greeting;
+  // }
+}
+
+Future<Map<String, dynamic>?> loadCachedUserCtMarks() async {
+  final box = await Hive.openBox(userCtMarksBox);
+  final raw = box.get(userCtMarksKey);
+
+  if (raw is Map) {
+    final coursesRaw = raw['courses'];
+
+    if (coursesRaw is Map) {
+      final courses = <String, List<List<int>>>{};
+
+      for (final entry in coursesRaw.entries) {
+        final key = entry.key.toString();
+        final value = entry.value;
+
+        if (value is List) {
+          final marks = value.map<List<int>>((pair) {
+            if (pair is List && pair.length == 2) {
+              return [
+                int.parse(pair[0].toString()),
+                int.parse(pair[1].toString()),
+              ];
+            }
+            return [0, 0];
+          }).toList();
+
+          courses[key] = marks;
+        }
+      }
+
+      return {'courses': courses};
     }
-
-    if ((weekday == 4 || weekday == 5) && !(hour >= 1 && hour < 4)) {
-      greeting += ", enjoy your weekend";
-    } else if (!(hour >= 1 && hour < 4)) {
-      greeting += ", have a nice day";
-    }
-
-    return greeting;
   }
+
+  return null;
 }
 
-// Get Tasks Data for Today
-
-Map<String, int> getTodayTaskStats(List<TodoTask> tasks) {
-  final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-
-  int createdToday = 0;
-  int completedToday = 0;
-
-  for (final task in tasks) {
-    final created = DateTime(
-      task.createdAt.year,
-      task.createdAt.month,
-      task.createdAt.day,
-    );
-    if (created == today) createdToday += 1;
-    if (task.completedAt != null) {
-      final completed = DateTime(
-        task.completedAt!.year,
-        task.completedAt!.month,
-        task.completedAt!.day,
-      );
-      if (completed == today) completedToday += 1;
-    }
-  }
-  return {'createdToday': createdToday, 'completedToday': completedToday};
+Future<void> cacheUserCtMarks(Map<String, dynamic> formattedCtMarks) async {
+  final box = await Hive.openBox(userCtMarksBox);
+  await box.put(userCtMarksKey, formattedCtMarks);
 }
 
-//Dashboard card
-class _DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String titleValue;
-  final String subtitle;
-  final Widget? trailingWidget;
-  final VoidCallback onTap;
+String extractName(String? fullName) {
+  if (fullName == null || fullName.trim().isEmpty) return '';
+  final trimmed = fullName.trim();
 
-  const _DashboardCard({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.titleValue,
-    required this.subtitle,
-    this.trailingWidget,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white.withValues(alpha: 0.07),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 0,
-      child: ListTile(
-        leading: Icon(icon, color: color, size: 32),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              titleValue,
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (subtitle.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  subtitle,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white54,
-                    fontSize: 12,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-          ],
-        ),
-        trailing: trailingWidget,
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-// Notice Card for horizontal scroll
-class _NoticeCard extends StatelessWidget {
-  final String title;
-  final String desc;
-  final String time;
-  const _NoticeCard({
-    required this.title,
-    required this.desc,
-    required this.time,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            desc,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const Spacer(),
-          Text(
-            time,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Todo Card for horizontal scroll
-class _TodoCard extends StatelessWidget {
-  final String title;
-  final String due;
-  const _TodoCard({required this.title, required this.due});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Due: $due",
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const Spacer(),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Icon(Icons.chevron_right, color: Colors.white24, size: 18),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Gradiant effect animation
-class SlideGradientTransform extends GradientTransform {
-  final double slidePercent;
-  const SlideGradientTransform(this.slidePercent);
-
-  @override
-  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
-    final double dx = -bounds.width * slidePercent;
-    return Matrix4.translationValues(dx, 0, 0);
+  // Remove all spaces and check character count
+  final nonSpaceChars = trimmed.replaceAll(' ', '');
+  if (nonSpaceChars.length <= 3) {
+    // Get index of second space
+    int first = trimmed.indexOf(' ');
+    if (first == -1) return trimmed; // No spaces
+    int second = trimmed.indexOf(' ', first + 1);
+    if (second == -1) return trimmed; // Only one space
+    return trimmed.substring(0, second).trim();
+  } else {
+    // Typical case: cut at first space
+    int first = trimmed.indexOf(' ');
+    if (first == -1) return trimmed; // No spaces
+    return trimmed.substring(0, first);
   }
 }

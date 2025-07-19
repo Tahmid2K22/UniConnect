@@ -16,7 +16,6 @@ Future<UserCredential?> signInWithGoogle() async {
 
     return await FirebaseAuth.instance.signInWithCredential(credential);
   } catch (e) {
-    print("Google Sign-In Error: $e");
     return null;
   }
 }

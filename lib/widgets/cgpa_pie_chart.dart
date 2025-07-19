@@ -15,11 +15,12 @@ class CgpaPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bins = [
-      {'label': '<2.5', 'color': Colors.redAccent, 'count': 0},
-      {'label': '2.5–3.0', 'color': Colors.orangeAccent, 'count': 0},
-      {'label': '3.0–3.5', 'color': Colors.blueAccent, 'count': 0},
-      {'label': '3.5–4.0', 'color': Colors.cyanAccent, 'count': 0},
+      {'label': '<2.5', 'color': const Color(0xFFFF6B6B), 'count': 0},
+      {'label': '2.5–3.0', 'color': const Color(0xFFFFA36C), 'count': 0},
+      {'label': '3.0–3.5', 'color': const Color(0xFF5DADE2), 'count': 0},
+      {'label': '3.5–4.0', 'color': const Color(0xFF00E6E6), 'count': 0},
     ];
+
     double? userCgpa;
     for (final e in ranking) {
       final cgpa = e.avgCgpa!;
@@ -47,36 +48,53 @@ class CgpaPieChart extends StatelessWidget {
 
     return Column(
       children: [
+        const SizedBox(height: 10),
         SizedBox(
-          height: 220,
+          height: 240,
           child: PieChart(
             PieChartData(
+              startDegreeOffset: -90,
+              borderData: FlBorderData(show: false),
+              sectionsSpace: 3,
+              centerSpaceRadius: 35,
               sections: List.generate(bins.length, (i) {
                 final isUser = i == userBin;
+                final count = (bins[i]['count'] as int).toDouble();
                 return PieChartSectionData(
                   color: bins[i]['color'] as Color,
-                  value: (bins[i]['count'] as int).toDouble(),
-                  title: '${bins[i]['count']}',
-                  radius: isUser ? 75 : 55,
+                  value: count,
+                  title: count == 0 ? '' : '${count.toInt()}',
+                  radius: isUser ? 70 : 55,
                   titleStyle: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontWeight: isUser ? FontWeight.bold : FontWeight.normal,
-                    fontSize: isUser ? 20 : 14,
+                    fontWeight: isUser ? FontWeight.bold : FontWeight.w500,
+                    fontSize: isUser ? 18 : 13,
                   ),
                   badgeWidget: isUser
-                      ? Icon(Icons.person, color: Colors.white, size: 28)
+                      ? Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person_pin_circle,
+                            size: 26,
+                            color: Colors.white,
+                          ),
+                        )
                       : null,
-                  badgePositionPercentageOffset: 1.2,
+                  badgePositionPercentageOffset: 1.1,
                 );
               }),
-              sectionsSpace: 2,
-              centerSpaceRadius: 30,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Wrap(
-          spacing: 18,
+          spacing: 20,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
           children: List.generate(bins.length, (i) {
             return Row(
               mainAxisSize: MainAxisSize.min,
@@ -86,7 +104,7 @@ class CgpaPieChart extends StatelessWidget {
                   height: 16,
                   decoration: BoxDecoration(
                     color: bins[i]['color'] as Color,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -94,7 +112,7 @@ class CgpaPieChart extends StatelessWidget {
                   bins[i]['label'] as String,
                   style: GoogleFonts.poppins(
                     color: Colors.white70,
-                    fontSize: 13,
+                    fontSize: 13.5,
                   ),
                 ),
               ],
@@ -103,13 +121,13 @@ class CgpaPieChart extends StatelessWidget {
         ),
         if (userBin >= 0)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 10),
             child: Text(
               "You are in the ${bins[userBin]['label']} group.",
               style: GoogleFonts.poppins(
-                color: Colors.cyanAccent,
+                color: const Color(0xFF00FFC6),
                 fontWeight: FontWeight.bold,
-                fontSize: 15,
+                fontSize: 15.5,
               ),
             ),
           ),

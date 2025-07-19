@@ -19,6 +19,8 @@ class CgpaChart extends StatelessWidget {
           height: 180,
           child: LineChart(
             LineChartData(
+              minX: -0.2,
+              maxX: cgpaList.length - 1 + 0.2,
               gridData: FlGridData(show: true, drawVerticalLine: false),
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(

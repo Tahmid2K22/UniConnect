@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'glass_card.dart';
+import '../utils/glass_card.dart';
 
 class ExamPreviewList extends StatelessWidget {
   final List<Map<String, dynamic>> exams;

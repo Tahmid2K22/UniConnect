@@ -1,21 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
-import 'package:hive/hive.dart';
 
-// Load Data Start -------------------------------------------------------------------------------------------------------------------
+import 'package:uni_connect/firebase/firestore/database.dart';
 
-Future<Map<String, dynamic>> loadProfile() async {
-  final String jsonString = await rootBundle.loadString(
-    'assets/user_profile_demo.json',
-  );
-  return json.decode(jsonString);
-}
-
-// Load Data End -------------------------------------------------------------------------------------------------------------------
+import 'package:uni_connect/utils/sidebar_button.dart';
 
 class SideNavigation extends StatefulWidget {
   const SideNavigation({super.key});
@@ -25,22 +16,20 @@ class SideNavigation extends StatefulWidget {
 }
 
 class _SideNavigationState extends State<SideNavigation> {
-  late Future<Map<String, dynamic>> _profileFuture;
+  late Future<Map<String, dynamic>?> _profileFuture;
 
   String? _profileImagePath;
 
   @override
   void initState() {
     super.initState();
-    _profileFuture = loadProfile();
+    _profileFuture = loadUserProfile();
     _loadProfileImagePath();
   }
 
   void _loadProfileImagePath() {
-    final box = Hive.box('profileBox');
-    setState(() {
-      _profileImagePath = box.get('profileImagePath');
-    });
+    _profileImagePath = loadLocalProfileImagePath();
+    setState(() {});
   }
 
   @override
@@ -100,7 +89,7 @@ class _SideNavigationState extends State<SideNavigation> {
                   color: Colors.white.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: FutureBuilder<Map<String, dynamic>>(
+                child: FutureBuilder<Map<String, dynamic>?>(
                   future: _profileFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -133,7 +122,7 @@ class _SideNavigationState extends State<SideNavigation> {
                                 ),
                                 SizedBox(height: 2),
                                 Text(
-                                  profile['institution'],
+                                  profile['university'],
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
@@ -147,7 +136,7 @@ class _SideNavigationState extends State<SideNavigation> {
                                   ),
                                 ),
                                 Text(
-                                  'Roll: ${profile['roll_number']}',
+                                  'Roll: ${profile['roll']}',
                                   style: TextStyle(
                                     color: Colors.white38,
                                     fontSize: 12,
@@ -177,7 +166,7 @@ class _SideNavigationState extends State<SideNavigation> {
                   columnGap: 18,
                   children: List.generate(
                     navItems.length,
-                    (i) => _SidebarButton(
+                    (i) => SidebarButton(
                       icon: navItems[i]['icon'] as IconData,
                       label: navItems[i]['label'] as String,
                       route: navItems[i]['route'] as String,
@@ -189,55 +178,6 @@ class _SideNavigationState extends State<SideNavigation> {
             // Settings button at bottom right
             settingsButton,
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// Side Bar Buttons
-class _SidebarButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String route;
-
-  const _SidebarButton({
-    required this.icon,
-    required this.label,
-    required this.route,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: Material(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, route);
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.cyanAccent, size: 28),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

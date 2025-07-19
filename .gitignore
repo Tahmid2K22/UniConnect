@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+/lib/push_to_db/
 
 # Symbolication related
 app.*.symbols

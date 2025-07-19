@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:uni_connect/firebase/auth/auth.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:uni_connect/firebase/auth/auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,6 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _gradientController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -28,6 +32,37 @@ class _LoginPageState extends State<LoginPage>
   void dispose() {
     _gradientController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    await signInWithGoogle();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && user.email != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.email)
+          .get();
+      if (doc.exists) {
+        Navigator.pushReplacementNamed(context, '/frontpage');
+      } else {
+        await FirebaseAuth.instance.signOut();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Access denied. Sign in with your institutional email.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign-in failed. Please try again')),
+      );
+    }
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -47,18 +82,15 @@ class _LoginPageState extends State<LoginPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Fancy splash animation
             SizedBox(
               width: 300,
               height: 300,
               child: Lottie.asset(
-                'assets/animations/Login.json', // ⚠️ Add this file
+                'assets/animations/Login.json',
                 fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 16),
-
-            // Gradient shimmer UniConnect title
             AnimatedBuilder(
               animation: _gradientController,
               builder: (context, child) {
@@ -95,17 +127,12 @@ class _LoginPageState extends State<LoginPage>
                 );
               },
             ),
-
             const SizedBox(height: 10),
-
             Text(
               "Connect, plan, and thrive at university.",
               style: GoogleFonts.poppins(color: Colors.white70, fontSize: 16),
             ),
-
             const SizedBox(height: 40),
-
-            // Google Sign-In button
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
@@ -128,19 +155,7 @@ class _LoginPageState extends State<LoginPage>
                 child: Column(
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () async {
-                        await signInWithGoogle();
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user != null) {
-                          Navigator.pushReplacementNamed(context, '/frontpage');
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Sign-in failed. Please try again'),
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: _isLoading ? null : _handleGoogleSignIn,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.deepPurpleAccent,
                         side: const BorderSide(
@@ -155,13 +170,19 @@ class _LoginPageState extends State<LoginPage>
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      icon: const Icon(
-                        Icons.g_mobiledata,
-                        size: 30,
-                        color: Colors.deepPurpleAccent,
-                      ),
+                      icon: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(
+                              Icons.g_mobiledata,
+                              size: 30,
+                              color: Colors.deepPurpleAccent,
+                            ),
                       label: Text(
-                        "Sign in with Google",
+                        _isLoading ? "Signing in..." : "Sign in with Google",
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,

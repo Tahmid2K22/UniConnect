@@ -1,8 +1,8 @@
 name: uni_connect
-description: "A new Flutter project."
+description: "A flutter app for managing university information."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.2.1 
+  google_fonts: ^6.2.1
   flutter_animate: ^4.5.0
   animate_gradient: ^0.0.3
   flutter_layout_grid: ^2.0.0
@@ -51,7 +51,9 @@ dependencies:
   firebase_auth: ^4.16.0
   cloud_firestore: ^4.9.0
   google_sign_in: ^6.2.1
-  
+  intl: ^0.19.0
+  dash_chat_2: ^0.0.21
+  provider: ^6.0.5
 
 dev_dependencies:
   flutter_test:
@@ -65,13 +67,11 @@ dev_dependencies:
   connectivity_plus: ^5.0.2
   http: ^1.1.0
   shared_preferences: ^2.2.3
-  intl: ^0.20.2
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/icon/icon1.png" # Path to icon
-  
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -85,12 +85,11 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
 
-  assets: 
+  assets:
     - assets/background/
     - assets/user_profile_demo.json
     - assets/profile/

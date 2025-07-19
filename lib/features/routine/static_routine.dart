@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui';
+
+import 'package:uni_connect/utils/glass_table.dart';
 
 class RoutineTableView extends StatefulWidget {
   final List<List<String>> sectionA;
@@ -66,11 +68,16 @@ class _RoutineTableViewState extends State<RoutineTableView>
       appBar: AppBar(
         elevation: 10,
         backgroundColor: const Color(0xFF1A1A2E),
-        iconTheme: const IconThemeData(color: Color.fromARGB(255, 3, 236, 244)),
+        iconTheme: const IconThemeData(
+          color: Color.fromARGB(255, 255, 255, 255),
+        ),
         title: ShaderMask(
           shaderCallback: (Rect bounds) {
             return const LinearGradient(
-              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
+              colors: [
+                Color.fromARGB(255, 255, 255, 255),
+                Color.fromARGB(255, 255, 255, 255),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ).createShader(bounds);
@@ -231,78 +238,6 @@ class _RoutineTableViewState extends State<RoutineTableView>
             _controller.forward();
           }
         },
-      ),
-    );
-  }
-}
-
-//Glass table utils
-class GlassTable extends StatelessWidget {
-  final Widget child;
-  const GlassTable({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.08),
-            Colors.cyanAccent.withValues(alpha: 0.05),
-            Colors.deepPurple.withValues(alpha: 0.07),
-          ],
-        ),
-        border: Border.all(
-          color: Colors.cyanAccent.withValues(alpha: 0.15),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurpleAccent.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-//Glass header utils
-class GlassHeader extends StatelessWidget {
-  final String text;
-  const GlassHeader({super.key, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6C3483), Color(0xFF00DBDE)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }

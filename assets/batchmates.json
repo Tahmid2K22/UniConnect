@@ -11,7 +11,17 @@
       "profile_pic": "assets/batchmates/rafsan.jpg",
       "github": "https://github.com/rafsanri",
       "facebook": "https://facebook.com/rafsanri",
-      "linkedin": "https://linkedin.com/in/rafsanri"
+      "linkedin": "https://linkedin.com/in/rafsanri",
+      "status": "semester_drop",
+      "cgpa_list": [
+        2.93,
+        2.93,
+        2.54,
+        3.15,
+        2.88
+      ],
+      "current_year": 3,
+      "current_semester": 2
     },
     {
       "name": "Nusrat Jahan",
@@ -24,7 +34,17 @@
       "profile_pic": "assets/batchmates/nusrat.jpg",
       "github": "https://github.com/nusratj",
       "facebook": "https://facebook.com/nusratj",
-      "linkedin": "https://linkedin.com/in/nusratj"
+      "linkedin": "https://linkedin.com/in/nusratj",
+      "status": "semester_drop",
+      "cgpa_list": [
+        2.93,
+        2.93,
+        2.54,
+        3.15,
+        2.88
+      ],
+      "current_year": 3,
+      "current_semester": 2
     }
    
   ]

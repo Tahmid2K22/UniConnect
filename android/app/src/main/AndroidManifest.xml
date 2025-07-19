@@ -5,7 +5,7 @@
 
 
     <application
-        android:label="uni_connect"
+        android:label="UniConnect"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

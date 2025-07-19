@@ -5,18 +5,18 @@
       "university": "KUET",
       "department": "CSE",
       "email": "mahbub@cse.kuet.ac.bd",
-      "blood_group": "B+",
+      "title": "Lecturer",
       "phone": "+8801711223344",
-      "profile_pic": "assets/teachers/mahbub.jpg"
+      "profile_pic": "https://www.kuet.ac.bd/images/faculty/107"
     },
     {
       "name": "Prof. Nusrat Jahan",
       "university": "KUET",
       "department": "CSE",
       "email": "nusrat@cse.kuet.ac.bd",
-      "blood_group": "O-",
+      "title": "Professor",
       "phone": "+8801811223344",
-      "profile_pic": "assets/teachers/nusrat.jpg"
+      "profile_pic": "https://www.kuet.ac.bd/images/faculty/176"
     }
   ]
 }

@@ -8,6 +8,14 @@ class CtComparisonChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    try {
+      return _buildChart(context);
+    } catch (e) {
+      return _buildFallback(context, error: e);
+    }
+  }
+
+  Widget _buildChart(BuildContext context) {
     final xLabels = entries.map((e) => '${e.course} CT${e.ctNumber}').toList();
 
     return SizedBox(
@@ -84,6 +92,28 @@ class CtComparisonChart extends StatelessWidget {
           borderData: FlBorderData(show: false),
           barTouchData: BarTouchData(enabled: true),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFallback(BuildContext context, {Object? error}) {
+    return Container(
+      height: 260,
+      alignment: Alignment.center,
+      color: Colors.black26,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, color: Colors.redAccent, size: 40),
+          const SizedBox(height: 12),
+          const Text(
+            "Whoops! Something went wrong.\nPlease reload the page.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white70, fontSize: 16),
+          ),
+          // Uncomment for debugging:
+          // if (error != null) Text(error.toString(), style: TextStyle(color: Colors.red, fontSize: 12)),
+        ],
       ),
     );
   }
