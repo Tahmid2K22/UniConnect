@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:marquee/marquee.dart';
 // import 'package:intl/intl.dart' as init;
-import 'dart:io';
 //import 'dart:convert';
 //import 'package:image/image.dart' as img;
 
@@ -52,8 +50,6 @@ class _FrontPageState extends State<FrontPage>
   DataModel? nextClass;
   Map<String, dynamic>? userProfile;
 
-  String? _profileImagePath;
-
   Map<String, dynamic>? ctMarksData;
 
   @override
@@ -65,7 +61,6 @@ class _FrontPageState extends State<FrontPage>
       duration: const Duration(seconds: 5),
     )..repeat(reverse: false);
     _loadProfile();
-    _loadProfileImagePath();
   }
 
   @override
@@ -125,86 +120,89 @@ class _FrontPageState extends State<FrontPage>
                   children: [
                     // Top: User Avatar, App Name, Greeting
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Left side: UniConnect + Greeting
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedBuilder(
-                              animation: _controller,
-                              builder: (context, child) {
-                                return ShaderMask(
-                                  shaderCallback: (bounds) {
-                                    return LinearGradient(
-                                      colors: [
-                                        Colors.cyan,
-                                        Colors.blue,
-                                        const Color.fromARGB(255, 192, 56, 216),
-                                        Colors.cyan,
-                                      ],
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      stops: const [0.0, 0.33, 0.66, 1.0],
-                                      tileMode: TileMode.repeated,
-                                      transform: SlideGradientTransform(
-                                        _controller.value,
-                                      ),
-                                    ).createShader(
-                                      Rect.fromLTWH(
-                                        0,
-                                        0,
-                                        bounds.width * 2,
-                                        bounds.height,
-                                      ),
-                                    );
-                                  },
-                                  child: child,
-                                );
-                              },
-                              child: Text(
-                                'UniConnect',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                        // Add an invisible sized box for symmetry (optional, helps center exactly with trailing icon)
+                        const SizedBox(
+                          width: 48,
+                        ), // Adjust width to match IconButton size for balance
+                        // Centered titles
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Centered, animated gradient UniConnect text
+                              AnimatedBuilder(
+                                animation: _controller,
+                                builder: (context, child) {
+                                  return ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return LinearGradient(
+                                        colors: [
+                                          Colors.cyanAccent,
+                                          Colors.blueAccent,
+                                          Colors.purpleAccent,
+                                          Colors.cyanAccent,
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                        stops: const [0.0, 0.33, 0.66, 1.0],
+                                        tileMode: TileMode.repeated,
+                                        transform: SlideGradientTransform(
+                                          _controller.value,
+                                        ),
+                                      ).createShader(
+                                        Rect.fromLTWH(
+                                          0,
+                                          0,
+                                          bounds.width * 2,
+                                          bounds.height,
+                                        ),
+                                      );
+                                    },
+                                    child: child,
+                                  );
+                                },
+                                child: Text(
+                                  'UniConnect',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 1,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            SizedBox(
-                              height: 28,
-                              width: 200,
-                              child: Marquee(
-                                text:
-                                    "${getGreetingMessage()}, ${userProfile?['name'] ?? ''}!",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white70,
-                                  fontSize: 15,
+
+                              // Welcome text below, centered
+                              Padding(
+                                padding: const EdgeInsets.only(top: 3.0),
+                                child: Text(
+                                  "Welcome ${extractName(userProfile?['name'])}",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                scrollAxis: Axis.horizontal,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                blankSpace: 40.0,
-                                velocity: 50.0,
-                                startPadding: 10.0,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
 
-                        // Right side: Profile image
-                        GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, "/profile"),
-                          child: CircleAvatar(
-                            radius: 28,
-                            backgroundImage: _profileImagePath != null
-                                ? FileImage(File(_profileImagePath!))
-                                : const AssetImage('assets/profile/profile.jpg')
-                                      as ImageProvider,
-                            backgroundColor: Colors.cyanAccent.withAlpha(50),
-                            child: userProfile == null
-                                ? const CircularProgressIndicator()
-                                : null,
+                        // Hamburger menu - right side
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.menu,
+                              color: Colors.cyanAccent,
+                              size: 28,
+                            ),
+                            onPressed: () =>
+                                scaffoldKey.currentState?.openEndDrawer(),
+                            splashRadius: 22,
                           ),
                         ),
                       ],
@@ -394,6 +392,15 @@ class _FrontPageState extends State<FrontPage>
                       },
                     ),
                     const SizedBox(height: 16),
+                    Text(
+                      "Task Analytics",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white70,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
                     // Task Graph (small, as a card)
                     Card(
@@ -412,6 +419,22 @@ class _FrontPageState extends State<FrontPage>
                             ).listenable(),
                             builder: (context, Box<TodoTask> box, _) {
                               final taskStats = getCompletionStatsLast30Days();
+                              // The important check: are ALL counts zero?
+                              final allZero = taskStats.every(
+                                (count) => count == 0,
+                              );
+                              if (allZero) {
+                                return Center(
+                                  child: Text(
+                                    'Complete a task to get started!',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white54,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }
                               return MonthlyTaskCompletionGraph(
                                 taskStats: taskStats,
                               );
@@ -568,12 +591,6 @@ class _FrontPageState extends State<FrontPage>
     });
   }
 
-  void _loadProfileImagePath() {
-    _profileImagePath = loadLocalProfileImagePath();
-    // syncProfilePicIfNeeded(_profileImagePath);
-    setState(() {});
-  }
-
   // Load Data End -------------------------------------------------------------------------------------------------------------------
 
   // Call this in initState or wherever you check profile state
@@ -626,33 +643,33 @@ class _FrontPageState extends State<FrontPage>
 
   //Greet Message Utils
 
-  String getGreetingMessage() {
-    final now = DateTime.now();
-    final hour = now.hour;
-    final weekday = now.weekday; // Monday=1, Sunday=7 in Dart
+  // String getGreetingMessage() {
+  //   final now = DateTime.now();
+  //   final hour = now.hour;
+  //   final weekday = now.weekday; // Monday=1, Sunday=7 in Dart
 
-    String greeting;
+  //   String greeting;
 
-    if (hour >= 1 && hour < 4) {
-      greeting = "You should be sleeping, what are you up to? ";
-    } else if (hour >= 5 && hour < 12) {
-      greeting = "Good morning";
-    } else if (hour >= 12 && hour < 17) {
-      greeting = "Good afternoon";
-    } else if (hour >= 17 && hour < 21) {
-      greeting = "Good evening";
-    } else {
-      greeting = "Good night";
-    }
+  //   if (hour >= 1 && hour < 4) {
+  //     greeting = "You should be sleeping, what are you up to? ";
+  //   } else if (hour >= 5 && hour < 12) {
+  //     greeting = "Good morning";
+  //   } else if (hour >= 12 && hour < 17) {
+  //     greeting = "Good afternoon";
+  //   } else if (hour >= 17 && hour < 21) {
+  //     greeting = "Good evening";
+  //   } else {
+  //     greeting = "Good night";
+  //   }
 
-    if ((weekday == 4 || weekday == 5) && !(hour >= 1 && hour < 4)) {
-      greeting += ", enjoy your weekend";
-    } else if (!(hour >= 1 && hour < 4)) {
-      greeting += ", have a nice day";
-    }
+  //   if ((weekday == 4 || weekday == 5) && !(hour >= 1 && hour < 4)) {
+  //     greeting += ", enjoy your weekend";
+  //   } else if (!(hour >= 1 && hour < 4)) {
+  //     greeting += ", have a nice day";
+  //   }
 
-    return greeting;
-  }
+  //   return greeting;
+  // }
 }
 
 Future<Map<String, dynamic>?> loadCachedUserCtMarks() async {
@@ -694,4 +711,25 @@ Future<Map<String, dynamic>?> loadCachedUserCtMarks() async {
 Future<void> cacheUserCtMarks(Map<String, dynamic> formattedCtMarks) async {
   final box = await Hive.openBox(userCtMarksBox);
   await box.put(userCtMarksKey, formattedCtMarks);
+}
+
+String extractName(String? fullName) {
+  if (fullName == null || fullName.trim().isEmpty) return '';
+  final trimmed = fullName.trim();
+
+  // Remove all spaces and check character count
+  final nonSpaceChars = trimmed.replaceAll(' ', '');
+  if (nonSpaceChars.length <= 3) {
+    // Get index of second space
+    int first = trimmed.indexOf(' ');
+    if (first == -1) return trimmed; // No spaces
+    int second = trimmed.indexOf(' ', first + 1);
+    if (second == -1) return trimmed; // Only one space
+    return trimmed.substring(0, second).trim();
+  } else {
+    // Typical case: cut at first space
+    int first = trimmed.indexOf(' ');
+    if (first == -1) return trimmed; // No spaces
+    return trimmed.substring(0, first);
+  }
 }

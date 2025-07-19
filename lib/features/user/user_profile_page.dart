@@ -179,103 +179,141 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             child: CgpaChart(cgpaList: userData!['cgpa_list']),
                           ),
                           const SizedBox(height: 30),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SocialIconButton(
-                                icon: FontAwesomeIcons.facebookF,
-                                color: Colors.blueAccent,
-                                platform: 'facebook',
-                                userData: userData,
-                                onUpdate: (link) =>
-                                    _updateSocialLink('facebook', link),
+                          // Social Icons Row with Background
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 24,
+                            ),
+                            margin: EdgeInsets.only(bottom: 28),
+                            decoration: BoxDecoration(
+                              color: Colors.cyanAccent.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.cyanAccent.withValues(alpha: 0.3),
+                                width: 1,
                               ),
-                              const SizedBox(width: 20),
-                              SocialIconButton(
-                                icon: FontAwesomeIcons.linkedinIn,
-                                color: Colors.blue,
-                                platform: 'linkedin',
-                                userData: userData,
-                                onUpdate: (link) =>
-                                    _updateSocialLink('linkedin', link),
-                              ),
-                              const SizedBox(width: 20),
-                              SocialIconButton(
-                                icon: FontAwesomeIcons.github,
-                                color: Colors.black87,
-                                platform: 'github',
-                                userData: userData,
-                                onUpdate: (link) =>
-                                    _updateSocialLink('github', link),
-                              ),
-                            ],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.cyanAccent.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SocialIconButton(
+                                  icon: FontAwesomeIcons.facebookF,
+                                  color: Colors.blueAccent,
+                                  platform: 'facebook',
+                                  userData: userData,
+                                  onUpdate: (link) =>
+                                      _updateSocialLink('facebook', link),
+                                ),
+                                SizedBox(width: 30),
+                                SocialIconButton(
+                                  icon: FontAwesomeIcons.linkedinIn,
+                                  color: Colors.blue,
+                                  platform: 'linkedin',
+                                  userData: userData,
+                                  onUpdate: (link) =>
+                                      _updateSocialLink('linkedin', link),
+                                ),
+                                SizedBox(width: 30),
+                                SocialIconButton(
+                                  icon: FontAwesomeIcons.github,
+                                  color: Colors.black87,
+                                  platform: 'github',
+                                  userData: userData,
+                                  onUpdate: (link) =>
+                                      _updateSocialLink('github', link),
+                                ),
+                              ],
+                            ),
                           ),
 
-                          GestureDetector(
-                            onTap: () async {
-                              final shouldEdit = await showDialog<bool>(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  backgroundColor: const Color(0xFF201B4D),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  title: Text(
-                                    'Update Phone Number',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.cyanAccent,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
+                          // Phone number card with label
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 24,
+                            ),
+                            margin: EdgeInsets.only(bottom: 28),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: Colors.cyanAccent.withValues(alpha: 0.2),
+                                width: 1,
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onTap: () async {
+                                final shouldEdit = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: Color(0xFF201B4D),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18),
                                     ),
-                                  ),
-                                  content: Text(
-                                    'Do you want to update your phone number?',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white70,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: Text(
-                                        'Cancel',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.cyanAccent,
-                                        ),
+                                    title: Text(
+                                      'Update Phone Number',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.cyanAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
                                       ),
                                     ),
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.cyanAccent,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                    content: Text(
+                                      'Do you want to update your phone number?',
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white70,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.cyanAccent,
                                           ),
                                         ),
-                                        elevation: 0,
                                       ),
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: Text(
-                                        'Update',
-                                        style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.cyanAccent,
+                                          foregroundColor: Colors.black,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: Text(
+                                          'Update',
+                                          style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              if (shouldEdit == true) {
-                                _editPhoneNumber();
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                    ],
+                                  ),
+                                );
+                                if (shouldEdit == true) {
+                                  _editPhoneNumber();
+                                }
+                              },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -284,15 +322,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     color: Colors.cyanAccent,
                                     size: 28,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    userData?['phone'] ?? 'No number set',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
-                                    ),
+                                  SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Contact',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.cyanAccent,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        userData?['phone'] ?? 'No number set',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

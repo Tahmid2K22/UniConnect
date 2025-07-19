@@ -6,7 +6,8 @@ class TeacherCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isGrid;
 
-  const TeacherCard({super.key, 
+  const TeacherCard({
+    super.key,
     required this.teacher,
     required this.onTap,
     this.isGrid = false,
@@ -30,7 +31,7 @@ class TeacherCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundImage: NetworkImage(teacher['profile_pic']),
-                  radius: 56,
+                  radius: 50,
                   backgroundColor: Colors.white10,
                 ),
                 const SizedBox(height: 12),
@@ -69,7 +70,7 @@ class TeacherCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundImage: NetworkImage(teacher['profile_pic']),
-                  radius: 56,
+                  radius: 45,
                   backgroundColor: Colors.white10,
                 ),
                 const SizedBox(width: 16),

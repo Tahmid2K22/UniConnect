@@ -21,7 +21,6 @@ import 'package:uni_connect/utils/ct_comparison_entries.dart';
 import 'package:uni_connect/utils/cgpa_ranking.dart';
 import 'package:uni_connect/utils/user_cgpa_position.dart';
 
-
 import 'package:uni_connect/firebase/firestore/database.dart';
 
 const String userCtMarksBox = 'userCtMarksBox';
@@ -60,7 +59,6 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       final formatted = formatBatchAverage(
         calculateBatchAverageCtMarks(filtered),
       );
-      print("📤 Saving fresh CT avg from Firestore...");
       cacheBatchAverageCtMarks(formatted);
       cacheBatchmatesCgpa(filtered);
 
@@ -111,7 +109,6 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       }
       return null;
     } catch (e) {
-      print('Error loading batchmatesCgpa from Hive: $e');
       return null;
     }
   }
@@ -180,6 +177,25 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                       ).listenable(),
                       builder: (context, Box<TodoTask> box, _) {
                         final taskStats = getCompletionStatsLast30Days();
+                        final allZero = taskStats.every((count) => count == 0);
+                        if (allZero) {
+                          return Column(
+                            children: [
+                              SizedBox(height: 12),
+                              Center(
+                                child: Text(
+                                  'Complete a task to get started!',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white54,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 12),
+                            ],
+                          );
+                        }
                         return MonthlyTaskCompletionGraph(taskStats: taskStats);
                       },
                     ),

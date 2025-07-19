@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase/firebase_options.dart';
+
+import 'package:provider/provider.dart';
+import 'utils/font_scale.dart';
 
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:uni_connect/features/auth/login_page.dart';
@@ -35,10 +36,32 @@ void main() async {
   await Hive.openBox('teachersBox');
   await Hive.openBox('examsBox');
   await Hive.openBox('noticesBox');
+  await Hive.openBox('settingsBox');
 
   runApp(
-    MaterialApp(
+    ChangeNotifierProvider(
+      create: (_) => FontScaleProvider(),
+      child: const UniConnectApp(),
+    ),
+  );
+}
+
+class UniConnectApp extends StatelessWidget {
+  const UniConnectApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final fontScale = context.watch<FontScaleProvider>().fontScale;
+
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        // Use MediaQuery to change textScaleFactor globally
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: fontScale),
+          child: child!,
+        );
+      },
       home: SplashScreen(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -75,6 +98,6 @@ void main() async {
             );
         }
       },
-    ),
-  );
+    );
+  }
 }

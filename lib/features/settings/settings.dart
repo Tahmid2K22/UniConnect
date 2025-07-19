@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:provider/provider.dart';
+import 'package:uni_connect/utils/font_scale.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -112,6 +115,53 @@ class SettingsPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+              ],
+            ),
+          ),
+          // Font size selector
+          Padding(
+            padding: const EdgeInsets.only(top: 32.0, bottom: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Font Size",
+                  style: GoogleFonts.poppins(
+                    color: Colors.cyanAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Consumer<FontScaleProvider>(
+                  builder: (context, fontProvider, _) {
+                    double scale = fontProvider.fontScale;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _FontSizeOption(
+                          label: "Small",
+                          scale: 0.8,
+                          selected: scale < 0.85,
+                          onTap: () => fontProvider.setSmall(),
+                        ),
+                        _FontSizeOption(
+                          label: "Medium",
+                          scale: 0.9,
+                          selected: scale >= 0.85 && scale < 0.95,
+                          onTap: () => fontProvider.setMedium(),
+                        ),
+                        _FontSizeOption(
+                          label: "Large",
+                          scale: 1.0,
+                          selected: scale >= 0.95,
+                          onTap: () => fontProvider.setLarge(),
+                        ),
+                      ].map((w) => Expanded(child: w)).toList(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -245,6 +295,63 @@ class SettingsPage extends StatelessWidget {
             style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FontSizeOption extends StatelessWidget {
+  final String label;
+  final double scale;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FontSizeOption({
+    Key? key,
+    required this.label,
+    required this.scale,
+    required this.selected,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 180),
+        margin: EdgeInsets.symmetric(horizontal: 4),
+        padding: EdgeInsets.symmetric(vertical: 13, horizontal: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.cyanAccent.withValues(alpha: 0.20)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: selected ? Colors.cyanAccent : Colors.white24,
+            width: selected ? 2.0 : 1.0,
+          ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.cyanAccent.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    offset: Offset(0, 0),
+                  ),
+                ]
+              : [],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: selected ? Colors.cyanAccent : Colors.white70,
+              fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+              fontSize: scale * 17, // visually slightly larger
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
       ),
     );
   }
