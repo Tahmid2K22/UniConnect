@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
 import 'teacher_details_page.dart';
-
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 import '../../utils/teacher_card.dart';
@@ -19,6 +18,33 @@ class TeachersPage extends StatefulWidget {
 class _TeachersPageState extends State<TeachersPage> {
   bool showGrid = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // --- Title precedence map (lower is higher priority) ---
+  static const Map<String, int> _titlePriority = {
+    'Head': 0,
+    'Professor': 1,
+    'Associate Professor': 2,
+    'Assistant Professor': 3,
+    'Lecturer': 4,
+    // others: 5+
+  };
+
+  // Sort list by title precedence, then alphabetically
+  List<Map<String, dynamic>> _sortTeachers(
+    List<Map<String, dynamic>> teachers,
+  ) {
+    teachers.sort((a, b) {
+      final titleA = (a['title'] ?? '').toString();
+      final titleB = (b['title'] ?? '').toString();
+      final priA = _titlePriority[titleA] ?? 100;
+      final priB = _titlePriority[titleB] ?? 100;
+      // First by precedence
+      if (priA != priB) return priA.compareTo(priB);
+      // Then alphabetically by title
+      return titleA.compareTo(titleB);
+    });
+    return teachers;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +118,10 @@ class _TeachersPageState extends State<TeachersPage> {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final teachers = snapshot.data!;
+                // --- SORT THE TEACHERS BY TITLE PRECEDENCE BEFORE DISPLAY ---
+                final teachers = _sortTeachers(
+                  List<Map<String, dynamic>>.from(snapshot.data!),
+                );
                 if (showGrid) {
                   return LayoutBuilder(
                     builder: (context, constraints) {

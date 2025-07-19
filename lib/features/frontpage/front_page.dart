@@ -110,6 +110,7 @@ class _FrontPageState extends State<FrontPage>
                 await reloadExams();
                 await reloadNotices();
                 await _loadRoutineData();
+                await reloadBatchmates();
 
                 setState(() {
                   userProfile = profile;
