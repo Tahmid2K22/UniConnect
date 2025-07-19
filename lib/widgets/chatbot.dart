@@ -78,7 +78,7 @@ class _BasicChatState extends State<BasicChat> {
   Future<String> _getBotResponse(String userMessage) async {
     try {
       final response = await http.post(
-        Uri.parse('https://alap-zontro.onrender.com/chat'),
+        Uri.parse(''),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'query': userMessage}),
       );
