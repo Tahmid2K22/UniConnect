@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
-// import 'package:intl/intl.dart' as init;
-//import 'dart:convert';
-//import 'package:image/image.dart' as img;
-
-//import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
+import 'package:uni_connect/utils/glass_card.dart';
 
 import '../todo/todo_task.dart';
 
@@ -26,8 +21,8 @@ import 'package:uni_connect/widgets/load_user_ct_marks.dart';
 import 'package:uni_connect/widgets/monthly_task_completion_graph.dart';
 import 'package:uni_connect/utils/todo_card.dart';
 import 'package:uni_connect/utils/notice_card.dart';
-import 'package:uni_connect/utils/dashboard_card.dart';
 import 'package:uni_connect/widgets/today_task.dart';
+import 'package:uni_connect/widgets/top_section.dart';
 
 // Constants (reuse the same box/key as in analytics page)
 const String userCtMarksBox = 'userCtMarksBox';
@@ -51,11 +46,13 @@ class _FrontPageState extends State<FrontPage>
   Map<String, dynamic>? userProfile;
 
   Map<String, dynamic>? ctMarksData;
+  Map<String, dynamic>? upcomingExam;
 
   @override
   void initState() {
     super.initState();
     _loadRoutineData();
+    _loadUpcomingExam();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
@@ -89,10 +86,9 @@ class _FrontPageState extends State<FrontPage>
           key: scaffoldKey,
           endDrawer: const SideNavigation(),
           backgroundColor: const Color.fromARGB(255, 11, 11, 34),
-
           body: SafeArea(
             child: RefreshIndicator(
-              color: Colors.cyanAccent,
+              color: Colors.tealAccent[400]!,
               backgroundColor: const Color.fromARGB(255, 11, 11, 34),
               onRefresh: () async {
                 final profile = await reloadUserProfile();
@@ -112,430 +108,255 @@ class _FrontPageState extends State<FrontPage>
                   ctMarksData = parsed; // Now already cached for future loads
                 });
               },
-
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top: User Avatar, App Name, Greeting
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Add an invisible sized box for symmetry (optional, helps center exactly with trailing icon)
-                        const SizedBox(
-                          width: 48,
-                        ), // Adjust width to match IconButton size for balance
-                        // Centered titles
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Centered, animated gradient UniConnect text
-                              AnimatedBuilder(
-                                animation: _controller,
-                                builder: (context, child) {
-                                  return ShaderMask(
-                                    shaderCallback: (bounds) {
-                                      return LinearGradient(
-                                        colors: [
-                                          Colors.cyanAccent,
-                                          Colors.blueAccent,
-                                          Colors.purpleAccent,
-                                          Colors.cyanAccent,
-                                        ],
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                        stops: const [0.0, 0.33, 0.66, 1.0],
-                                        tileMode: TileMode.repeated,
-                                        transform: SlideGradientTransform(
-                                          _controller.value,
-                                        ),
-                                      ).createShader(
-                                        Rect.fromLTWH(
-                                          0,
-                                          0,
-                                          bounds.width * 2,
-                                          bounds.height,
-                                        ),
-                                      );
-                                    },
-                                    child: child,
-                                  );
-                                },
-                                child: Text(
-                                  'UniConnect',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 1,
-                                  ),
-                                ),
-                              ),
-
-                              // Welcome text below, centered
-                              Padding(
-                                padding: const EdgeInsets.only(top: 3.0),
-                                child: Text(
-                                  "Welcome ${extractName(userProfile?['name'])}",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Hamburger menu - right side
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.menu,
-                              color: Colors.cyanAccent,
-                              size: 28,
-                            ),
-                            onPressed: () =>
-                                scaffoldKey.currentState?.openEndDrawer(),
-                            splashRadius: 22,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Next Class Card
-                    DashboardCard(
-                      icon: Icons.class_,
-                      color: Colors.green,
-                      title: "Next Class",
-                      titleValue: nextClass?.data ?? "No classes scheduled",
-                      subtitle: nextClass?.period ?? "",
-                      onTap: () => Navigator.pushNamed(context, '/routine'),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Upcoming Exam Card (fetches first upcoming exam)
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: fetchExamsFromFirestore(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox(
-                            height: 70,
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        final exams = snapshot.data!;
-
-                        // Sort exams by days left (soonest first)
-                        exams.sort((a, b) {
-                          final aDays = _daysUntil(a['data']['date'] ?? '');
-                          final bDays = _daysUntil(b['data']['date'] ?? '');
-                          return aDays.compareTo(bDays);
-                        });
-
-                        final exam = exams.isNotEmpty ? exams.first : null;
-
-                        final daysLeft = exam != null
-                            ? _daysUntil(exam['data']['date'] ?? '')
-                            : null;
-                        final daysLeftText = daysLeft == null
-                            ? ''
-                            : daysLeft < 0
-                            ? 'Passed'
-                            : daysLeft == 0
-                            ? 'Today'
-                            : '$daysLeft day${daysLeft == 1 ? '' : 's'} left';
-
-                        return GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/exams'),
-                          child: DashboardCard(
-                            icon: Icons.event,
-                            color: Colors.blueAccent,
-                            title: "Upcoming Exam",
-                            titleValue:
-                                exam?['data']['title'] ?? "No upcoming exams",
-                            subtitle: exam != null
-                                ? "${exam['data']['date']} • ${exam['data']['time']}"
-                                : "",
-                            trailingWidget: daysLeft != null
-                                ? Text(
-                                    daysLeftText,
-                                    style: TextStyle(
-                                      color: _daysLeftColor(daysLeft),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  )
-                                : null,
-                            onTap: () => Navigator.pushNamed(context, '/exam'),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Notices (horizontal scroll)
-                    Text(
-                      "Notices",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18.0),
+                      child: TopSection(
+                        userName: extractName(userProfile?['name']),
+                        nextClassTitle: nextClass?.data ?? '',
+                        nextClassTime: nextClass?.period ?? '',
+                        hasNextClass: nextClass != null &&
+                            nextClass!.data != 'No classes scheduled',
+                        hasNextExam: upcomingExam != null,
+                        nextExamTitle: upcomingExam?['data']?['title'] ?? '',
+                        nextExamTime: upcomingExam != null
+                            ? "${upcomingExam?['data']?['date'] ?? ''} • ${upcomingExam?['data']?['time'] ?? ''}"
+                            : '',
+                        daysUntilExam: upcomingExam != null
+                            ? _daysUntil(upcomingExam?['data']?['date'] ?? '')
+                            : null,
+                        onTapNextClass: () =>
+                            Navigator.pushNamed(context, '/routine'),
+                        onTapNextExam: () =>
+                            Navigator.pushNamed(context, '/exam'),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: fetchNoticesFromFirestore(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const SizedBox(
-                            height: 110,
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        final noticeList = snapshot.data!;
-                        if (noticeList.isEmpty) {
-                          return const SizedBox(
-                            height: 110,
-                            child: Center(
-                              child: Text(
-                                "No notices found.",
-                                style: TextStyle(color: Colors.white54),
+                  ),
+                  const _SectionHeader(title: "Notices"),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future: fetchNoticesFromFirestore(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const SizedBox(
+                              height: 110,
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          final noticeList = snapshot.data!;
+                          if (noticeList.isEmpty) {
+                            return const SizedBox(
+                              height: 110,
+                              child: Center(
+                                child: Text(
+                                  "No notices found.",
+                                  style: TextStyle(color: Colors.white54),
+                                ),
+                              ),
+                            );
+                          }
+                          return GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/notices'),
+                            child: SizedBox(
+                              height: 110,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: noticeList.map((notice) {
+                                  final data = notice['data'] ?? {};
+                                  return NoticeCard(
+                                    title: data['title'] ?? "",
+                                    desc: data['desc'] ?? "",
+                                    time: data['time'] ?? "",
+                                  );
+                                }).toList(),
                               ),
                             ),
                           );
-                        }
-                        return GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/notices'),
-                          child: SizedBox(
-                            height: 110,
+                        },
+                      ),
+                    ),
+                  ),
+                  const _SectionHeader(title: "Todo"),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: ValueListenableBuilder(
+                        valueListenable: Hive.box<TodoTask>(
+                          'todoBox',
+                        ).listenable(),
+                        builder: (context, Box<TodoTask> box, _) {
+                          final tasks = getDueSoonTasks();
+                          if (tasks.isEmpty) {
+                            return SizedBox(
+                              height: 90,
+                              child: Center(
+                                child: Text(
+                                  "No tasks for today!",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white38,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return SizedBox(
+                            height: 90,
                             child: ListView(
                               scrollDirection: Axis.horizontal,
-                              children: noticeList.map((notice) {
-                                final data = notice['data'] ?? {};
-                                return NoticeCard(
-                                  title: data['title'] ?? "",
-                                  desc: data['desc'] ?? "",
-                                  time: data['time'] ?? "",
+                              children: tasks.map((task) {
+                                return GestureDetector(
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/todo').then((
+                                        _,
+                                      ) {
+                                        setState(() {}); // Refresh home on return
+                                      }),
+                                  child: TodoCard(
+                                    title: task.title,
+                                    due: task.dueDate != null
+                                        ? task.dueDate!
+                                              .toLocal()
+                                              .toString()
+                                              .split(' ')[0]
+                                        : "No due date",
+                                  ),
                                 );
                               }).toList(),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Todo List (horizontal scroll)
-                    Text(
-                      "Todo",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ValueListenableBuilder(
-                      valueListenable: Hive.box<TodoTask>(
-                        'todoBox',
-                      ).listenable(),
-                      builder: (context, Box<TodoTask> box, _) {
-                        final tasks = getDueSoonTasks();
-                        if (tasks.isEmpty) {
-                          return SizedBox(
-                            height: 90,
-                            child: Center(
-                              child: Text(
-                                "No tasks for today!",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white38,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
                           );
-                        }
-                        return SizedBox(
-                          height: 90,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: tasks.map((task) {
-                              return GestureDetector(
-                                onTap: () =>
-                                    Navigator.pushNamed(context, '/todo').then((
-                                      _,
-                                    ) {
-                                      setState(() {}); // Refresh home on return
-                                    }),
-                                child: TodoCard(
-                                  title: task.title,
-                                  due: task.dueDate != null
-                                      ? task.dueDate!
-                                            .toLocal()
-                                            .toString()
-                                            .split(' ')[0]
-                                      : "No due date",
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Task Analytics",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        },
                       ),
                     ),
-                    const SizedBox(height: 8),
-
-                    // Task Graph (small, as a card)
-                    Card(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/analytics'),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 180,
-                          child: ValueListenableBuilder(
-                            valueListenable: Hive.box<TodoTask>(
-                              'todoBox',
-                            ).listenable(),
-                            builder: (context, Box<TodoTask> box, _) {
-                              final taskStats = getCompletionStatsLast30Days();
-                              // The important check: are ALL counts zero?
-                              final allZero = taskStats.every(
-                                (count) => count == 0,
-                              );
-                              if (allZero) {
-                                return Center(
-                                  child: Text(
-                                    'Complete a task to get started!',
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white54,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                  ),
+                  const _SectionHeader(title: "Task Analytics"),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: GlassCard(
+                        child: GestureDetector(
+                          onTap: () => Navigator.pushNamed(context, '/analytics'),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 180,
+                            child: ValueListenableBuilder(
+                              valueListenable: Hive.box<TodoTask>(
+                                'todoBox',
+                              ).listenable(),
+                              builder: (context, Box<TodoTask> box, _) {
+                                final taskStats = getCompletionStatsLast30Days();
+                                // The important check: are ALL counts zero?
+                                final allZero = taskStats.every(
+                                  (count) => count == 0,
                                 );
-                              }
-                              return MonthlyTaskCompletionGraph(
-                                taskStats: taskStats,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Progress Summary / Motivation
-                    GestureDetector(
-                      onTap: () =>
-                          Navigator.pushNamed(context, '/todo').then((_) {
-                            setState(() {}); // Refresh home on return
-                          }),
-                      child: Card(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.emoji_events,
-                                color: Colors.amber.shade300,
-                                size: 28,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Today's Progress",
+                                if (allZero) {
+                                  return Center(
+                                    child: Text(
+                                      'Complete a task to get started!',
                                       style: GoogleFonts.poppins(
-                                        color: Colors.white70,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "$completedToday of $createdToday tasks completed today",
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.cyanAccent,
-                                        fontSize: 14,
+                                        color: Colors.white54,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      createdToday == 0
-                                          ? "No tasks added today yet."
-                                          : (completedToday == createdToday
-                                                ? "All done for today! 🎉"
-                                                : (completedToday > 0
-                                                      ? "Great progress, keep going!"
-                                                      : "Let's get started!")),
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white54,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                                  );
+                                }
+                                return MonthlyTaskCompletionGraph(
+                                  taskStats: taskStats,
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    if (ctMarksData != null) ...[
-                      const SizedBox(height: 18),
-                      Text(
-                        "CT Marks Histogram",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white70,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
+                  ),
+                  const _SectionHeader(title: "Progress Summary"),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: GestureDetector(
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/todo').then((_) {
+                              setState(() {}); // Refresh home on return
+                            }),
+                        child: GlassCard(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16), // This is internal padding
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.emoji_events,
+                                  color: Colors.amber.shade300,
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Today's Progress",
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white70,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "$completedToday of $createdToday tasks completed today",
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.tealAccent[400]!,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        createdToday == 0
+                                            ? "No tasks added today yet."
+                                            : (completedToday == createdToday
+                                                ? "All done for today! 🎉"
+                                                : (completedToday > 0
+                                                    ? "Great progress, keep going!"
+                                                    : "Let's get started!")),
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white54,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      CtMarksHistogram(data: ctMarksData!),
-                      const SizedBox(height: 18),
-                      Text(
-                        "CT Marks Details",
-                        style: GoogleFonts.poppins(
-                          color: Colors.white70,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    ),
+                  ),
+                  if (ctMarksData != null) ...[
+                    const _SectionHeader(title: "CT Marks Histogram"),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        child: GlassCard(child: CtMarksHistogram(data: ctMarksData!)),
                       ),
-                      const SizedBox(height: 8),
-                      CtMarksDetails(data: ctMarksData!),
-                    ],
+                    ),
+                    const _SectionHeader(title: "CT Marks Details"),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        child: GlassCard(child: CtMarksDetails(data: ctMarksData!)),
+                      ),
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -593,35 +414,6 @@ class _FrontPageState extends State<FrontPage>
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------
 
-  // Call this in initState or wherever you check profile state
-  // Future<void> syncProfilePicIfNeeded(String? localPath) async {
-  //   if (localPath == null) return;
-
-  //   final user = FirebaseAuth.instance.currentUser;
-  //   if (user == null || user.email == null) return;
-
-  //   final docRef = FirebaseFirestore.instance
-  //       .collection('students')
-  //       .doc(user.email);
-  //   final doc = await docRef.get();
-
-  //   if (!doc.exists) return;
-  //   final data = doc.data();
-  //   if (data == null ||
-  //       (data['profile_pic'] == null || data['profile_pic'].isEmpty)) {
-  //     final file = File(localPath);
-  //     if (!await file.exists()) return;
-  //     final bytes = await file.readAsBytes();
-  //     final image = img.decodeImage(bytes);
-  //     if (image == null) return;
-  //     final resized = img.copyResize(image, width: 96, height: 96); // Low-res
-  //     final jpg = img.encodeJpg(resized, quality: 60);
-  //     final base64Str = base64Encode(jpg);
-  //     await docRef.update({'profile_pic': base64Str});
-  //   }
-  // }
-  // Exam Utils
-
   int _daysUntil(String date) {
     try {
       DateTime examDate = DateTime.parse(date);
@@ -634,42 +426,54 @@ class _FrontPageState extends State<FrontPage>
     }
   }
 
-  Color _daysLeftColor(int daysLeft) {
-    if (daysLeft < 0) return Colors.grey;
-    if (daysLeft <= 1) return Colors.redAccent;
-    if (daysLeft <= 3) return Colors.orangeAccent;
-    return Colors.greenAccent;
+  Future<void> _loadUpcomingExam() async {
+    try {
+      final exams =
+          await fetchExamsFromFirestore(); // Your async fetch function
+      if (exams.isNotEmpty) {
+        // Sort exams by closeness
+        exams.sort((a, b) {
+          final aDays = _daysUntil(a['data']['date'] ?? '');
+          final bDays = _daysUntil(b['data']['date'] ?? '');
+          return aDays.compareTo(bDays);
+        });
+        setState(() {
+          upcomingExam = exams.first;
+        });
+      } else {
+        setState(() {
+          upcomingExam = null;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        upcomingExam = null;
+      });
+    }
   }
+}
 
-  //Greet Message Utils
+class _SectionHeader extends StatelessWidget {
+  final String title;
 
-  // String getGreetingMessage() {
-  //   final now = DateTime.now();
-  //   final hour = now.hour;
-  //   final weekday = now.weekday; // Monday=1, Sunday=7 in Dart
+  const _SectionHeader({required this.title});
 
-  //   String greeting;
-
-  //   if (hour >= 1 && hour < 4) {
-  //     greeting = "You should be sleeping, what are you up to? ";
-  //   } else if (hour >= 5 && hour < 12) {
-  //     greeting = "Good morning";
-  //   } else if (hour >= 12 && hour < 17) {
-  //     greeting = "Good afternoon";
-  //   } else if (hour >= 17 && hour < 21) {
-  //     greeting = "Good evening";
-  //   } else {
-  //     greeting = "Good night";
-  //   }
-
-  //   if ((weekday == 4 || weekday == 5) && !(hour >= 1 && hour < 4)) {
-  //     greeting += ", enjoy your weekend";
-  //   } else if (!(hour >= 1 && hour < 4)) {
-  //     greeting += ", have a nice day";
-  //   }
-
-  //   return greeting;
-  // }
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 24, 18, 12),
+        child: Text(
+          title,
+          style: GoogleFonts.poppins(
+            color: Colors.white70,
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<Map<String, dynamic>?> loadCachedUserCtMarks() async {

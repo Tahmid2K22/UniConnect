@@ -47,7 +47,7 @@ void main() async {
 }
 
 class UniConnectApp extends StatelessWidget {
-  const UniConnectApp({Key? key}) : super(key: key);
+  const UniConnectApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,9 @@ class UniConnectApp extends StatelessWidget {
       builder: (context, child) {
         // Use MediaQuery to change textScaleFactor globally
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: fontScale),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(fontScale)),
           child: child!,
         );
       },
