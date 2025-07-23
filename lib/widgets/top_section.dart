@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:marquee/marquee.dart';
+import '../../features/chatbot/gemini_summary.dart';
 
 class TopSection extends StatefulWidget {
   final String? userName;
@@ -8,6 +9,7 @@ class TopSection extends StatefulWidget {
   final String? nextClassTime;
   final String? nextExamTitle;
   final String? nextExamTime;
+  final String? noticesText;
   final int? daysUntilExam;
   final bool hasNextClass;
   final bool hasNextExam;
@@ -21,6 +23,7 @@ class TopSection extends StatefulWidget {
     this.nextExamTitle,
     this.nextExamTime,
     this.daysUntilExam,
+    this.noticesText,
     required this.hasNextClass,
     required this.hasNextExam,
     this.onTapNextClass,
@@ -41,6 +44,10 @@ class _TopSectionState extends State<TopSection>
   bool get _trulyHasNextClass =>
       widget.nextClassTitle != null && widget.nextClassTitle != 'Rest up!';
 
+  String? _aiTitle;
+  String? _aiDescription;
+  bool _isLoadingAi = false;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +56,9 @@ class _TopSectionState extends State<TopSection>
       duration: const Duration(seconds: 5),
       vsync: this,
     )..repeat();
+    Future.delayed(const Duration(milliseconds: 700), () {
+      _fetchAndSetAiSummary();
+    });
   }
 
   @override
@@ -289,24 +299,72 @@ class _TopSectionState extends State<TopSection>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Welcome to UniConnect',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black.withValues(alpha: 0.75),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "What's on your mind this ${_getTimePeriod()}? Next exam in ${widget.daysUntilExam ?? 'N/A'} days, don't forget to prepare!",
-                          style: GoogleFonts.poppins(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 600),
+                          switchInCurve: Curves.easeIn,
+                          switchOutCurve: Curves.easeOut,
+                          child:
+                              _isLoadingAi ||
+                                  _aiTitle == null ||
+                                  _aiDescription == null
+                              ? Column(
+                                  key: const ValueKey('defaultText'),
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Welcome to UniConnect',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black.withValues(
+                                          alpha: 0.75,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      "What's on your mind this ${_getTimePeriod()}? Are you doing well?",
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  key: const ValueKey('aiText'),
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _aiTitle!,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black.withValues(
+                                          alpha: 0.85,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      _aiDescription!,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                         ),
                         const Spacer(),
                         Row(
@@ -653,6 +711,37 @@ class _TopSectionState extends State<TopSection>
     if (hour >= 21 || hour < 2) return 'night';
     // hour in [2, 5)
     return 'midnight';
+  }
+
+  Future<void> _fetchAndSetAiSummary() async {
+    if (widget.noticesText == null) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingAi = true;
+    });
+
+    try {
+      final result = await fetchGeminiSummary(
+        userName: widget.userName ?? '',
+        notices: widget.noticesText ?? '',
+        examTitle: widget.nextExamTitle ?? '',
+        examDate: widget.nextExamTime ?? '',
+      );
+      setState(() {
+        _aiTitle = result.title;
+        _aiDescription = result.description;
+        _isLoadingAi = false;
+      });
+    } catch (e, st) {
+      print("[AI Summary] Exception: $e \n$st");
+      setState(() {
+        _aiTitle = null;
+        _aiDescription = null;
+        _isLoadingAi = false;
+      });
+    }
   }
 }
 

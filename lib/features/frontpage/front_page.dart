@@ -48,11 +48,14 @@ class _FrontPageState extends State<FrontPage>
   Map<String, dynamic>? ctMarksData;
   Map<String, dynamic>? upcomingExam;
 
+  String _noticeSummary = "";
+
   @override
   void initState() {
     super.initState();
     _loadRoutineData();
     _loadUpcomingExam();
+    _loadNoticesSummary();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
@@ -117,7 +120,8 @@ class _FrontPageState extends State<FrontPage>
                         userName: extractName(userProfile?['name']),
                         nextClassTitle: nextClass?.data ?? '',
                         nextClassTime: nextClass?.period ?? '',
-                        hasNextClass: nextClass != null &&
+                        hasNextClass:
+                            nextClass != null &&
                             nextClass!.data != 'No classes scheduled',
                         hasNextExam: upcomingExam != null,
                         nextExamTitle: upcomingExam?['data']?['title'] ?? '',
@@ -127,6 +131,7 @@ class _FrontPageState extends State<FrontPage>
                         daysUntilExam: upcomingExam != null
                             ? _daysUntil(upcomingExam?['data']?['date'] ?? '')
                             : null,
+                        noticesText: _noticeSummary,
                         onTapNextClass: () =>
                             Navigator.pushNamed(context, '/routine'),
                         onTapNextExam: () =>
@@ -160,7 +165,8 @@ class _FrontPageState extends State<FrontPage>
                             );
                           }
                           return GestureDetector(
-                            onTap: () => Navigator.pushNamed(context, '/notices'),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/notices'),
                             child: SizedBox(
                               height: 110,
                               child: ListView(
@@ -211,10 +217,13 @@ class _FrontPageState extends State<FrontPage>
                               children: tasks.map((task) {
                                 return GestureDetector(
                                   onTap: () =>
-                                      Navigator.pushNamed(context, '/todo').then((
-                                        _,
-                                      ) {
-                                        setState(() {}); // Refresh home on return
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/todo',
+                                      ).then((_) {
+                                        setState(
+                                          () {},
+                                        ); // Refresh home on return
                                       }),
                                   child: TodoCard(
                                     title: task.title,
@@ -239,7 +248,8 @@ class _FrontPageState extends State<FrontPage>
                       padding: const EdgeInsets.symmetric(horizontal: 18.0),
                       child: GlassCard(
                         child: GestureDetector(
-                          onTap: () => Navigator.pushNamed(context, '/analytics'),
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/analytics'),
                           child: SizedBox(
                             width: double.infinity,
                             height: 180,
@@ -248,7 +258,8 @@ class _FrontPageState extends State<FrontPage>
                                 'todoBox',
                               ).listenable(),
                               builder: (context, Box<TodoTask> box, _) {
-                                final taskStats = getCompletionStatsLast30Days();
+                                final taskStats =
+                                    getCompletionStatsLast30Days();
                                 // The important check: are ALL counts zero?
                                 final allZero = taskStats.every(
                                   (count) => count == 0,
@@ -286,7 +297,9 @@ class _FrontPageState extends State<FrontPage>
                             }),
                         child: GlassCard(
                           child: Padding(
-                            padding: const EdgeInsets.all(16), // This is internal padding
+                            padding: const EdgeInsets.all(
+                              16,
+                            ), // This is internal padding
                             child: Row(
                               children: [
                                 Icon(
@@ -297,7 +310,8 @@ class _FrontPageState extends State<FrontPage>
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "Today's Progress",
@@ -321,10 +335,10 @@ class _FrontPageState extends State<FrontPage>
                                         createdToday == 0
                                             ? "No tasks added today yet."
                                             : (completedToday == createdToday
-                                                ? "All done for today! 🎉"
-                                                : (completedToday > 0
-                                                    ? "Great progress, keep going!"
-                                                    : "Let's get started!")),
+                                                  ? "All done for today! 🎉"
+                                                  : (completedToday > 0
+                                                        ? "Great progress, keep going!"
+                                                        : "Let's get started!")),
                                         style: GoogleFonts.poppins(
                                           color: Colors.white54,
                                           fontSize: 13,
@@ -345,14 +359,18 @@ class _FrontPageState extends State<FrontPage>
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                        child: GlassCard(child: CtMarksHistogram(data: ctMarksData!)),
+                        child: GlassCard(
+                          child: CtMarksHistogram(data: ctMarksData!),
+                        ),
                       ),
                     ),
                     const _SectionHeader(title: "CT Marks Details"),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                        child: GlassCard(child: CtMarksDetails(data: ctMarksData!)),
+                        child: GlassCard(
+                          child: CtMarksDetails(data: ctMarksData!),
+                        ),
                       ),
                     ),
                   ],
@@ -410,6 +428,15 @@ class _FrontPageState extends State<FrontPage>
       // Use cached, fallback to dynamic parse if cache is absent
       ctMarksData = cachedCt ?? parseCtMarksFromProfile(profile);
     });
+  }
+
+  Future<void> _loadNoticesSummary() async {
+    final notices = await fetchNoticesFromFirestore();
+    final titles = notices
+        .map((n) => n['data']?['desc']?.toString() ?? "")
+        .toList();
+    _noticeSummary = titles.join("; ");
+    setState(() {});
   }
 
   // Load Data End -------------------------------------------------------------------------------------------------------------------

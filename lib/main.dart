@@ -22,9 +22,11 @@ import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());

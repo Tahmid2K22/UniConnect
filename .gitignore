@@ -1,3 +1,4 @@
+.env
 # Miscellaneous
 *.class
 *.log
@@ -33,6 +34,7 @@ migrate_working_dir/
 .pub/
 /build/
 /lib/push_to_db/
+/lib/features/chatbot/
 
 # Symbolication related
 app.*.symbols

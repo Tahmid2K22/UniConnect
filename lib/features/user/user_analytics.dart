@@ -125,10 +125,10 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       child: Scaffold(
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF0E0E2C),
+        backgroundColor: const Color.fromARGB(255, 11, 11, 34),
         body: RefreshIndicator(
           color: Colors.cyanAccent,
-          backgroundColor: const Color(0xFF0E0E2C),
+          backgroundColor: const Color.fromARGB(255, 11, 11, 34),
           onRefresh: () async {
             final user = await reloadUserProfile();
             final batchmates = await reloadBatchmates();
