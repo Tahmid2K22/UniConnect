@@ -307,12 +307,11 @@ class _FontSizeOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const _FontSizeOption({
-    Key? key,
     required this.label,
     required this.scale,
     required this.selected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

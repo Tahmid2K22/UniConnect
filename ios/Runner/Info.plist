@@ -45,5 +45,30 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to allow you to select images for your profile or other features.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to allow you to take photos for your profile or other features.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to your microphone to allow you to record videos for your profile or other features.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>sms</string>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>googlechromes</string>
+		<string>comgooglemaps</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.819634197812-76pddbrptip3200ncmajn3fa5vsvf0vt</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

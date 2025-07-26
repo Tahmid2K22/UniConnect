@@ -11,12 +11,12 @@ class MonthlyTaskCompletionGraph extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 30),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(color: Colors.white12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(2, 4),
           ),
@@ -30,8 +30,8 @@ class MonthlyTaskCompletionGraph extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 2),
               height: 20.0 * count,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.cyan, Colors.blueAccent],
+                gradient: LinearGradient(
+                  colors: [Colors.tealAccent[400]!, Colors.lightBlueAccent[400]!],
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                 ),
@@ -44,3 +44,4 @@ class MonthlyTaskCompletionGraph extends StatelessWidget {
     );
   }
 }
+

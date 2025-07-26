@@ -9,7 +9,8 @@ class ProfileInfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const ProfileInfoRow({super.key, 
+  const ProfileInfoRow({
+    super.key,
     required this.icon,
     required this.label,
     required this.value,
@@ -17,31 +18,40 @@ class ProfileInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.cyanAccent, size: 28),
-        const SizedBox(width: 14),
-        Text(
-          '$label:',
-          style: GoogleFonts.poppins(
-            color: Colors.white70,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.tealAccent[400]!, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -53,7 +63,8 @@ class SocialIconButton extends StatelessWidget {
   final Map<String, dynamic>? userData;
   final Function(String link) onUpdate;
 
-  const SocialIconButton({super.key, 
+  const SocialIconButton({
+    super.key,
     required this.icon,
     required this.color,
     required this.platform,
@@ -121,7 +132,7 @@ class _EditLinkDialogState extends State<_EditLinkDialog> {
       title: Text(
         'Edit your $platformTitle link',
         style: GoogleFonts.poppins(
-          color: Colors.cyanAccent,
+          color: Colors.tealAccent[400]!,
           fontWeight: FontWeight.bold,
           fontSize: 20,
         ),
@@ -139,12 +150,12 @@ class _EditLinkDialogState extends State<_EditLinkDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(
             'Cancel',
-            style: GoogleFonts.poppins(color: Colors.cyanAccent),
+            style: GoogleFonts.poppins(color: Colors.tealAccent[400]!),
           ),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.cyanAccent,
+            backgroundColor: Colors.tealAccent[400]!,
             foregroundColor: Colors.black,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

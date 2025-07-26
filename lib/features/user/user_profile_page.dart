@@ -20,6 +20,7 @@ import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 import 'package:uni_connect/utils/user_profile_utils.dart';
 import 'package:uni_connect/widgets/cgpa_chart.dart';
+import 'package:uni_connect/utils/glass_card.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -43,7 +44,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget build(BuildContext context) {
     final scaffoldKey = GlobalKey<ScaffoldState>();
     final backgroundGradient = const LinearGradient(
-      colors: [Color(0xFF1A144B), Color(0xFF2B175C), Color(0xFF181A2A)],
+      colors: [
+        Color.fromARGB(255, 11, 11, 34),
+        Color.fromARGB(255, 11, 11, 34),
+        Color.fromARGB(255, 11, 11, 34),
+      ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -57,10 +62,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       child: Scaffold(
         key: scaffoldKey,
         endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF0E0E2C),
+        backgroundColor: const Color.fromARGB(255, 11, 11, 34),
         body: RefreshIndicator(
-          color: Colors.cyanAccent,
-          backgroundColor: const Color(0xFF0E0E2C),
+          color: Colors.tealAccent[400]!,
+          backgroundColor: const Color.fromARGB(255, 11, 11, 34),
           onRefresh: () async {
             final freshUser = await reloadUserProfile();
             setState(() {
@@ -86,61 +91,60 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Profile Picture
+                          const SizedBox(height: 25),
                           GestureDetector(
                             onTap: _onProfilePicTap,
-                            child: CircleAvatar(
-                              radius: 64,
-                              backgroundImage: _profileImagePath != null
-                                  ? FileImage(File(_profileImagePath!))
-                                  : AssetImage('assets/profile/profile.jpg')
-                                        as ImageProvider,
-                              backgroundColor: Colors.cyanAccent.withValues(
-                                alpha: 0.18,
-                              ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 64,
+                                  backgroundImage: _profileImagePath != null
+                                      ? FileImage(File(_profileImagePath!))
+                                      : const AssetImage(
+                                              'assets/profile/profile.jpg',
+                                            )
+                                            as ImageProvider,
+                                  backgroundColor: Colors.tealAccent.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                                Container(
+                                  width: 128,
+                                  height: 128,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-
-                          const SizedBox(height: 30),
-                          // Name
+                          const SizedBox(height: 20),
                           Text(
                             userData!['name'],
                             style: GoogleFonts.poppins(
                               color: Colors.white,
-                              fontSize: 34, // Bigger name text
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
                             ),
                           ),
-                          const SizedBox(height: 14),
-                          // Institution
+                          const SizedBox(height: 8),
                           Text(
                             userData!['university'],
                             style: GoogleFonts.poppins(
-                              color: Colors.cyanAccent,
-                              fontSize: 22,
+                              color: Colors.tealAccent[400]!,
+                              fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
                             ),
                           ),
                           const SizedBox(height: 28),
-                          // Info Card
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 22,
-                              horizontal: 24,
-                            ),
-                            margin: const EdgeInsets.only(bottom: 28),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.03),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: Colors.cyanAccent.withValues(
-                                  alpha: 0.11,
-                                ),
-                                width: 1,
-                              ),
-                            ),
+                          GlassCard(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -149,19 +153,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   label: 'Department',
                                   value: userData!['department'],
                                 ),
-                                const SizedBox(height: 14),
                                 ProfileInfoRow(
                                   icon: Icons.confirmation_number_rounded,
                                   label: 'Roll Number',
                                   value: userData!['roll'],
                                 ),
-                                const SizedBox(height: 14),
                                 ProfileInfoRow(
                                   icon: Icons.calendar_today_rounded,
                                   label: 'Year',
                                   value: userData!['current_year'].toString(),
                                 ),
-                                const SizedBox(height: 14),
                                 ProfileInfoRow(
                                   icon: Icons.calendar_view_month_rounded,
                                   label: 'Semester',
@@ -171,38 +172,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               ],
                             ),
                           ),
-                          // CGPA Chart + Average
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 2.0,
-                            ),
+                          const SizedBox(height: 28),
+                          GlassCard(
                             child: CgpaChart(cgpaList: userData!['cgpa_list']),
                           ),
-                          const SizedBox(height: 30),
-                          // Social Icons Row with Background
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 24,
+                          const SizedBox(height: 28),
+                          const Center(
+                            child: Text(
+                              'Tap to update socials',
+                              style: TextStyle(color: Colors.white54),
                             ),
-                            margin: EdgeInsets.only(bottom: 28),
-                            decoration: BoxDecoration(
-                              color: Colors.cyanAccent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.cyanAccent.withValues(alpha: 0.3),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.cyanAccent.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          GlassCard(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -214,7 +196,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   onUpdate: (link) =>
                                       _updateSocialLink('facebook', link),
                                 ),
-                                SizedBox(width: 30),
+                                const SizedBox(width: 30),
                                 SocialIconButton(
                                   icon: FontAwesomeIcons.linkedinIn,
                                   color: Colors.blue,
@@ -223,7 +205,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   onUpdate: (link) =>
                                       _updateSocialLink('linkedin', link),
                                 ),
-                                SizedBox(width: 30),
+                                const SizedBox(width: 30),
                                 SocialIconButton(
                                   icon: FontAwesomeIcons.github,
                                   color: Colors.black87,
@@ -235,35 +217,28 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               ],
                             ),
                           ),
-
-                          // Phone number card with label
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 24,
+                          const SizedBox(height: 28),
+                          const Center(
+                            child: Text(
+                              'Tap to update number',
+                              style: TextStyle(color: Colors.white54),
                             ),
-                            margin: EdgeInsets.only(bottom: 28),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: Colors.cyanAccent.withValues(alpha: 0.2),
-                                width: 1,
-                              ),
-                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          GlassCard(
                             child: GestureDetector(
                               onTap: () async {
                                 final shouldEdit = await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    backgroundColor: Color(0xFF201B4D),
+                                    backgroundColor: const Color(0xFF201B4D),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(18),
                                     ),
                                     title: Text(
                                       'Update Phone Number',
                                       style: GoogleFonts.poppins(
-                                        color: Colors.cyanAccent,
+                                        color: Colors.tealAccent[400]!,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20,
                                       ),
@@ -282,13 +257,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         child: Text(
                                           'Cancel',
                                           style: GoogleFonts.poppins(
-                                            color: Colors.cyanAccent,
+                                            color: Colors.tealAccent[400]!,
                                           ),
                                         ),
                                       ),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.cyanAccent,
+                                          backgroundColor:
+                                              Colors.tealAccent[400]!,
                                           foregroundColor: Colors.black,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
@@ -319,10 +295,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                 children: [
                                   Icon(
                                     Icons.phone,
-                                    color: Colors.cyanAccent,
+                                    color: Colors.tealAccent[400]!,
                                     size: 28,
                                   ),
-                                  SizedBox(width: 12),
+                                  const SizedBox(width: 12),
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -330,12 +306,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                       Text(
                                         'Contact',
                                         style: GoogleFonts.poppins(
-                                          color: Colors.cyanAccent,
+                                          color: Colors.tealAccent[400]!,
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      SizedBox(height: 2),
+                                      const SizedBox(height: 2),
                                       Text(
                                         userData?['phone'] ?? 'No number set',
                                         style: GoogleFonts.poppins(
@@ -385,7 +361,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: Text(
           'Change Profile Picture?',
           style: GoogleFonts.poppins(
-            color: Colors.cyanAccent,
+            color: Colors.tealAccent[400]!,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -400,14 +376,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
             child: Text(
               'Cancel',
               style: GoogleFonts.poppins(
-                color: Colors.cyanAccent,
+                color: Colors.tealAccent[400]!,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyanAccent,
+              backgroundColor: Colors.tealAccent[400]!,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -436,6 +412,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final savedImage = await File(
         picked.path,
       ).copy('${appDir.path}/$fileName');
@@ -468,7 +445,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final bytes = await file.readAsBytes();
     final image = img.decodeImage(bytes);
     if (image == null) return;
-    final resized = img.copyResize(image, width: 120, height: 120); // Low-res
+    final resized = img.copyResize(image, width: 120); // Low-res
     final jpg = img.encodeJpg(resized, quality: 60);
     final base64Str = base64Encode(jpg);
 
@@ -506,7 +483,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _editPhoneNumber() async {
-    final controller = TextEditingController(text: userData?['number'] ?? '');
+    final controller = TextEditingController(text: userData?['phone'] ?? '');
     final updated = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -515,7 +492,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         title: Text(
           'Enter new phone number',
           style: GoogleFonts.poppins(
-            color: Colors.cyanAccent,
+            color: Colors.tealAccent[400]!,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
@@ -534,12 +511,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
             onPressed: () => Navigator.pop(context, null),
             child: Text(
               'Cancel',
-              style: GoogleFonts.poppins(color: Colors.cyanAccent),
+              style: GoogleFonts.poppins(color: Colors.tealAccent[400]!),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.cyanAccent,
+              backgroundColor: Colors.tealAccent[400]!,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),

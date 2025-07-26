@@ -219,14 +219,27 @@ class _TodoPageState extends State<TodoPage> {
   }
 
   void _onCheckboxChanged(bool? val, int index) {
-    final removedTask = _tasks[index];
-    removedTask.isDone = val ?? false;
-    if (removedTask.isDone) {
-      removedTask.completedAt = DateTime.now();
-      removedTask.save();
+    final task = _tasks[index];
+    final isOverdue = _isOverdue(task);
 
-      // Animate fade-out, then remove from the list
-      // For deletions (removals), use this in removeItem:
+    if (val == true && isOverdue) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Task expired! Please delete it.',
+            style: GoogleFonts.poppins(color: Colors.cyanAccent),
+          ),
+          backgroundColor: Colors.deepPurple.shade900,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return; // Prevent marking as done if overdue
+    }
+
+    task.isDone = val ?? false;
+    if (task.isDone) {
+      task.completedAt = DateTime.now();
+      task.save();
 
       _listKey.currentState?.removeItem(
         index,
@@ -235,10 +248,10 @@ class _TodoPageState extends State<TodoPage> {
           axis: Axis.vertical,
           axisAlignment: 0.0,
           child: _buildTaskTile(
-            removedTask,
+            task,
             0,
-            _isOverdue(removedTask),
-          ), // Use 0 or any fixed number here
+            _isOverdue(task),
+          ),
         ),
         duration: const Duration(milliseconds: 400),
       );
@@ -247,8 +260,8 @@ class _TodoPageState extends State<TodoPage> {
         _tasks.removeAt(index);
       });
     } else {
-      removedTask.completedAt = null;
-      removedTask.save();
+      task.completedAt = null;
+      task.save();
     }
   }
 

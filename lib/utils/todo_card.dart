@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:uni_connect/utils/glass_card.dart';
 
 // Todo Card for horizontal scroll
 class TodoCard extends StatelessWidget {
@@ -7,35 +8,36 @@ class TodoCard extends StatelessWidget {
   const TodoCard({super.key, required this.title, required this.due});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 180,
+    return GlassCard(
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.cyanAccent,
-              fontWeight: FontWeight.bold,
+      child: SizedBox(
+        width: 180,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "Due: $due",
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const Spacer(),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Icon(Icons.chevron_right, color: Colors.white24, size: 18),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              "Due: $due",
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const Spacer(),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Icon(Icons.chevron_right, color: Colors.white24, size: 18),
+            ),
+          ],
+        ),
       ),
     );
   }

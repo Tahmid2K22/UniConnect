@@ -22,9 +22,11 @@ import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
@@ -47,7 +49,7 @@ void main() async {
 }
 
 class UniConnectApp extends StatelessWidget {
-  const UniConnectApp({Key? key}) : super(key: key);
+  const UniConnectApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +60,9 @@ class UniConnectApp extends StatelessWidget {
       builder: (context, child) {
         // Use MediaQuery to change textScaleFactor globally
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: fontScale),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(fontScale)),
           child: child!,
         );
       },
