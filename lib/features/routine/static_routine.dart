@@ -4,6 +4,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:uni_connect/utils/glass_table.dart';
+import '../../firebase/firestore/database.dart';
 
 class RoutineTableView extends StatefulWidget {
   final List<List<String>> sectionA;
@@ -25,7 +26,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<double> _scale;
-  String _currentSection = 'Section B';
+  String _currentSection = 'Section A';
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _RoutineTableViewState extends State<RoutineTableView>
       end: 1,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
     _loadSection();
+    _loadProfile();
   }
 
   @override
@@ -146,6 +148,26 @@ class _RoutineTableViewState extends State<RoutineTableView>
         ),
       ),
     );
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await loadUserProfile();
+    final prefs = await SharedPreferences.getInstance();
+
+    // Only set section based on roll if not already saved
+    if (!prefs.containsKey('section')) {
+      final String userRoll = profile?['roll'] ?? '';
+      final String inferredSection =
+          (int.tryParse(userRoll) ?? 0) >= 2207001 &&
+              (int.tryParse(userRoll) ?? 0) <= 2207060
+          ? 'Section A'
+          : 'Section B';
+
+      await prefs.setString('section', inferredSection);
+    }
+
+    // Now call _loadSection to apply saved section (whether inferred or chosen before)
+    _loadSection();
   }
 
   //Load Section Data Start -------------------------------------------------------------------------------------------

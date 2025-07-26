@@ -41,9 +41,9 @@ class _FrontPageState extends State<FrontPage>
 
   late AnimationController _controller;
 
-  List<List<String>> sectionAData = [];
   DataModel? nextClass;
   Map<String, dynamic>? userProfile;
+  String userRoll = "";
 
   Map<String, dynamic>? ctMarksData;
   Map<String, dynamic>? upcomingExam;
@@ -105,10 +105,11 @@ class _FrontPageState extends State<FrontPage>
                 await reloadNotices();
                 await _loadRoutineData();
                 await reloadBatchmates();
+                await _loadUpcomingExam();
 
                 setState(() {
                   userProfile = profile;
-                  ctMarksData = parsed; // Now already cached for future loads
+                  ctMarksData = parsed;
                 });
               },
               child: CustomScrollView(
@@ -396,9 +397,16 @@ class _FrontPageState extends State<FrontPage>
         results = await CollectData.collectAllData();
         await RoutineCache.saveRoutine(results);
       }
+
+      // Determine section based on roll number
+      final int roll = int.tryParse(userRoll) ?? 0;
+      final bool isSectionA = roll >= 2207001 && roll <= 2207060;
+      final String sheetKey = isSectionA ? 'sheet1' : 'sheet2';
+
       setState(() {
-        sectionAData = results!['sheet1'] ?? [];
-        final nextList = getTodayNextClass(sectionAData);
+        final routineData = results![sheetKey] ?? [];
+
+        final nextList = getTodayNextClass(routineData);
         nextClass = nextList.isNotEmpty
             ? nextList.first
             : DataModel(
@@ -425,6 +433,7 @@ class _FrontPageState extends State<FrontPage>
 
     setState(() {
       userProfile = profile;
+      userRoll = profile?['roll'] ?? '';
       // Use cached, fallback to dynamic parse if cache is absent
       ctMarksData = cachedCt ?? parseCtMarksFromProfile(profile);
     });
@@ -457,15 +466,23 @@ class _FrontPageState extends State<FrontPage>
     try {
       final exams =
           await fetchExamsFromFirestore(); // Your async fetch function
-      if (exams.isNotEmpty) {
-        // Sort exams by closeness
-        exams.sort((a, b) {
+
+      // Filter exams to only include future ones
+      final futureExams = exams.where((exam) {
+        final days = _daysUntil(exam['data']['date'] ?? '');
+        return days >= 0;
+      }).toList();
+
+      if (futureExams.isNotEmpty) {
+        // Sort future exams by closest date
+        futureExams.sort((a, b) {
           final aDays = _daysUntil(a['data']['date'] ?? '');
           final bDays = _daysUntil(b['data']['date'] ?? '');
           return aDays.compareTo(bDays);
         });
+
         setState(() {
-          upcomingExam = exams.first;
+          upcomingExam = futureExams.first;
         });
       } else {
         setState(() {

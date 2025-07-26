@@ -77,38 +77,42 @@ class _TopSectionState extends State<TopSection>
         switch (period) {
           case 'morning':
             gradientColors = [
-              Colors.orange.shade100,
-              Colors.yellow.shade200,
-              Colors.lightBlue.shade100,
+              const Color(0xFFFFD580),
+              const Color(0xFFFFE0B2),
+              const Color(0xFFFFF8E1),
             ];
             break;
+
           case 'noon':
             gradientColors = [
-              Colors.lightBlue.shade100,
-              Colors.cyan.shade200,
-              Colors.tealAccent.shade100,
+              const Color(0xFF81D4FA),
+              const Color(0xFF4DD0E1),
+              const Color(0xFFB2EBF2),
             ];
             break;
+
           case 'evening':
             gradientColors = [
-              Colors.amber.shade200,
-              Colors.pink.shade100,
-              Colors.purple.shade100,
+              const Color(0xFFFFAB91),
+              const Color(0xFFF48FB1),
+              const Color(0xFFCE93D8),
             ];
             break;
+
           case 'night':
             gradientColors = [
-              Colors.blue.shade100,
-              Colors.indigo.shade100,
-              Colors.deepPurple.shade100,
+              const Color(0xFF3F51B5),
+              const Color(0xFF5C6BC0),
+              const Color(0xFF7986CB),
             ];
             break;
+
           case 'midnight':
           default:
             gradientColors = [
-              Colors.deepPurple.shade100,
-              Colors.lightBlue.shade100,
-              Colors.grey.shade100,
+              const Color(0xFF212121),
+              const Color(0xFF37474F),
+              const Color(0xFF455A64),
             ];
             break;
         }
@@ -130,7 +134,13 @@ class _TopSectionState extends State<TopSection>
           );
         } else {
           return LinearGradient(
-            colors: [Colors.blueGrey, Colors.grey.shade800],
+            colors: [
+              Color(0xFFff9a9e),
+              Color(0xFFfad0c4),
+              Color(0xFFfadadd),
+              Color(0xFFcbb4d4),
+            ],
+
             begin: Alignment.bottomLeft,
             end: Alignment.topRight,
             transform: GradientRotation(_gradientController.value * 2 * 3.1415),
@@ -150,6 +160,7 @@ class _TopSectionState extends State<TopSection>
             colors: [Colors.grey, Colors.black, Colors.purple[700]!],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
+            transform: GradientRotation(_gradientController.value * 2 * 3.1415),
           );
         }
         if ((widget.daysUntilExam ?? 99) == 0) {
@@ -157,6 +168,7 @@ class _TopSectionState extends State<TopSection>
             colors: [Colors.redAccent, Colors.purple, Colors.pinkAccent],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
+            transform: GradientRotation(_gradientController.value * 2 * 3.1415),
           );
         }
         if ((widget.daysUntilExam ?? 99) <= 3) {
@@ -164,12 +176,14 @@ class _TopSectionState extends State<TopSection>
             colors: [Colors.orange, Colors.deepOrange, Colors.amberAccent],
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
+            transform: GradientRotation(_gradientController.value * 2 * 3.1415),
           );
         }
         return LinearGradient(
           colors: [Colors.greenAccent, Colors.blue, Colors.blueAccent],
           begin: Alignment.bottomRight,
           end: Alignment.topLeft,
+          transform: GradientRotation(_gradientController.value * 2 * 3.1415),
         );
     }
   }
@@ -316,18 +330,29 @@ class _TopSectionState extends State<TopSection>
                                       style: GoogleFonts.poppins(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.black.withValues(
-                                          alpha: 0.75,
-                                        ),
+                                        color:
+                                            _isDarkTimePeriod(_getTimePeriod())
+                                            ? Colors.white.withValues(
+                                                alpha: 0.85,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.85,
+                                              ),
                                       ),
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
                                       "What's on your mind this ${_getTimePeriod()}? Are you doing well?",
                                       style: GoogleFonts.poppins(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.6,
-                                        ),
+                                        color:
+                                            _isDarkTimePeriod(_getTimePeriod())
+                                            ? Colors.white.withValues(
+                                                alpha: 0.6,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.6,
+                                              ),
+
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -345,9 +370,14 @@ class _TopSectionState extends State<TopSection>
                                       style: GoogleFonts.poppins(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.black.withValues(
-                                          alpha: 0.85,
-                                        ),
+                                        color:
+                                            _isDarkTimePeriod(_getTimePeriod())
+                                            ? Colors.white.withValues(
+                                                alpha: 0.85,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.85,
+                                              ),
                                       ),
                                     ),
                                     const SizedBox(height: 10),
@@ -356,9 +386,14 @@ class _TopSectionState extends State<TopSection>
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.black.withValues(
-                                          alpha: 0.7,
-                                        ),
+                                        color:
+                                            _isDarkTimePeriod(_getTimePeriod())
+                                            ? Colors.white.withValues(
+                                                alpha: 0.6,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.6,
+                                              ),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -382,9 +417,17 @@ class _TopSectionState extends State<TopSection>
                                             ? (widget.nextClassTitle ?? "")
                                             : "No class scheduled",
                                         style: GoogleFonts.poppins(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.7,
-                                          ),
+                                          color:
+                                              _isDarkTimePeriod(
+                                                _getTimePeriod(),
+                                              )
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.7,
+                                                ),
+
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
                                         ),
@@ -400,9 +443,17 @@ class _TopSectionState extends State<TopSection>
                                             ? (widget.nextClassTime ?? "")
                                             : "",
                                         style: GoogleFonts.poppins(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.5,
-                                          ),
+                                          color:
+                                              _isDarkTimePeriod(
+                                                _getTimePeriod(),
+                                              )
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.7,
+                                                ),
+
                                           fontWeight: FontWeight.w400,
                                           fontSize: 11,
                                         ),
@@ -428,9 +479,17 @@ class _TopSectionState extends State<TopSection>
                                             ? (widget.nextExamTitle ?? "")
                                             : "No upcoming exam",
                                         style: GoogleFonts.poppins(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.7,
-                                          ),
+                                          color:
+                                              _isDarkTimePeriod(
+                                                _getTimePeriod(),
+                                              )
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.7,
+                                                ),
+
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
                                         ),
@@ -446,9 +505,17 @@ class _TopSectionState extends State<TopSection>
                                             ? (widget.nextExamTime ?? "")
                                             : "",
                                         style: GoogleFonts.poppins(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.5,
-                                          ),
+                                          color:
+                                              _isDarkTimePeriod(
+                                                _getTimePeriod(),
+                                              )
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.7,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.7,
+                                                ),
+
                                           fontWeight: FontWeight.w400,
                                           fontSize: 11,
                                         ),
@@ -542,7 +609,7 @@ class _TopSectionState extends State<TopSection>
                                   child: _buildMarqueeText(
                                     "No Classes Right Now",
                                     style: GoogleFonts.poppins(
-                                      color: Colors.white,
+                                      color: Colors.black54,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 22,
                                       letterSpacing: 1,
@@ -553,7 +620,7 @@ class _TopSectionState extends State<TopSection>
                                 Text(
                                   "Chill! Next class info will show up here.",
                                   style: GoogleFonts.poppins(
-                                    color: Colors.white54,
+                                    color: Colors.black38,
                                     fontSize: 15,
                                   ),
                                 ),
@@ -615,9 +682,9 @@ class _TopSectionState extends State<TopSection>
                                             color: widget.daysUntilExam == 0
                                                 ? Colors.amberAccent
                                                 : widget.daysUntilExam! < 0
-                                                ? Colors.white54
+                                                ? Colors.white
                                                 : widget.daysUntilExam! <= 3
-                                                ? Colors.deepOrangeAccent
+                                                ? Colors.black45
                                                 : Colors.greenAccent,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 16,
@@ -630,9 +697,9 @@ class _TopSectionState extends State<TopSection>
                                             color: widget.daysUntilExam == 0
                                                 ? Colors.amberAccent
                                                 : widget.daysUntilExam! < 0
-                                                ? Colors.white54
+                                                ? Colors.white
                                                 : widget.daysUntilExam! <= 3
-                                                ? Colors.deepOrangeAccent
+                                                ? Colors.black45
                                                 : Colors.greenAccent,
                                             fontSize: 80,
                                             fontWeight: FontWeight.bold,
@@ -711,6 +778,10 @@ class _TopSectionState extends State<TopSection>
     if (hour >= 21 || hour < 2) return 'night';
     // hour in [2, 5)
     return 'midnight';
+  }
+
+  bool _isDarkTimePeriod(String period) {
+    return period == 'night' || period == 'midnight';
   }
 
   Future<void> _fetchAndSetAiSummary() async {

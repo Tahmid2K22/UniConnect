@@ -34,13 +34,15 @@ class NoticeCard extends StatelessWidget {
             Text(
               desc,
               style: const TextStyle(color: Colors.white70, fontSize: 13),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             const Spacer(),
             Text(
               time,
               style: const TextStyle(color: Colors.white38, fontSize: 11),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

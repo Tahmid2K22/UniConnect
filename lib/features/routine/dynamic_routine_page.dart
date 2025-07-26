@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:uni_connect/utils/glass_card_2.dart';
+import '../../firebase/firestore/database.dart';
 
 class DataModel {
   final String period;
@@ -28,7 +29,7 @@ class Routine extends StatefulWidget {
 }
 
 class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
-  String _selectedSection = 'Section B';
+  String _selectedSection = 'Section A';
   List<DataModel> _displayData = [];
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
@@ -45,6 +46,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
     _loadSection();
+    _loadProfile();
     _controller.forward();
   }
 
@@ -105,7 +107,9 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
                 builder: (context, child) {
                   return Transform.scale(
                     scale: _scaleAnimation.value,
-                    child: _displayData.isEmpty
+                    child:
+                        _displayData.isEmpty ||
+                            _displayData.first.data == 'Rest up!'
                         ? _buildEmptyState()
                         : _buildClassCard(),
                   );
@@ -356,6 +360,26 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  Future<void> _loadProfile() async {
+    final profile = await loadUserProfile();
+    final prefs = await SharedPreferences.getInstance();
+
+    // Only set section based on roll if not already saved
+    if (!prefs.containsKey('section')) {
+      final String userRoll = profile?['roll'] ?? '';
+      final String inferredSection =
+          (int.tryParse(userRoll) ?? 0) >= 2207001 &&
+              (int.tryParse(userRoll) ?? 0) <= 2207060
+          ? 'Section A'
+          : 'Section B';
+
+      await prefs.setString('section', inferredSection);
+    }
+
+    // Now call _loadSection to apply saved section (whether inferred or chosen before)
+    _loadSection();
   }
 
   // Full Schedule

@@ -412,6 +412,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
       final savedImage = await File(
         picked.path,
       ).copy('${appDir.path}/$fileName');
@@ -444,7 +445,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final bytes = await file.readAsBytes();
     final image = img.decodeImage(bytes);
     if (image == null) return;
-    final resized = img.copyResize(image, width: 120, height: 120); // Low-res
+    final resized = img.copyResize(image, width: 120); // Low-res
     final jpg = img.encodeJpg(resized, quality: 60);
     final base64Str = base64Encode(jpg);
 

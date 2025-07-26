@@ -23,6 +23,8 @@ class TodoCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 fontSize: 17,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 6),
             Text(
