@@ -247,11 +247,7 @@ class _TodoPageState extends State<TodoPage> {
           sizeFactor: animation,
           axis: Axis.vertical,
           axisAlignment: 0.0,
-          child: _buildTaskTile(
-            task,
-            0,
-            _isOverdue(task),
-          ),
+          child: _buildTaskTile(task, 0, _isOverdue(task)),
         ),
         duration: const Duration(milliseconds: 400),
       );
@@ -279,8 +275,8 @@ class _TodoPageState extends State<TodoPage> {
         );
         if (key != null) {
           await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => TaskDetailsPage(
+            NicePageRoute(
+              page: TaskDetailsPage(
                 task: task,
                 taskKey: key,
                 isFinishedTask: false,

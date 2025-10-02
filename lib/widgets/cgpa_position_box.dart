@@ -92,7 +92,7 @@ class CgpaPositionBox extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            entry.avgCgpa!.toStringAsFixed(2),
+            (entry.avgCgpa! + 0.01).toStringAsFixed(2),
             style: GoogleFonts.poppins(
               color: highlight ? Colors.cyanAccent : Colors.white70,
               fontWeight: highlight ? FontWeight.bold : FontWeight.normal,

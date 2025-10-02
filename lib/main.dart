@@ -5,6 +5,7 @@ import 'firebase/firebase_options.dart';
 
 import 'package:provider/provider.dart';
 import 'utils/font_scale.dart';
+import 'utils/splash_toggle.dart';
 
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:uni_connect/features/auth/login_page.dart';
@@ -22,6 +23,7 @@ import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
+import 'features/calendar/calendar_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -39,10 +41,16 @@ void main() async {
   await Hive.openBox('examsBox');
   await Hive.openBox('noticesBox');
   await Hive.openBox('settingsBox');
+  await Hive.openBox('goals');
+  await Hive.openBox('goals_history');
+  await Hive.openBox('calendarBox');
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => FontScaleProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FontScaleProvider()),
+        ChangeNotifierProvider(create: (_) => SplashToggleProvider()),
+      ],
       child: const UniConnectApp(),
     ),
   );
@@ -54,6 +62,7 @@ class UniConnectApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontScale = context.watch<FontScaleProvider>().fontScale;
+    final showSplash = context.watch<SplashToggleProvider>().showSplash;
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -66,7 +75,7 @@ class UniConnectApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: SplashScreen(),
+      home: showSplash ? SplashScreen() : FrontPage(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/profile':
@@ -95,6 +104,8 @@ class UniConnectApp extends StatelessWidget {
             return NicePageRoute(page: const SettingsPage());
           case '/chat':
             return NicePageRoute(page: const ChatbotPage());
+          case '/calendar':
+            return NicePageRoute(page: const CalendarPage());
           default:
             return MaterialPageRoute(
               builder: (context) =>

@@ -8,6 +8,7 @@ String? _cachedProfileImagePath;
 List<Map<String, dynamic>>? _teachersCache;
 List<Map<String, dynamic>>? _examsCache;
 List<Map<String, dynamic>>? _noticesCache;
+Map<String, dynamic>? _calendarCache;
 
 /// Loads the current user's profile data from Firestore, but uses cache if available.
 Future<Map<String, dynamic>?> loadUserProfile() async {
@@ -238,4 +239,50 @@ Future<List<Map<String, dynamic>>> reloadNotices() async {
   await box.put('notices', _noticesCache);
 
   return _noticesCache!;
+}
+
+/// Get calendar data from cache -> Hive -> Firestore
+Future<Map<String, dynamic>?> fetchCalendarFromFirestore() async {
+  if (_calendarCache != null) return _calendarCache;
+
+  final box = Hive.box('calendarBox');
+  final cachedMap = box.get('calendar');
+  if (cachedMap != null) {
+    _calendarCache = Map<String, dynamic>.from(cachedMap);
+    return _calendarCache;
+  }
+
+  // Only one document in calendar collection
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('calendar')
+      .limit(1)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    final doc = querySnapshot.docs.first;
+    _calendarCache = {'id': doc.id, ...doc.data()};
+    await box.put('calendar', _calendarCache);
+  }
+
+  return _calendarCache;
+}
+
+/// Explicitly reload (force refresh) calendar from Firestore
+Future<Map<String, dynamic>?> reloadCalendar() async {
+  _calendarCache = null;
+
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('calendar')
+      .limit(1)
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    final doc = querySnapshot.docs.first;
+    _calendarCache = {'id': doc.id, ...doc.data()};
+
+    final box = Hive.box('calendarBox');
+    await box.put('calendar', _calendarCache);
+  }
+
+  return _calendarCache;
 }

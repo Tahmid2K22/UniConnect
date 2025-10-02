@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:data_table_2/data_table_2.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:uni_connect/utils/glass_table.dart';
@@ -84,9 +85,9 @@ class _RoutineTableViewState extends State<RoutineTableView>
               end: Alignment.bottomRight,
             ).createShader(bounds);
           },
-          child: const Text(
+          child: Text(
             'Timetable',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 24,

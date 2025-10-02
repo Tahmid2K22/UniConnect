@@ -35,6 +35,7 @@ migrate_working_dir/
 /build/
 /lib/push_to_db/
 /lib/features/chatbot/
+/lib/features/calendar/goal_helper.dart
 
 # Symbolication related
 app.*.symbols

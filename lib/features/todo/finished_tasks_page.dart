@@ -6,6 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'todo_task.dart';
 import 'task_details_page.dart';
 
+import 'package:uni_connect/features/navigation/transition.dart';
+
 class FinishedTasksPage extends StatefulWidget {
   const FinishedTasksPage({super.key});
 
@@ -225,8 +227,8 @@ class _FinishedTasksPageState extends State<FinishedTasksPage> {
           onTap: () async {
             final result = await Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => TaskDetailsPage(
+              NicePageRoute(
+                page: TaskDetailsPage(
                   task: task,
                   taskKey: entry.key,
                   isFinishedTask: true,

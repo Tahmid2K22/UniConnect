@@ -31,7 +31,10 @@ class MonthlyTaskCompletionGraph extends StatelessWidget {
               height: 20.0 * count,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.tealAccent[400]!, Colors.lightBlueAccent[400]!],
+                  colors: [
+                    Colors.tealAccent[400]!,
+                    Colors.lightBlueAccent[400]!,
+                  ],
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                 ),
@@ -44,4 +47,3 @@ class MonthlyTaskCompletionGraph extends StatelessWidget {
     );
   }
 }
-

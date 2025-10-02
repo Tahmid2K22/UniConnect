@@ -15,7 +15,6 @@ import 'package:uni_connect/widgets/ct_comparison_chart.dart';
 import 'package:uni_connect/widgets/cgpa_position_box.dart';
 import 'package:uni_connect/widgets/full_cgpa_ranking_chart.dart';
 import 'package:uni_connect/widgets/cgpa_pie_chart.dart';
-import 'package:uni_connect/widgets/ct_comparison_summary.dart';
 
 import 'package:uni_connect/utils/ct_comparison_entries.dart';
 import 'package:uni_connect/utils/cgpa_ranking.dart';
@@ -171,6 +170,7 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                     ),
                     const SizedBox(height: 24),
                     const SectionTitle("Monthly Task Completion"),
+
                     ValueListenableBuilder(
                       valueListenable: Hive.box<TodoTask>(
                         'todoBox',
@@ -208,11 +208,38 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                       const SizedBox(height: 30),
                     ],
                     const SectionTitle("CT Marks Histogram"),
-                    ctMarksData == null
-                        ? const Center(child: CircularProgressIndicator())
-                        : CtMarksHistogram(data: ctMarksData!),
+                    if ((ctMarksData!['courses'] as Map).isEmpty)
+                      Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          Text(
+                            "No CT data available yet.",
+                            style: GoogleFonts.poppins(
+                              color: Colors.white54,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                      )
+                    else
+                      CtMarksHistogram(data: ctMarksData!),
                     const SizedBox(height: 24),
-                    if (ctMarksData != null && ctMarksAverageData != null) ...[
+
+                    if ((ctMarksData!['courses'] as Map).isEmpty) ...[
+                      const SectionTitle("Your CT Marks vs. Batch Average"),
+                      const SizedBox(height: 12),
+                      Text(
+                        "No CT data available yet.",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white54,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ] else ...[
                       const SectionTitle("Your CT Marks vs. Batch Average"),
                       CtComparisonChart(
                         entries: getCtComparisonEntries(
@@ -220,66 +247,25 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                           ctMarksAverageData!,
                         ),
                       ),
+                      // keep legend + summary the same
+                    ],
+
+                    const SectionTitle("CT Marks Details"),
+                    if ((ctMarksData!['courses'] as Map).isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 18,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: Colors.cyanAccent,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "You",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 24),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 18,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blueAccent,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "Average",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          "No CT data available yet.",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white54,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      CtComparisonSummary(
-                        entries: getCtComparisonEntries(
-                          ctMarksData!,
-                          ctMarksAverageData!,
-                        ),
-                      ),
-                    ],
-                    if (ctMarksData != null) ...[
-                      const SectionTitle("CT Marks Details"),
+                      )
+                    else
                       CtMarksDetails(data: ctMarksData!),
-                    ],
+
                     const SizedBox(height: 40),
                     if (batchmatesCgpaData != null && userData != null) ...[
                       const SectionTitle("Your CGPA Position in Batch"),
