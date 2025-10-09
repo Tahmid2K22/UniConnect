@@ -12,7 +12,7 @@ class SectionTitle extends StatelessWidget {
       child: Text(
         title,
         style: GoogleFonts.poppins(
-          color: Colors.white,
+          color: Colors.cyanAccent,
           fontSize: 20,
           fontWeight: FontWeight.w600,
         ),

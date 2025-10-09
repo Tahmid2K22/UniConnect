@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 import 'package:uni_connect/utils/AnimatedAssignmentCard.dart';
 
 class AssignmentPage extends StatelessWidget {
@@ -27,9 +27,9 @@ class AssignmentPage extends StatelessWidget {
               end: Alignment.bottomRight,
             ).createShader(bounds);
           },
-          child: const Text(
+          child: Text(
             'Assignments',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 24,
@@ -47,7 +47,7 @@ class AssignmentPage extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: assignments.isEmpty
+        child: assignments.isEmpty || assignments[0][0].isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

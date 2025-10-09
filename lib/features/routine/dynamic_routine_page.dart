@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,9 +77,9 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
               end: Alignment.bottomRight,
             ).createShader(bounds);
           },
-          child: const Text(
+          child: Text(
             'Today\'s Schedule',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 24,

@@ -6,8 +6,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uni_connect/firebase/firestore/database.dart';
 import 'package:uni_connect/utils/glass_card.dart';
 
-import '../todo/todo_task.dart';
-
 import '../navigation/side_navigation.dart';
 
 import '../routine/collect_data.dart';
@@ -15,6 +13,7 @@ import '../routine/collect_data.dart';
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
 
+import 'package:uni_connect/widgets/calander_card.dart';
 import 'package:uni_connect/widgets/ct_marks_histogram.dart';
 import 'package:uni_connect/widgets/ct_marks_details.dart';
 import 'package:uni_connect/widgets/load_user_ct_marks.dart';
@@ -53,7 +52,6 @@ class _FrontPageState extends State<FrontPage>
   @override
   void initState() {
     super.initState();
-    _loadRoutineData();
     _loadUpcomingExam();
     _loadNoticesSummary();
     _controller = AnimationController(
@@ -119,7 +117,13 @@ class _FrontPageState extends State<FrontPage>
                       padding: const EdgeInsets.all(18.0),
                       child: TopSection(
                         userName: extractName(userProfile?['name']),
-                        nextClassTitle: nextClass?.data ?? '',
+                        nextClassTitle: nextClass != null
+                            ? filterClassForUser(
+                                    nextClass!.data,
+                                    (userProfile?['roll'] ?? '0'),
+                                  ) ??
+                                  ''
+                            : '',
                         nextClassTime: nextClass?.period ?? '',
                         hasNextClass:
                             nextClass != null &&
@@ -140,10 +144,21 @@ class _FrontPageState extends State<FrontPage>
                       ),
                     ),
                   ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0,
+                        vertical: 10,
+                      ),
+                      child: const AcademicCalendarWidget(),
+                    ),
+                  ),
+
                   const _SectionHeader(title: "Notices"),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 19.0),
                       child: FutureBuilder<List<Map<String, dynamic>>>(
                         future: fetchNoticesFromFirestore(),
                         builder: (context, snapshot) {
@@ -170,16 +185,33 @@ class _FrontPageState extends State<FrontPage>
                                 Navigator.pushNamed(context, '/notices'),
                             child: SizedBox(
                               height: 110,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: noticeList.map((notice) {
-                                  final data = notice['data'] ?? {};
-                                  return NoticeCard(
-                                    title: data['title'] ?? "",
-                                    desc: data['desc'] ?? "",
-                                    time: data['time'] ?? "",
-                                  );
-                                }).toList(),
+                              child: ShaderMask(
+                                shaderCallback: (Rect bounds) {
+                                  return const LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.transparent, // left fade
+                                      Colors.white,
+                                      Colors.white,
+                                      Colors.transparent, // right fade
+                                    ],
+                                    stops: [0.0, 0.02, 0.98, 1.0],
+                                  ).createShader(bounds);
+                                },
+                                blendMode: BlendMode
+                                    .dstIn, // keeps only the gradient-masked part
+                                child: ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: noticeList.map((notice) {
+                                    final data = notice['data'] ?? {};
+                                    return NoticeCard(
+                                      title: data['title'] ?? "",
+                                      desc: data['desc'] ?? "",
+                                      time: data['time'] ?? "",
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ),
                           );
@@ -187,44 +219,40 @@ class _FrontPageState extends State<FrontPage>
                       ),
                     ),
                   ),
-                  const _SectionHeader(title: "Todo"),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                      child: ValueListenableBuilder(
-                        valueListenable: Hive.box<TodoTask>(
-                          'todoBox',
-                        ).listenable(),
-                        builder: (context, Box<TodoTask> box, _) {
-                          final tasks = getDueSoonTasks();
-                          if (tasks.isEmpty) {
-                            return SizedBox(
-                              height: 90,
-                              child: Center(
-                                child: Text(
-                                  "No tasks for today!",
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white38,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          return SizedBox(
-                            height: 90,
+
+                  // Todo Section (only show if tasks exist)
+                  if (getDueSoonTasks().isNotEmpty) ...[
+                    const _SectionHeader(title: "Todo"),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 19.0),
+                        child: SizedBox(
+                          height: 110,
+                          child: ShaderMask(
+                            shaderCallback: (Rect bounds) {
+                              return const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.transparent, // left fade
+                                  Colors.white,
+                                  Colors.white,
+                                  Colors.transparent, // right fade
+                                ],
+                                stops: [0.0, 0.02, 0.98, 1.0],
+                              ).createShader(bounds);
+                            },
+                            blendMode: BlendMode.dstIn,
                             child: ListView(
                               scrollDirection: Axis.horizontal,
-                              children: tasks.map((task) {
+                              children: getDueSoonTasks().map((task) {
                                 return GestureDetector(
                                   onTap: () =>
                                       Navigator.pushNamed(
                                         context,
                                         '/todo',
                                       ).then((_) {
-                                        setState(
-                                          () {},
-                                        ); // Refresh home on return
+                                        setState(() {});
                                       }),
                                   child: TodoCard(
                                     title: task.title,
@@ -238,128 +266,112 @@ class _FrontPageState extends State<FrontPage>
                                 );
                               }).toList(),
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  const _SectionHeader(title: "Task Analytics"),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                      child: GlassCard(
+                  ],
+
+                  // Task Analytics (only show if non-empty)
+                  if (!getCompletionStatsLast30Days().every((c) => c == 0)) ...[
+                    const _SectionHeader(title: "Task Analytics"),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 23.0,
+                          vertical: 0,
+                        ),
                         child: GestureDetector(
                           onTap: () =>
                               Navigator.pushNamed(context, '/analytics'),
                           child: SizedBox(
                             width: double.infinity,
                             height: 180,
-                            child: ValueListenableBuilder(
-                              valueListenable: Hive.box<TodoTask>(
-                                'todoBox',
-                              ).listenable(),
-                              builder: (context, Box<TodoTask> box, _) {
-                                final taskStats =
-                                    getCompletionStatsLast30Days();
-                                // The important check: are ALL counts zero?
-                                final allZero = taskStats.every(
-                                  (count) => count == 0,
-                                );
-                                if (allZero) {
-                                  return Center(
-                                    child: Text(
-                                      'Complete a task to get started!',
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.white54,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return MonthlyTaskCompletionGraph(
-                                  taskStats: taskStats,
-                                );
-                              },
+                            child: MonthlyTaskCompletionGraph(
+                              taskStats: getCompletionStatsLast30Days(),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const _SectionHeader(title: "Progress Summary"),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                      child: GestureDetector(
-                        onTap: () =>
-                            Navigator.pushNamed(context, '/todo').then((_) {
-                              setState(() {}); // Refresh home on return
-                            }),
-                        child: GlassCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              16,
-                            ), // This is internal padding
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.emoji_events,
-                                  color: Colors.amber.shade300,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Today's Progress",
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white70,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "$completedToday of $createdToday tasks completed today",
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.tealAccent[400]!,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        createdToday == 0
-                                            ? "No tasks added today yet."
-                                            : (completedToday == createdToday
-                                                  ? "All done for today! 🎉"
-                                                  : (completedToday > 0
-                                                        ? "Great progress, keep going!"
-                                                        : "Let's get started!")),
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white54,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
+                  ],
+
+                  // Progress Summary (only show if at least one task created today)
+                  if (createdToday > 0) ...[
+                    const _SectionHeader(title: "Progress Summary"),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child: GestureDetector(
+                          onTap: () =>
+                              Navigator.pushNamed(context, '/todo').then((_) {
+                                setState(() {}); // Refresh home on return
+                              }),
+                          child: GlassCard(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.emoji_events,
+                                    color: Colors.amber.shade300,
+                                    size: 28,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Today's Progress",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white70,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "$completedToday of $createdToday tasks completed today",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.tealAccent[400]!,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          completedToday == createdToday
+                                              ? "All done for today! 🎉"
+                                              : (completedToday > 0
+                                                    ? "Great progress, keep going!"
+                                                    : "Let's get started!"),
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white54,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (ctMarksData != null) ...[
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  ],
+
+                  // CT Marks (only show if data is non-null & not empty)
+                  if (ctMarksData != null &&
+                      (ctMarksData!['courses'] as Map).isNotEmpty) ...[
                     const _SectionHeader(title: "CT Marks Histogram"),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: GlassCard(
                           child: CtMarksHistogram(data: ctMarksData!),
                         ),
@@ -368,7 +380,7 @@ class _FrontPageState extends State<FrontPage>
                     const _SectionHeader(title: "CT Marks Details"),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
                         child: GlassCard(
                           child: CtMarksDetails(data: ctMarksData!),
                         ),
@@ -437,6 +449,9 @@ class _FrontPageState extends State<FrontPage>
       // Use cached, fallback to dynamic parse if cache is absent
       ctMarksData = cachedCt ?? parseCtMarksFromProfile(profile);
     });
+
+    // Now that userRoll is available, load the routine data
+    await _loadRoutineData();
   }
 
   Future<void> _loadNoticesSummary() async {
@@ -506,7 +521,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 24, 18, 12),
+        padding: const EdgeInsets.fromLTRB(23, 24, 23, 12),
         child: Text(
           title,
           style: GoogleFonts.poppins(
@@ -580,4 +595,49 @@ String extractName(String? fullName) {
     if (first == -1) return trimmed; // No spaces
     return trimmed.substring(0, first);
   }
+}
+
+String? filterClassForUser(String className, String userRoll) {
+  if (className.trim().isEmpty) return null;
+
+  // Determine user section
+  String? userSection;
+  if (userRoll.compareTo("2207001") >= 0 &&
+      userRoll.compareTo("2207030") <= 0) {
+    userSection = "A1";
+  } else if (userRoll.compareTo("2207031") >= 0 &&
+      userRoll.compareTo("2207060") <= 0) {
+    userSection = "A2";
+  } else if (userRoll.compareTo("2207061") >= 0 &&
+      userRoll.compareTo("2207080") <= 0) {
+    userSection = "B1";
+  } else if (userRoll.compareTo("2207081") >= 0 &&
+      userRoll.compareTo("2207121") <= 0) {
+    userSection = "B2";
+  }
+
+  // Split on '+' in case of multiple sections
+  final parts = className.split('+').map((p) => p.trim()).toList();
+
+  for (final part in parts) {
+    if (part.contains("A1") ||
+        part.contains("A2") ||
+        part.contains("B1") ||
+        part.contains("B2")) {
+      // Only return if section matches user
+      if (userSection != null && part.contains(userSection)) {
+        return part;
+      } else
+        return "Not for your section";
+    }
+  }
+
+  // If no section tags found → show as is
+  final hasSectionTag =
+      className.contains("A1") ||
+      className.contains("A2") ||
+      className.contains("B1") ||
+      className.contains("B2");
+
+  return hasSectionTag ? null : className;
 }

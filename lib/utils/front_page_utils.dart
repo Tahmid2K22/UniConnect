@@ -20,11 +20,10 @@ List<TodoTask> getDueSoonTasks() {
   final withoutDueDate = tasks.where((t) => t.dueDate == null).toList()
     ..sort((a, b) => a.title.compareTo(b.title));
 
-  // Take up to 3 tasks: due soon first, then any others
-  return [
-    ...withDueDate.take(3),
-    ...withoutDueDate.take(3 - withDueDate.length),
-  ];
+  // Combine the lists and take the top 3 overall
+  final combinedTasks = [...withDueDate, ...withoutDueDate];
+
+  return combinedTasks.take(3).toList();
 }
 
 List<int> getCompletionStatsLast30Days() {

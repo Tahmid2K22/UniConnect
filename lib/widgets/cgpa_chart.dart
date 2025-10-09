@@ -92,7 +92,7 @@ class CgpaChart extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 20),
-        AnimatedGradientCGPANumber(avgCgpa: avgCgpa),
+        AnimatedGradientCGPANumber(avgCgpa: avgCgpa + 0.01),
       ],
     );
   }

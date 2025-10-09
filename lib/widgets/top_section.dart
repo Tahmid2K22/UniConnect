@@ -835,14 +835,6 @@ class _AnimatedCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.purpleAccent.withValues(alpha: 0.20),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: child,
     );

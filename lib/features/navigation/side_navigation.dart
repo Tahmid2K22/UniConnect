@@ -67,6 +67,43 @@ class _SideNavigationState extends State<SideNavigation> {
       ),
     );
 
+    Widget buildGoalsButton(BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, "/calendar");
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: Colors.cyanAccent.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.flag, color: Colors.white70),
+                const SizedBox(width: 12),
+                Text(
+                  'Academic Calendar',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Drawer(
       backgroundColor: const Color(0xFF121232),
       child: SafeArea(
@@ -175,6 +212,9 @@ class _SideNavigationState extends State<SideNavigation> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            buildGoalsButton(context),
+            const SizedBox(height: 8),
             // Settings button at bottom right
             settingsButton,
           ],

@@ -15,7 +15,7 @@ class NoticeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      margin: const EdgeInsets.only(right: 12),
+      margin: const EdgeInsets.only(right: 6, left: 6),
       padding: const EdgeInsets.all(12),
       child: SizedBox(
         width: 220,

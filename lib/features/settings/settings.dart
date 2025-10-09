@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:uni_connect/utils/splash_toggle.dart';
+
 import 'package:provider/provider.dart';
 import 'package:uni_connect/utils/font_scale.dart';
 
@@ -164,6 +166,32 @@ class SettingsPage extends StatelessWidget {
                   },
                 ),
               ],
+            ),
+          ),
+          // Splash toggle
+          Padding(
+            padding: const EdgeInsets.only(top: 22.0, bottom: 20.0),
+            child: Consumer<SplashToggleProvider>(
+              builder: (context, splashProvider, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Enable Splash Screen",
+                      style: GoogleFonts.poppins(
+                        color: Colors.cyanAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Switch(
+                      value: splashProvider.showSplash,
+                      activeColor: Colors.cyanAccent,
+                      onChanged: (val) => splashProvider.toggleSplash(val),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
 
