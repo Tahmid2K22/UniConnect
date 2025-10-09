@@ -16,7 +16,6 @@ import 'package:uni_connect/features/notices/notices.dart';
 import 'package:uni_connect/features/resources/resources.dart';
 import 'package:uni_connect/features/settings/settings.dart';
 import 'package:uni_connect/features/auth/auth_wrapper.dart';
-import 'package:uni_connect/features/splashscreen/splash_screen.dart';
 import 'package:uni_connect/features/teachers/teachers_page.dart';
 import 'package:uni_connect/features/todo/todo_page.dart';
 import 'package:uni_connect/features/frontpage/front_page.dart';
