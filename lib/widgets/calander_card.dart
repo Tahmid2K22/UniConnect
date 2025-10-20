@@ -87,7 +87,7 @@ class AcademicCalendarWidget extends StatelessWidget {
                                 ? currentVacation.name
                                 : today.isAfter(semester.finalsStart)
                                 ? "Term Finals"
-                                : "Week ${(today.difference(semester.startDate).inDays / 7).ceil()}",
+                                : "Week ${((today.difference(semester.startDate).inDays + 1) / 7).ceil()}",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.pressStart2p(
