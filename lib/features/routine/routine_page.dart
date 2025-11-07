@@ -23,20 +23,25 @@ class _RoutinePageState extends State<RoutinePage>
   String? _error;
   late List<Widget> pages;
   late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+  //late Animation<double> _fadeAnimation;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Cache page widgets to avoid rebuilding on every tab switch
+  Widget? _cachedSchedulePage;
+  Widget? _cachedTimetablePage;
+  Widget? _cachedAssignmentPage;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 300),
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
+    // _fadeAnimation = CurvedAnimation(
+    //   parent: _controller,
+    //   curve: Curves.easeInOut,
+    // );
     _loadData();
   }
 
@@ -58,11 +63,14 @@ class _RoutinePageState extends State<RoutinePage>
         key: _scaffoldKey,
         endDrawer: const SideNavigation(),
         backgroundColor: const Color(0xFF0F3460),
-        body: _buildBody(),
-        bottomNavigationBar: GestureDetector(
-          onDoubleTap: _showRefreshDialog,
-          child: _buildNavBar(),
+        body: RefreshIndicator(
+          onRefresh: () => _loadData(forceRefresh: true),
+          color: Colors.cyanAccent,
+          backgroundColor: const Color(0xFF1A1A2E),
+          child: _buildBody(),
         ),
+        bottomNavigationBar: _buildNavBar(),
+        floatingActionButton: _buildRefreshFAB(),
       ),
     );
   }
@@ -81,27 +89,44 @@ class _RoutinePageState extends State<RoutinePage>
         results = await RoutineCache.loadRoutine();
       }
       if (results == null) {
-        // No cache or user requested refresh
         results = await CollectData.collectAllData();
         await RoutineCache.saveRoutine(results);
       }
 
       if (!mounted) return;
 
-      setState(() {
-        final sheet1 = results!['sheet1'] ?? [];
-        final sheet2 = results['sheet2'] ?? [];
-        final sheet3 = results['sheet3'] ?? [];
+      final sheet1 = results['sheet1'] ?? [];
+      final sheet2 = results['sheet2'] ?? [];
+      final sheet3 = results['sheet3'] ?? [];
 
+      // Cache pages to avoid rebuilding heavy widgets on tab switch
+      _cachedSchedulePage = Routine(
+        key: const ValueKey('schedule'),
+        sectionAData: sheet1,
+        sectionBData: sheet2,
+      );
+      _cachedTimetablePage = RoutineTableView(
+        key: const ValueKey('timetable'),
+        sectionA: sheet1,
+        sectionB: sheet2,
+      );
+      _cachedAssignmentPage = AssignmentPage(
+        key: const ValueKey('assignments'),
+        assignments: sheet3,
+      );
+
+      setState(() {
         pages = [
-          Routine(sectionAData: sheet1, sectionBData: sheet2),
-          RoutineTableView(sectionA: sheet1, sectionB: sheet2),
-          AssignmentPage(assignments: sheet3),
+          _cachedSchedulePage!,
+          _cachedTimetablePage!,
+          _cachedAssignmentPage!,
         ];
         _isLoading = false;
       });
+
       _controller.forward();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Failed to load data: $e';
         _isLoading = false;
@@ -110,73 +135,6 @@ class _RoutinePageState extends State<RoutinePage>
   }
 
   //Load Routine Data End -------------------------------------------------------------------------------------------
-
-  //Double tap for refresh
-
-  void _showRefreshDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: Colors.cyanAccent.withValues(alpha: 0.3),
-            width: 2,
-          ),
-        ),
-        title: ShaderMask(
-          shaderCallback: (Rect bounds) {
-            return const LinearGradient(
-              colors: [Color.fromARGB(255, 153, 200, 214), Color(0xFF00DBDE)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ).createShader(bounds);
-          },
-          child: const Text(
-            'Refresh Routine',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 22,
-              letterSpacing: 1.1,
-            ),
-          ),
-        ),
-        content: const Text(
-          'Do you want to refresh the routine data?',
-          style: TextStyle(color: Colors.white70, fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
-                color: Colors.white54,
-                fontWeight: FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.cyanAccent,
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _loadData(forceRefresh: true);
-            },
-            child: const Text('Refresh'),
-          ),
-        ],
-      ),
-    );
-  }
 
   //Body utils
   Widget _buildBody() {
@@ -203,30 +161,61 @@ class _RoutinePageState extends State<RoutinePage>
     }
 
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: Colors.redAccent.withValues(alpha: 0.7),
-                size: 60,
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height - 200,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    color: Colors.redAccent.withValues(alpha: 0.7),
+                    size: 60,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    _error!,
+                    style: const TextStyle(color: Colors.white70, fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: () => _loadData(forceRefresh: true),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.cyanAccent,
+                      foregroundColor: const Color(0xFF0F3460),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              Text(
-                _error!,
-                style: const TextStyle(color: Colors.white70, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-            ],
+            ),
           ),
         ),
       );
     }
 
-    return FadeTransition(opacity: _fadeAnimation, child: pages[_page]);
+    // Use IndexedStack to keep all pages in memory but only show current one
+    // This prevents rebuilding heavy widgets on tab switch
+    return IndexedStack(index: _page, children: pages);
+  }
+
+  // Floating Action Button for refresh
+  Widget? _buildRefreshFAB() {
+    if (_isLoading) return null;
+
+    return FloatingActionButton(
+      onPressed: () => _loadData(forceRefresh: true),
+      backgroundColor: Colors.cyanAccent.withValues(alpha: 0.9),
+      foregroundColor: const Color(0xFF0F3460),
+      tooltip: 'Refresh routine',
+      child: const Icon(Icons.refresh),
+    );
   }
 
   // Navbar utils
@@ -242,10 +231,10 @@ class _RoutinePageState extends State<RoutinePage>
       color: const Color(0xFF16213E),
       buttonBackgroundColor: const Color(0xFF0F3460),
       backgroundColor: Colors.transparent,
-      animationDuration: const Duration(milliseconds: 400),
-      animationCurve: Curves.easeInOutBack,
+      animationDuration: const Duration(milliseconds: 300),
+      animationCurve: Curves.easeInOut,
       onTap: (index) {
-        if (index != _page) {
+        if (index != _page && !_isLoading) {
           setState(() => _page = index);
         }
       },

@@ -6,6 +6,7 @@ import 'firebase/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'utils/font_scale.dart';
 import 'utils/splash_toggle.dart';
+import 'utils/data_preloader.dart';
 
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:uni_connect/features/auth/login_page.dart';
@@ -28,22 +29,41 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('Error loading .env file: $e');
+  }
+
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint('Error initializing Firebase: $e');
+  }
+
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
-  await Hive.openBox<TodoTask>('todoBox');
-  await Hive.openBox<TodoTask>('dailyTaskBox');
-  await Hive.openBox('profileBox');
-  await Hive.openBox('userBox');
-  await Hive.openBox('batchmatesBox');
-  await Hive.openBox('teachersBox');
-  await Hive.openBox('examsBox');
-  await Hive.openBox('noticesBox');
-  await Hive.openBox('settingsBox');
-  await Hive.openBox('goals');
-  await Hive.openBox('goals_history');
-  await Hive.openBox('calendarBox');
+
+  // Open all Hive boxes in parallel for faster startup
+  await Future.wait([
+    Hive.openBox<TodoTask>('todoBox'),
+    Hive.openBox<TodoTask>('dailyTaskBox'),
+    Hive.openBox('profileBox'),
+    Hive.openBox('userBox'),
+    Hive.openBox('batchmatesBox'),
+    Hive.openBox('teachersBox'),
+    Hive.openBox('examsBox'),
+    Hive.openBox('noticesBox'),
+    Hive.openBox('settingsBox'),
+    Hive.openBox('goals'),
+    Hive.openBox('goals_history'),
+    Hive.openBox('calendarBox'),
+    Hive.openBox('userCtMarksBox'),
+  ]);
+
+  // Preload critical data in background
+  DataPreloader.preloadCriticalData();
 
   runApp(
     MultiProvider(

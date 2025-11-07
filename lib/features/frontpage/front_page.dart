@@ -9,6 +9,7 @@ import 'package:uni_connect/utils/glass_card.dart';
 import '../navigation/side_navigation.dart';
 
 import '../routine/collect_data.dart';
+import '../todo/todo_task.dart';
 
 import 'package:uni_connect/utils/front_page_utils.dart';
 import 'package:uni_connect/models/data_model.dart';
@@ -48,6 +49,13 @@ class _FrontPageState extends State<FrontPage>
   Map<String, dynamic>? upcomingExam;
 
   String _noticeSummary = "";
+  
+  // Cache computed values to avoid recalculating on every build
+  List<TodoTask>? _cachedTasks;
+  Map<String, int>? _cachedTodayStats;
+  List<TodoTask>? _cachedDueSoonTasks;
+  List<int>? _cachedCompletionStats;
+  List<Map<String, dynamic>>? _cachedNotices;
 
   @override
   void initState() {
@@ -59,6 +67,22 @@ class _FrontPageState extends State<FrontPage>
       duration: const Duration(seconds: 5),
     )..repeat(reverse: false);
     _loadProfile();
+    _computeCachedValues();
+    _loadNotices();
+  }
+
+  void _computeCachedValues() {
+    _cachedTasks = getAllTasks();
+    _cachedTodayStats = getTodayTaskStats(_cachedTasks!);
+    _cachedDueSoonTasks = getDueSoonTasks();
+    _cachedCompletionStats = getCompletionStatsLast30Days();
+  }
+  
+  Future<void> _loadNotices() async {
+    final notices = await fetchNoticesFromFirestore();
+    setState(() {
+      _cachedNotices = notices;
+    });
   }
 
   @override
@@ -69,9 +93,8 @@ class _FrontPageState extends State<FrontPage>
 
   @override
   Widget build(BuildContext context) {
-    // For progress summary
-    final tasks = getAllTasks();
-    final todayStats = getTodayTaskStats(tasks);
+    // Use cached values instead of recomputing
+    final todayStats = _cachedTodayStats ?? {'createdToday': 0, 'completedToday': 0};
     final createdToday = todayStats['createdToday']!;
     final completedToday = todayStats['completedToday']!;
 
@@ -95,15 +118,20 @@ class _FrontPageState extends State<FrontPage>
                 final profile = await reloadUserProfile();
                 final parsed = parseCtMarksFromProfile(profile);
 
-                // Save new parsed ct marks to Hive cache
                 await cacheUserCtMarks(parsed);
 
-                // ...reload other things as you do
-                await reloadExams();
-                await reloadNotices();
-                await _loadRoutineData();
-                await reloadBatchmates();
+                // Reload all data in parallel for faster refresh
+                await Future.wait([
+                  reloadExams(),
+                  reloadNotices(),
+                  _loadRoutineData(),
+                  reloadBatchmates(),
+                ]);
+                
                 await _loadUpcomingExam();
+                await _loadNotices();
+                
+                _computeCachedValues();
 
                 setState(() {
                   userProfile = profile;
@@ -159,69 +187,64 @@ class _FrontPageState extends State<FrontPage>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 19.0),
-                      child: FutureBuilder<List<Map<String, dynamic>>>(
-                        future: fetchNoticesFromFirestore(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return const SizedBox(
-                              height: 110,
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                          final noticeList = snapshot.data!;
-                          if (noticeList.isEmpty) {
-                            return const SizedBox(
+                      child: _cachedNotices == null
+                          ? const SizedBox(
                               height: 110,
                               child: Center(
-                                child: Text(
-                                  "No notices found.",
-                                  style: TextStyle(color: Colors.white54),
+                                child: CircularProgressIndicator(
+                                  color: Colors.tealAccent,
                                 ),
                               ),
-                            );
-                          }
-                          return GestureDetector(
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/notices'),
-                            child: SizedBox(
-                              height: 110,
-                              child: ShaderMask(
-                                shaderCallback: (Rect bounds) {
-                                  return const LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Colors.transparent, // left fade
-                                      Colors.white,
-                                      Colors.white,
-                                      Colors.transparent, // right fade
-                                    ],
-                                    stops: [0.0, 0.02, 0.98, 1.0],
-                                  ).createShader(bounds);
-                                },
-                                blendMode: BlendMode
-                                    .dstIn, // keeps only the gradient-masked part
-                                child: ListView(
-                                  scrollDirection: Axis.horizontal,
-                                  children: noticeList.map((notice) {
-                                    final data = notice['data'] ?? {};
-                                    return NoticeCard(
-                                      title: data['title'] ?? "",
-                                      desc: data['desc'] ?? "",
-                                      time: data['time'] ?? "",
-                                    );
-                                  }).toList(),
+                            )
+                          : _cachedNotices!.isEmpty
+                              ? const SizedBox(
+                                  height: 110,
+                                  child: Center(
+                                    child: Text(
+                                      "No notices found.",
+                                      style: TextStyle(color: Colors.white54),
+                                    ),
+                                  ),
+                                )
+                              : GestureDetector(
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/notices'),
+                                  child: SizedBox(
+                                    height: 110,
+                                    child: ShaderMask(
+                                      shaderCallback: (Rect bounds) {
+                                        return const LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.white,
+                                            Colors.white,
+                                            Colors.transparent,
+                                          ],
+                                          stops: [0.0, 0.02, 0.98, 1.0],
+                                        ).createShader(bounds);
+                                      },
+                                      blendMode: BlendMode.dstIn,
+                                      child: ListView(
+                                        scrollDirection: Axis.horizontal,
+                                        children: _cachedNotices!.map((notice) {
+                                          final data = notice['data'] ?? {};
+                                          return NoticeCard(
+                                            title: data['title'] ?? "",
+                                            desc: data['desc'] ?? "",
+                                            time: data['time'] ?? "",
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ),
                   ),
 
                   // Todo Section (only show if tasks exist)
-                  if (getDueSoonTasks().isNotEmpty) ...[
+                  if ((_cachedDueSoonTasks ?? []).isNotEmpty) ...[
                     const _SectionHeader(title: "Todo"),
                     SliverToBoxAdapter(
                       child: Padding(
@@ -245,13 +268,15 @@ class _FrontPageState extends State<FrontPage>
                             blendMode: BlendMode.dstIn,
                             child: ListView(
                               scrollDirection: Axis.horizontal,
-                              children: getDueSoonTasks().map((task) {
+                              children: (_cachedDueSoonTasks ?? <TodoTask>[])
+                                  .map<Widget>((task) {
                                 return GestureDetector(
                                   onTap: () =>
                                       Navigator.pushNamed(
                                         context,
                                         '/todo',
                                       ).then((_) {
+                                        _computeCachedValues();
                                         setState(() {});
                                       }),
                                   child: TodoCard(
@@ -273,7 +298,7 @@ class _FrontPageState extends State<FrontPage>
                   ],
 
                   // Task Analytics (only show if non-empty)
-                  if (!getCompletionStatsLast30Days().every((c) => c == 0)) ...[
+                  if (!(_cachedCompletionStats ?? []).every((c) => c == 0)) ...[
                     const _SectionHeader(title: "Task Analytics"),
                     SliverToBoxAdapter(
                       child: Padding(
@@ -288,7 +313,7 @@ class _FrontPageState extends State<FrontPage>
                             width: double.infinity,
                             height: 180,
                             child: MonthlyTaskCompletionGraph(
-                              taskStats: getCompletionStatsLast30Days(),
+                              taskStats: _cachedCompletionStats ?? [],
                             ),
                           ),
                         ),
@@ -305,6 +330,7 @@ class _FrontPageState extends State<FrontPage>
                         child: GestureDetector(
                           onTap: () =>
                               Navigator.pushNamed(context, '/todo').then((_) {
+                                _computeCachedValues();
                                 setState(() {}); // Refresh home on return
                               }),
                           child: GlassCard(
@@ -627,8 +653,9 @@ String? filterClassForUser(String className, String userRoll) {
       // Only return if section matches user
       if (userSection != null && part.contains(userSection)) {
         return part;
-      } else
+      } else {
         return "Not for your section";
+      }
     }
   }
 

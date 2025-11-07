@@ -17,6 +17,8 @@ migrate_working_dir/
 *.iml
 *.ipr
 *.iws
+*.md
+*.txt
 .idea/
 
 # The .vscode folder contains launch configuration and tasks you configure in

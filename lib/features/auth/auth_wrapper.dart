@@ -21,12 +21,42 @@ class AuthWrapper extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
+              backgroundColor: Color.fromARGB(255, 11, 11, 34),
               body: Center(
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(
+                  color: Colors.tealAccent,
+                ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Scaffold(
+              backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.redAccent,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Authentication Error',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      snapshot.error.toString(),
+                      style: const TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             );
           } else if (snapshot.hasData) {
-            return FrontPage();
+            return const FrontPage();
           } else {
             return const LoginPage();
           }

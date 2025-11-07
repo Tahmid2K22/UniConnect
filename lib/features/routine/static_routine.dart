@@ -22,28 +22,35 @@ class RoutineTableView extends StatefulWidget {
 }
 
 class _RoutineTableViewState extends State<RoutineTableView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late List<DataRow> _rows = [];
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<double> _scale;
   String _currentSection = 'Section A';
+  
+  // Cache generated rows to avoid regeneration
+  List<DataRow>? _cachedSectionARows;
+  List<DataRow>? _cachedSectionBRows;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
     );
     _fade = Tween<double>(
       begin: 0,
       end: 1,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _scale = Tween<double>(
-      begin: 0.95,
+      begin: 0.98,
       end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _loadSection();
     _loadProfile();
   }
@@ -56,7 +63,11 @@ class _RoutineTableViewState extends State<RoutineTableView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    
     final hasData = widget.sectionA.isNotEmpty && widget.sectionB.isNotEmpty;
+    
+    // Generate columns only once
     final columns = hasData
         ? List.generate(
             widget.sectionA[0].length,
@@ -120,21 +131,22 @@ class _RoutineTableViewState extends State<RoutineTableView>
                             opacity: _fade.value,
                             child: Transform.scale(
                               scale: _scale.value,
-                              child: GlassTable(
-                                child: DataTable2(
-                                  columnSpacing: 12,
-                                  horizontalMargin: 12,
-                                  minWidth: 1000,
-                                  headingRowHeight: 0,
-                                  dividerThickness: 0,
-                                  dataRowHeight: 90,
-                                  columns: columns,
-                                  rows: _rows,
-                                ),
-                              ),
+                              child: child,
                             ),
                           );
                         },
+                        child: GlassTable(
+                          child: DataTable2(
+                            columnSpacing: 12,
+                            horizontalMargin: 12,
+                            minWidth: 1000,
+                            headingRowHeight: 0,
+                            dividerThickness: 0,
+                            dataRowHeight: 90,
+                            columns: columns,
+                            rows: _rows,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -176,32 +188,47 @@ class _RoutineTableViewState extends State<RoutineTableView>
   Future<void> _loadSection() async {
     final prefs = await SharedPreferences.getInstance();
     final section = prefs.getString('section') ?? 'Section B';
+    
     setState(() {
       _currentSection = section;
-      _rows = _currentSection == 'Section A'
-          ? _generateRows(widget.sectionA)
-          : _generateRows(widget.sectionB);
+      
+      // Use cached rows if available
+      if (_currentSection == 'Section A') {
+        _cachedSectionARows ??= _generateRows(widget.sectionA);
+        _rows = _cachedSectionARows!;
+      } else {
+        _cachedSectionBRows ??= _generateRows(widget.sectionB);
+        _rows = _cachedSectionBRows!;
+      }
     });
+    
     _controller.forward();
   }
 
   //Load Section Data End -------------------------------------------------------------------------------------------
 
-  // Row Generation
+  // Row Generation - optimized
   List<DataRow> _generateRows(List<List<String>> data) {
+    if (data.isEmpty) return [];
+    
     return List.generate(data.length, (index) {
       return DataRow(
-        cells: List.generate(data[index].length, (cellIndex) {
-          return DataCell(
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Text(
-                data[index][cellIndex],
-                style: const TextStyle(color: Colors.white70),
+        cells: List.generate(
+          data[index].length,
+          (cellIndex) {
+            return DataCell(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  data[index][cellIndex],
+                  style: const TextStyle(color: Colors.white70),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
       );
     });
   }
@@ -248,13 +275,20 @@ class _RoutineTableViewState extends State<RoutineTableView>
           );
         }).toList(),
         onChanged: (String? newValue) async {
-          if (newValue != null) {
+          if (newValue != null && newValue != _currentSection) {
             setState(() {
               _currentSection = newValue;
-              _rows = newValue == 'Section A'
-                  ? _generateRows(widget.sectionA)
-                  : _generateRows(widget.sectionB);
+              
+              // Use cached rows
+              if (newValue == 'Section A') {
+                _cachedSectionARows ??= _generateRows(widget.sectionA);
+                _rows = _cachedSectionARows!;
+              } else {
+                _cachedSectionBRows ??= _generateRows(widget.sectionB);
+                _rows = _cachedSectionBRows!;
+              }
             });
+            
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('section', newValue);
             _controller.reset();

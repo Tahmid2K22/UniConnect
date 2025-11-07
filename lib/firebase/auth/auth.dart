@@ -1,10 +1,14 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 Future<UserCredential?> signInWithGoogle() async {
   try {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return null;
+    if (googleUser == null) {
+      debugPrint('Google sign-in cancelled by user');
+      return null;
+    }
 
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
@@ -15,7 +19,11 @@ Future<UserCredential?> signInWithGoogle() async {
     );
 
     return await FirebaseAuth.instance.signInWithCredential(credential);
+  } on FirebaseAuthException catch (e) {
+    debugPrint('Firebase auth error: ${e.code} - ${e.message}');
+    return null;
   } catch (e) {
+    debugPrint('Sign in error: $e');
     return null;
   }
 }
