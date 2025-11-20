@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:io';
+import 'package:universal_io/io.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -32,12 +33,16 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   Map<String, dynamic>? userData;
   String? _profileImagePath;
+  Uint8List? _webProfileImageBytes;
 
   @override
   void initState() {
     super.initState();
     loadProfile();
-    _loadProfileImagePath();
+    loadProfile();
+    if (!kIsWeb) {
+      _loadProfileImagePath();
+    }
   }
 
   @override
@@ -99,12 +104,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               children: [
                                 CircleAvatar(
                                   radius: 64,
-                                  backgroundImage: _profileImagePath != null
-                                      ? FileImage(File(_profileImagePath!))
-                                      : const AssetImage(
-                                              'assets/profile/profile.jpg',
-                                            )
-                                            as ImageProvider,
+                                  backgroundImage: _getProfileImageProvider(),
                                   backgroundColor: Colors.tealAccent.withValues(
                                     alpha: 0.18,
                                   ),
@@ -345,8 +345,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   void _loadProfileImagePath() {
+    if (kIsWeb) return;
     _profileImagePath = loadLocalProfileImagePath();
     setState(() {});
+  }
+
+  ImageProvider _getProfileImageProvider() {
+    if (kIsWeb) {
+      if (_webProfileImageBytes != null) {
+        return MemoryImage(_webProfileImageBytes!);
+      }
+      if (userData != null && userData!['profile_pic'] != null) {
+        try {
+          return MemoryImage(base64Decode(userData!['profile_pic']));
+        } catch (e) {
+          debugPrint('Error decoding profile pic: $e');
+        }
+      }
+    } else {
+      if (_profileImagePath != null) {
+        return FileImage(File(_profileImagePath!));
+      }
+    }
+    return const AssetImage('assets/profile/profile.jpg');
   }
 
   // Load User Data End ----------------------------------------------------------------------------------
@@ -410,23 +431,32 @@ class _UserProfilePageState extends State<UserProfilePage> {
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked == null) return;
 
-      final appDir = await getApplicationDocumentsDirectory();
-      final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        setState(() {
+          _webProfileImageBytes = bytes;
+        });
+        final base64Str = base64Encode(bytes);
+        await _updateProfilePicWeb(base64Str);
+      } else {
+        final appDir = await getApplicationDocumentsDirectory();
+        final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      final savedImage = await File(
-        picked.path,
-      ).copy('${appDir.path}/$fileName');
+        final savedImage = await File(
+          picked.path,
+        ).copy('${appDir.path}/$fileName');
 
-      if (!mounted) return;
-      setState(() {
-        _profileImagePath = savedImage.path;
-      });
+        if (!mounted) return;
+        setState(() {
+          _profileImagePath = savedImage.path;
+        });
 
-      if (Hive.isBoxOpen('profileBox')) {
-        Hive.box('profileBox').put('profileImagePath', savedImage.path);
+        if (Hive.isBoxOpen('profileBox')) {
+          Hive.box('profileBox').put('profileImagePath', savedImage.path);
+        }
+
+        await updateProfilePic(savedImage.path);
       }
-
-      await updateProfilePic(savedImage.path);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -437,6 +467,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   // Call this after user changes their profile picture
   Future<void> updateProfilePic(String localPath) async {
+    if (kIsWeb) return; // Should not be called on web
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) return;
 
@@ -456,6 +487,36 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     updateCachedProfilePic(base64Str);
     updateCachedProfileImagePath(localPath);
+  }
+
+  Future<void> _updateProfilePicWeb(String base64Str) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) return;
+
+    // Resize logic for web could be done here if needed, but for now just upload
+    // To resize on web, we might need a different approach or just upload as is if not too large
+    // For now, we'll assume the image is okay or resize it using a web-compatible way if needed.
+    // But 'image' package is pure Dart, so it might work on web too?
+    // Yes, 'image' package is pure Dart.
+    
+    try {
+       final bytes = base64Decode(base64Str);
+       final image = img.decodeImage(bytes);
+       if (image != null) {
+         final resized = img.copyResize(image, width: 120);
+         final jpg = img.encodeJpg(resized, quality: 60);
+         base64Str = base64Encode(jpg);
+       }
+    } catch(e) {
+      debugPrint("Error resizing image on web: $e");
+    }
+
+    await FirebaseFirestore.instance
+        .collection('students')
+        .doc(user.email)
+        .update({'profile_pic': base64Str});
+    
+    updateCachedProfilePic(base64Str);
   }
 
   Future<void> _updateSocialLink(String field, String link) async {

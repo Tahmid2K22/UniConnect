@@ -7,6 +7,8 @@ import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 import '../../utils/teacher_card.dart';
 import '../../widgets/teacher_search.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class TeachersPage extends StatefulWidget {
   const TeachersPage({super.key});
@@ -54,55 +56,57 @@ class _TeachersPageState extends State<TeachersPage> {
       end: Alignment.bottomRight,
     );
 
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
         backgroundColor: const Color(0xFF181A2A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            'Teachers',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.search, color: Colors.cyanAccent),
-              tooltip: 'Search',
-              onPressed: () async {
-                final result = await showSearch(
-                  context: context,
-                  delegate: TeacherSearchDelegate(
-                    fetchTeachersFromFirestore,
-                    showGrid,
-                    _openDetails,
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  'Teachers',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-                if (result != null && result is Map<String, dynamic>) {
-                  _openDetails(context, result);
-                }
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                showGrid ? Icons.list : Icons.grid_view,
-                color: Colors.cyanAccent,
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.cyanAccent),
+                    tooltip: 'Search',
+                    onPressed: () async {
+                      final result = await showSearch(
+                        context: context,
+                        delegate: TeacherSearchDelegate(
+                          fetchTeachersFromFirestore,
+                          showGrid,
+                          _openDetails,
+                        ),
+                      );
+                      if (result != null && result is Map<String, dynamic>) {
+                        _openDetails(context, result);
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      showGrid ? Icons.list : Icons.grid_view,
+                      color: Colors.cyanAccent,
+                    ),
+                    tooltip: showGrid ? 'Show List' : 'Show Grid',
+                    onPressed: () => setState(() => showGrid = !showGrid),
+                  ),
+                ],
               ),
-              tooltip: showGrid ? 'Show List' : 'Show Grid',
-              onPressed: () => setState(() => showGrid = !showGrid),
-            ),
-          ],
-        ),
         body: RefreshIndicator(
           color: Colors.cyanAccent,
           backgroundColor: const Color(0xFF181A2A),
@@ -112,68 +116,130 @@ class _TeachersPageState extends State<TeachersPage> {
           },
           child: Container(
             decoration: BoxDecoration(gradient: backgroundGradient),
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: fetchTeachersFromFirestore(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                // --- SORT THE TEACHERS BY TITLE PRECEDENCE BEFORE DISPLAY ---
-                final teachers = _sortTeachers(
-                  List<Map<String, dynamic>>.from(snapshot.data!),
-                );
-                if (showGrid) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: constraints.maxHeight,
+            child: Column(
+              children: [
+                if (kIsWeb)
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Teachers',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        child: GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 20,
-                                crossAxisSpacing: 20,
-                                childAspectRatio: 0.78,
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.cyanAccent,
                               ),
+                              tooltip: 'Search',
+                              onPressed: () async {
+                                final result = await showSearch(
+                                  context: context,
+                                  delegate: TeacherSearchDelegate(
+                                    fetchTeachersFromFirestore,
+                                    showGrid,
+                                    _openDetails,
+                                  ),
+                                );
+                                if (result != null &&
+                                    result is Map<String, dynamic>) {
+                                  _openDetails(context, result);
+                                }
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                showGrid ? Icons.list : Icons.grid_view,
+                                color: Colors.cyanAccent,
+                              ),
+                              tooltip: showGrid ? 'Show List' : 'Show Grid',
+                              onPressed: () =>
+                                  setState(() => showGrid = !showGrid),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchTeachersFromFirestore(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      // --- SORT THE TEACHERS BY TITLE PRECEDENCE BEFORE DISPLAY ---
+                      final teachers = _sortTeachers(
+                        List<Map<String, dynamic>>.from(snapshot.data!),
+                      );
+                      if (showGrid) {
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: constraints.maxHeight,
+                              ),
+                              child: GridView.builder(
+                                padding: const EdgeInsets.all(16),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 20,
+                                      crossAxisSpacing: 20,
+                                      childAspectRatio: 0.78,
+                                    ),
+                                itemCount: teachers.length,
+                                itemBuilder: (context, index) {
+                                  final teacher = teachers[index];
+                                  return TeacherCard(
+                                    teacher: teacher,
+                                    onTap: () => _openDetails(context, teacher),
+                                    isGrid: true,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(10),
                           itemCount: teachers.length,
                           itemBuilder: (context, index) {
                             final teacher = teachers[index];
-                            return TeacherCard(
-                              teacher: teacher,
-                              onTap: () => _openDetails(context, teacher),
-                              isGrid: true,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: TeacherCard(
+                                teacher: teacher,
+                                onTap: () => _openDetails(context, teacher),
+                                isGrid: false,
+                              ),
                             );
                           },
-                        ),
-                      );
+                        );
+                      }
                     },
-                  );
-                } else {
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(10),
-                    itemCount: teachers.length,
-                    itemBuilder: (context, index) {
-                      final teacher = teachers[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: TeacherCard(
-                          teacher: teacher,
-                          onTap: () => _openDetails(context, teacher),
-                          isGrid: false,
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/teachers', child: content);
+    }
+    return content;
   }
 
   void _openDetails(BuildContext context, Map<String, dynamic> teacher) {

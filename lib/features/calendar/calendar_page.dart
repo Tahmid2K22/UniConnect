@@ -4,6 +4,8 @@ import 'data_models.dart';
 import 'calendar_widgets/index.dart';
 import 'package:uni_connect/features/navigation/side_navigation.dart';
 import '../../firebase/firestore/database.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -170,28 +172,32 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color.fromARGB(255, 11, 11, 34),
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 11, 11, 34),
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            "Academic Calendar",
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          leading: const BackButton(color: Colors.white),
-        ),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
+        backgroundColor: kIsWeb
+            ? Colors.transparent
+            : const Color.fromARGB(255, 11, 11, 34),
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  "Academic Calendar",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const BackButton(color: Colors.white),
+              ),
         body: FutureBuilder<Semester?>(
           future: _semesterFuture,
           builder: (context, snapshot) {
@@ -388,6 +394,17 @@ class _CalendarPageState extends State<CalendarPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  if (kIsWeb) ...[
+                    Text(
+                      "Academic Calendar",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   HeroCard(
                     baseGradient: heroGradient,
                     title: heroTitle,
@@ -427,5 +444,10 @@ class _CalendarPageState extends State<CalendarPage> {
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/calendar', child: content);
+    }
+    return content;
   }
 }

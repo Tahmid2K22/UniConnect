@@ -5,6 +5,9 @@ import 'package:uni_connect/features/auth/login_page.dart';
 import 'package:uni_connect/features/frontpage/front_page.dart';
 import 'package:uni_connect/features/splashscreen/splash_screen.dart';
 import 'package:uni_connect/utils/splash_toggle.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_front_page.dart';
+import 'package:uni_connect/features/web/web_login_page.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -23,9 +26,7 @@ class AuthWrapper extends StatelessWidget {
             return const Scaffold(
               backgroundColor: Color.fromARGB(255, 11, 11, 34),
               body: Center(
-                child: CircularProgressIndicator(
-                  color: Colors.tealAccent,
-                ),
+                child: CircularProgressIndicator(color: Colors.tealAccent),
               ),
             );
           } else if (snapshot.hasError) {
@@ -56,9 +57,9 @@ class AuthWrapper extends StatelessWidget {
               ),
             );
           } else if (snapshot.hasData) {
-            return const FrontPage();
+            return kIsWeb ? const WebFrontPage() : const FrontPage();
           } else {
-            return const LoginPage();
+            return kIsWeb ? const WebLoginPage() : const LoginPage();
           }
         },
       );

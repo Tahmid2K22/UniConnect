@@ -21,6 +21,8 @@ import 'package:uni_connect/utils/cgpa_ranking.dart';
 import 'package:uni_connect/utils/user_cgpa_position.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 const String userCtMarksBox = 'userCtMarksBox';
 const String batchAverageCtMarksBox = 'batchCtAverageBox';
@@ -115,16 +117,32 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
   @override
   Widget build(BuildContext context) {
     final scaffoldKey = GlobalKey<ScaffoldState>();
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
+        backgroundColor: kIsWeb
+            ? Colors.transparent
+            : const Color.fromARGB(255, 11, 11, 34),
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  "Analytics",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const BackButton(color: Colors.white),
+              ),
         body: RefreshIndicator(
           color: Colors.cyanAccent,
           backgroundColor: const Color.fromARGB(255, 11, 11, 34),
@@ -160,14 +178,27 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      "Analytics",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                    if (kIsWeb)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: Text(
+                          "Analytics",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        "Analytics",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 24),
                     const SectionTitle("Monthly Task Completion"),
 
@@ -318,6 +349,11 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/analytics', child: content);
+    }
+    return content;
   }
 
   Future<void> loadCtMarks() async {

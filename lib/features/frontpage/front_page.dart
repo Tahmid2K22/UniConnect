@@ -49,7 +49,7 @@ class _FrontPageState extends State<FrontPage>
   Map<String, dynamic>? upcomingExam;
 
   String _noticeSummary = "";
-  
+
   // Cache computed values to avoid recalculating on every build
   List<TodoTask>? _cachedTasks;
   Map<String, int>? _cachedTodayStats;
@@ -77,7 +77,7 @@ class _FrontPageState extends State<FrontPage>
     _cachedDueSoonTasks = getDueSoonTasks();
     _cachedCompletionStats = getCompletionStatsLast30Days();
   }
-  
+
   Future<void> _loadNotices() async {
     final notices = await fetchNoticesFromFirestore();
     setState(() {
@@ -94,7 +94,8 @@ class _FrontPageState extends State<FrontPage>
   @override
   Widget build(BuildContext context) {
     // Use cached values instead of recomputing
-    final todayStats = _cachedTodayStats ?? {'createdToday': 0, 'completedToday': 0};
+    final todayStats =
+        _cachedTodayStats ?? {'createdToday': 0, 'completedToday': 0};
     final createdToday = todayStats['createdToday']!;
     final completedToday = todayStats['completedToday']!;
 
@@ -127,10 +128,10 @@ class _FrontPageState extends State<FrontPage>
                   _loadRoutineData(),
                   reloadBatchmates(),
                 ]);
-                
+
                 await _loadUpcomingExam();
                 await _loadNotices();
-                
+
                 _computeCachedValues();
 
                 setState(() {
@@ -197,49 +198,49 @@ class _FrontPageState extends State<FrontPage>
                               ),
                             )
                           : _cachedNotices!.isEmpty
-                              ? const SizedBox(
-                                  height: 110,
-                                  child: Center(
-                                    child: Text(
-                                      "No notices found.",
-                                      style: TextStyle(color: Colors.white54),
-                                    ),
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: () =>
-                                      Navigator.pushNamed(context, '/notices'),
-                                  child: SizedBox(
-                                    height: 110,
-                                    child: ShaderMask(
-                                      shaderCallback: (Rect bounds) {
-                                        return const LinearGradient(
-                                          begin: Alignment.centerLeft,
-                                          end: Alignment.centerRight,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.white,
-                                            Colors.white,
-                                            Colors.transparent,
-                                          ],
-                                          stops: [0.0, 0.02, 0.98, 1.0],
-                                        ).createShader(bounds);
-                                      },
-                                      blendMode: BlendMode.dstIn,
-                                      child: ListView(
-                                        scrollDirection: Axis.horizontal,
-                                        children: _cachedNotices!.map((notice) {
-                                          final data = notice['data'] ?? {};
-                                          return NoticeCard(
-                                            title: data['title'] ?? "",
-                                            desc: data['desc'] ?? "",
-                                            time: data['time'] ?? "",
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
+                          ? const SizedBox(
+                              height: 110,
+                              child: Center(
+                                child: Text(
+                                  "No notices found.",
+                                  style: TextStyle(color: Colors.white54),
+                                ),
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () =>
+                                  Navigator.pushNamed(context, '/notices'),
+                              child: SizedBox(
+                                height: 110,
+                                child: ShaderMask(
+                                  shaderCallback: (Rect bounds) {
+                                    return const LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.white,
+                                        Colors.white,
+                                        Colors.transparent,
+                                      ],
+                                      stops: [0.0, 0.02, 0.98, 1.0],
+                                    ).createShader(bounds);
+                                  },
+                                  blendMode: BlendMode.dstIn,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    children: _cachedNotices!.map((notice) {
+                                      final data = notice['data'] ?? {};
+                                      return NoticeCard(
+                                        title: data['title'] ?? "",
+                                        desc: data['desc'] ?? "",
+                                        time: data['time'] ?? "",
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
+                              ),
+                            ),
                     ),
                   ),
 
@@ -270,26 +271,27 @@ class _FrontPageState extends State<FrontPage>
                               scrollDirection: Axis.horizontal,
                               children: (_cachedDueSoonTasks ?? <TodoTask>[])
                                   .map<Widget>((task) {
-                                return GestureDetector(
-                                  onTap: () =>
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/todo',
-                                      ).then((_) {
-                                        _computeCachedValues();
-                                        setState(() {});
-                                      }),
-                                  child: TodoCard(
-                                    title: task.title,
-                                    due: task.dueDate != null
-                                        ? task.dueDate!
-                                              .toLocal()
-                                              .toString()
-                                              .split(' ')[0]
-                                        : "No due date",
-                                  ),
-                                );
-                              }).toList(),
+                                    return GestureDetector(
+                                      onTap: () =>
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/todo',
+                                          ).then((_) {
+                                            _computeCachedValues();
+                                            setState(() {});
+                                          }),
+                                      child: TodoCard(
+                                        title: task.title,
+                                        due: task.dueDate != null
+                                            ? task.dueDate!
+                                                  .toLocal()
+                                                  .toString()
+                                                  .split(' ')[0]
+                                            : "No due date",
+                                      ),
+                                    );
+                                  })
+                                  .toList(),
                             ),
                           ),
                         ),
@@ -621,50 +623,4 @@ String extractName(String? fullName) {
     if (first == -1) return trimmed; // No spaces
     return trimmed.substring(0, first);
   }
-}
-
-String? filterClassForUser(String className, String userRoll) {
-  if (className.trim().isEmpty) return null;
-
-  // Determine user section
-  String? userSection;
-  if (userRoll.compareTo("2207001") >= 0 &&
-      userRoll.compareTo("2207030") <= 0) {
-    userSection = "A1";
-  } else if (userRoll.compareTo("2207031") >= 0 &&
-      userRoll.compareTo("2207060") <= 0) {
-    userSection = "A2";
-  } else if (userRoll.compareTo("2207061") >= 0 &&
-      userRoll.compareTo("2207080") <= 0) {
-    userSection = "B1";
-  } else if (userRoll.compareTo("2207081") >= 0 &&
-      userRoll.compareTo("2207121") <= 0) {
-    userSection = "B2";
-  }
-
-  // Split on '+' in case of multiple sections
-  final parts = className.split('+').map((p) => p.trim()).toList();
-
-  for (final part in parts) {
-    if (part.contains("A1") ||
-        part.contains("A2") ||
-        part.contains("B1") ||
-        part.contains("B2")) {
-      // Only return if section matches user
-      if (userSection != null && part.contains(userSection)) {
-        return part;
-      } else {
-        return "Not for your section";
-      }
-    }
-  }
-
-  // If no section tags found → show as is
-  final hasSectionTag =
-      className.contains("A1") ||
-      className.contains("A2") ||
-      className.contains("B1") ||
-      className.contains("B2");
-
-  return hasSectionTag ? null : className;
 }

@@ -9,6 +9,8 @@ import 'finished_tasks_page.dart';
 
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:uni_connect/features/navigation/side_navigation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -42,58 +44,105 @@ class _TodoPageState extends State<TodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF0E0E2C),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
+        backgroundColor: kIsWeb ? Colors.transparent : const Color(0xFF0E0E2C),
         body: SafeArea(
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                child: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(color: Colors.white),
-                  title: Text(
-                    'To-Do List',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
+              if (!kIsWeb)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                  child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    iconTheme: const IconThemeData(color: Colors.white),
+                    automaticallyImplyLeading: false,
+                    title: Text(
+                      'To-Do List',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
                     ),
+                    actions: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.repeat, color: Colors.cyanAccent),
+                            tooltip: 'Manage Daily Tasks',
+                            onPressed: _showDailyTasksDialog,
+                          ),
+                          SizedBox(width: 8),
+                          IconButton(
+                            icon: Icon(Icons.history, color: Colors.cyanAccent),
+                            tooltip: 'View Finished Tasks',
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                NicePageRoute(page: const FinishedTasksPage()),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  actions: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.repeat, color: Colors.cyanAccent),
-                          tooltip: 'Manage Daily Tasks',
-                          onPressed: _showDailyTasksDialog,
-                        ),
-                        SizedBox(width: 8),
-                        IconButton(
-                          icon: Icon(Icons.history, color: Colors.cyanAccent),
-                          tooltip: 'View Finished Tasks',
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              NicePageRoute(page: const FinishedTasksPage()),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
-              ),
+              if (kIsWeb) ...[
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'To-Do List',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _showDailyTasksDialog,
+                            icon: const Icon(Icons.repeat, size: 18),
+                            label: const Text('Daily Tasks'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple,
+                              foregroundColor: Colors.cyanAccent,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                NicePageRoute(page: const FinishedTasksPage()),
+                              );
+                            },
+                            icon: const Icon(Icons.history, size: 18),
+                            label: const Text('History'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white10,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
 
               Expanded(
                 child: _tasks.isEmpty
@@ -164,6 +213,11 @@ class _TodoPageState extends State<TodoPage> {
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/todo', child: content);
+    }
+    return content;
   }
 
   void _refreshTasks({bool initial = false}) {

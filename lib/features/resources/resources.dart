@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:uni_connect/features/navigation/side_navigation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class ResourcesPage extends StatefulWidget {
   const ResourcesPage({super.key});
@@ -64,34 +66,36 @@ class _ResourcesPageState extends State<ResourcesPage>
       end: Alignment.bottomRight,
     );
 
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
         backgroundColor: const Color(0xFF181A2A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            'Resources',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  color: Colors.cyanAccent.withValues(alpha: 0.3),
-                  blurRadius: 8,
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  'Resources',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.cyanAccent.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
         body: Container(
           decoration: BoxDecoration(gradient: backgroundGradient),
           width: double.infinity,
@@ -113,6 +117,17 @@ class _ResourcesPageState extends State<ResourcesPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  if (kIsWeb) ...[
+                    Text(
+                      'Resources',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                   // Icon with toned down glow
                   Container(
                     decoration: BoxDecoration(
@@ -213,6 +228,11 @@ class _ResourcesPageState extends State<ResourcesPage>
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/resources', child: content);
+    }
+    return content;
   }
 
   // Open google drive

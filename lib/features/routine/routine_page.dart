@@ -8,6 +8,8 @@ import 'collect_data.dart';
 import 'dynamic_routine_page.dart';
 
 import 'package:uni_connect/features/navigation/side_navigation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class RoutinePage extends StatefulWidget {
   const RoutinePage({super.key});
@@ -53,24 +55,79 @@ class _RoutinePageState extends State<RoutinePage>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color(0xFF0F3460),
-        body: RefreshIndicator(
-          onRefresh: () => _loadData(forceRefresh: true),
-          color: Colors.cyanAccent,
-          backgroundColor: const Color(0xFF1A1A2E),
-          child: _buildBody(),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
+        backgroundColor: kIsWeb ? Colors.transparent : const Color(0xFF0F3460),
+        body: Column(
+          children: [
+            if (kIsWeb)
+              Container(
+                margin: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 24,
+                ),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildWebTab("Schedule", 0),
+                    _buildWebTab("Timetable", 1),
+                    _buildWebTab("Assignments", 2),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => _loadData(forceRefresh: true),
+                color: Colors.cyanAccent,
+                backgroundColor: const Color(0xFF1A1A2E),
+                child: _buildBody(),
+              ),
+            ),
+          ],
         ),
-        bottomNavigationBar: _buildNavBar(),
+        bottomNavigationBar: kIsWeb ? null : _buildNavBar(),
         floatingActionButton: _buildRefreshFAB(),
+      ),
+    );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/routine', child: content);
+    }
+    return content;
+  }
+
+  Widget _buildWebTab(String label, int index) {
+    final isActive = _page == index;
+    return InkWell(
+      onTap: () {
+        if (!_isLoading) setState(() => _page = index);
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.cyanAccent : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.black : Colors.white70,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

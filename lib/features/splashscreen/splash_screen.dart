@@ -6,6 +6,8 @@ import 'package:lottie/lottie.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:uni_connect/features/frontpage/front_page.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_front_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -143,7 +145,7 @@ void navigateToFrontPage(BuildContext context) {
     PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 700),
       pageBuilder: (context, animation, secondaryAnimation) =>
-          const FrontPage(),
+          kIsWeb ? const WebFrontPage() : const FrontPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         final offsetAnimation = Tween<Offset>(
           begin: const Offset(0, 0.1),

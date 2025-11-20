@@ -25,11 +25,16 @@ import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
 import 'features/user/user_analytics.dart';
 import 'features/calendar/calendar_page.dart';
+import 'features/web/web_profile_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'features/web/web_front_page.dart';
+import 'features/web/web_login_page.dart';
+import 'widgets/responsive_wrapper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     await dotenv.load(fileName: '.env');
   } catch (e) {
@@ -37,7 +42,9 @@ void main() async {
   }
 
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     debugPrint('Error initializing Firebase: $e');
   }
@@ -87,20 +94,26 @@ class UniConnectApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         // Use MediaQuery to change textScaleFactor globally
-        return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(fontScale)),
-          child: child!,
+        return ResponsiveWrapper(
+          child: MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(fontScale)),
+            child: child!,
+          ),
         );
       },
       home: const AuthWrapper(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/profile':
-            return NicePageRoute(page: const UserProfilePage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebProfilePage() : const UserProfilePage(),
+            );
           case '/frontpage':
-            return NicePageRoute(page: FrontPage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebFrontPage() : const FrontPage(),
+            );
           case '/todo':
             return NicePageRoute(page: const TodoPage());
           case '/routine':
@@ -118,7 +131,9 @@ class UniConnectApp extends StatelessWidget {
           case '/notices':
             return NicePageRoute(page: const NoticesPage());
           case '/login':
-            return NicePageRoute(page: const LoginPage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebLoginPage() : const LoginPage(),
+            );
           case '/settings':
             return NicePageRoute(page: const SettingsPage());
           case '/chat':
