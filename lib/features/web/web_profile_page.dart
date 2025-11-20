@@ -3,9 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uni_connect/features/web/web_layout.dart';
 import 'package:uni_connect/utils/glass_card.dart';
 import 'package:uni_connect/firebase/firestore/database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image/image.dart' as img_lib;
 
 class WebProfilePage extends StatefulWidget {
   const WebProfilePage({super.key});
@@ -52,29 +55,75 @@ class _WebProfilePageState extends State<WebProfilePage> {
   }
 
   Future<void> _saveProfile() async {
-    if (_newImageBytes != null) {
-      final base64Image = base64Encode(_newImageBytes!);
+    if (_newImageBytes == null) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.email == null) return;
+
+      // Show loading
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Uploading profile picture...')),
+      );
+
+      // Resize and compress the image
+      String base64Image = base64Encode(_newImageBytes!);
+
+      try {
+        // Import image package for resizing
+        // This requires: import 'package:image/image.dart' as img;
+        final img = await compute(_resizeImage, _newImageBytes!);
+        if (img != null) {
+          base64Image = base64Encode(img);
+        }
+      } catch (e) {
+        debugPrint('Error resizing image: $e');
+        // Continue with original if resize fails
+      }
+
+      // Update Firestore
+      await FirebaseFirestore.instance
+          .collection('students')
+          .doc(user.email)
+          .update({'profile_pic': base64Image});
+
+      // Update cache
       updateCachedProfilePic(base64Image);
-      // Ideally update Firestore too, but for now we update cache.
-      // In a real app, we'd upload to Storage or save Base64 to Firestore.
-      // The existing app saves Base64 to Firestore for web.
 
-      // We need a method to save to Firestore.
-      // Assuming updateProfilePic logic exists or we implement it here.
-      // For now, we'll just update the local state and show a success message.
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile picture updated!')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile picture updated successfully!')),
+      );
 
       setState(() {
         _newImageBytes = null;
       });
 
-      // Reload to reflect changes
+      // Reload profile
       await reloadUserProfile();
       _loadProfile();
+    } catch (e) {
+      debugPrint('Error saving profile picture: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile picture: $e')),
+      );
     }
+  }
+
+  static Uint8List? _resizeImage(Uint8List bytes) {
+    try {
+      // This will be imported separately
+      final image = img_lib.decodeImage(bytes);
+      if (image != null) {
+        final resized = img_lib.copyResize(image, width: 120);
+        return Uint8List.fromList(img_lib.encodeJpg(resized, quality: 60));
+      }
+    } catch (e) {
+      debugPrint('Image resize error: $e');
+    }
+    return null;
   }
 
   @override
