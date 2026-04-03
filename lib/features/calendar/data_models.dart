@@ -1,4 +1,14 @@
 // features/calendar/data_models.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+DateTime _parseDate(dynamic dateData) {
+  if (dateData == null) return DateTime.now();
+  if (dateData is DateTime) return dateData;
+  if (dateData is Timestamp) return dateData.toDate();
+  if (dateData is String) return DateTime.tryParse(dateData) ?? DateTime.now();
+  if (dateData is int) return DateTime.fromMillisecondsSinceEpoch(dateData);
+  return DateTime.now();
+}
 
 class Semester {
   final DateTime startDate; // Semester official start
@@ -35,15 +45,17 @@ class Semester {
   // Convert Map → Semester
   factory Semester.fromMap(Map<String, dynamic> map) {
     return Semester(
-      startDate: DateTime.parse(map['startDate']),
-      plStart: DateTime.parse(map['plStart']),
-      plEnd: DateTime.parse(map['plEnd']),
-      finalsStart: DateTime.parse(map['finalsStart']),
-      finalsEnd: DateTime.parse(map['finalsEnd']),
-      endDate: DateTime.parse(map['endDate']),
-      vacations: (map['vacations'] as List)
-          .map((v) => Vacation.fromMap(Map<String, dynamic>.from(v)))
-          .toList(),
+      startDate: _parseDate(map['startDate']),
+      plStart: _parseDate(map['plStart']),
+      plEnd: _parseDate(map['plEnd']),
+      finalsStart: _parseDate(map['finalsStart']),
+      finalsEnd: _parseDate(map['finalsEnd']),
+      endDate: _parseDate(map['endDate']),
+      vacations:
+          (map['vacations'] as List?)
+              ?.map((v) => Vacation.fromMap(Map<String, dynamic>.from(v)))
+              .toList() ??
+          [],
     );
   }
 }
@@ -72,8 +84,8 @@ class Vacation {
   factory Vacation.fromMap(Map<String, dynamic> map) {
     return Vacation(
       name: map['name'] ?? '',
-      startDate: DateTime.parse(map['startDate']),
-      endDate: DateTime.parse(map['endDate']),
+      startDate: _parseDate(map['startDate']),
+      endDate: _parseDate(map['endDate']),
     );
   }
 }

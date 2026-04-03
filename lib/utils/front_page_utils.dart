@@ -108,3 +108,49 @@ List<DataModel> getTodayNextClass(List<List<String>> sectionData) {
 
   return [DataModel(period: 'No more classes', data: 'Rest up!', endTime: '')];
 }
+
+String? filterClassForUser(String className, String userRoll) {
+  if (className.trim().isEmpty) return null;
+
+  // Determine user section
+  String? userSection;
+  if (userRoll.compareTo("2207001") >= 0 &&
+      userRoll.compareTo("2207030") <= 0) {
+    userSection = "A1";
+  } else if (userRoll.compareTo("2207031") >= 0 &&
+      userRoll.compareTo("2207060") <= 0) {
+    userSection = "A2";
+  } else if (userRoll.compareTo("2207061") >= 0 &&
+      userRoll.compareTo("2207080") <= 0) {
+    userSection = "B1";
+  } else if (userRoll.compareTo("2207081") >= 0 &&
+      userRoll.compareTo("2207121") <= 0) {
+    userSection = "B2";
+  }
+
+  // Split on '+' in case of multiple sections
+  final parts = className.split('+').map((p) => p.trim()).toList();
+
+  for (final part in parts) {
+    if (part.contains("A1") ||
+        part.contains("A2") ||
+        part.contains("B1") ||
+        part.contains("B2")) {
+      // Only return if section matches user
+      if (userSection != null && part.contains(userSection)) {
+        return part;
+      } else {
+        return "Not for your section";
+      }
+    }
+  }
+
+  // If no section tags found → show as is
+  final hasSectionTag =
+      className.contains("A1") ||
+      className.contains("A2") ||
+      className.contains("B1") ||
+      className.contains("B2");
+
+  return hasSectionTag ? null : className;
+}

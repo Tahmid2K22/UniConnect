@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
-import 'dart:io';
+import 'package:universal_io/io.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
 
@@ -28,18 +30,37 @@ class _SideNavigationState extends State<SideNavigation> {
   }
 
   void _loadProfileImagePath() {
+    if (kIsWeb) return;
     _profileImagePath = loadLocalProfileImagePath();
     setState(() {});
   }
 
+  ImageProvider _getImageProvider(Map<String, dynamic>? profile) {
+    if (kIsWeb) {
+      if (profile != null && profile['profile_pic'] != null) {
+        try {
+          return MemoryImage(base64Decode(profile['profile_pic']));
+        } catch (e) {
+          debugPrint('Error decoding profile pic: $e');
+        }
+      }
+    } else {
+      if (_profileImagePath != null) {
+        return FileImage(File(_profileImagePath!));
+      }
+    }
+    return const AssetImage('assets/profile/profile.jpg');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profilePic = CircleAvatar(
-      radius: 32,
-      backgroundImage: _profileImagePath != null
-          ? FileImage(File(_profileImagePath!))
-          : AssetImage('assets/profile/profile.jpg') as ImageProvider,
-    );
+    // Helper to build avatar
+    Widget buildAvatar(Map<String, dynamic>? profile) {
+      return CircleAvatar(
+        radius: 32,
+        backgroundImage: _getImageProvider(profile),
+      );
+    }
 
     final navItems = [
       {"icon": Icons.home, "label": "Home", "route": "/frontpage"},
@@ -132,7 +153,7 @@ class _SideNavigationState extends State<SideNavigation> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Row(
                         children: [
-                          profilePic,
+                          buildAvatar(null),
                           SizedBox(width: 14),
                           Expanded(child: CircularProgressIndicator()),
                         ],
@@ -143,7 +164,7 @@ class _SideNavigationState extends State<SideNavigation> {
                       final profile = snapshot.data!;
                       return Row(
                         children: [
-                          profilePic,
+                          buildAvatar(profile),
                           SizedBox(width: 14),
                           Expanded(
                             child: Column(

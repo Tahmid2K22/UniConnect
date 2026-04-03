@@ -13,17 +13,21 @@ Map<String, dynamic> parseCtMarksFromProfile(
     if (match == null) continue;
 
     final courseName = match.group(1)!;
-    final ctNumber = int.parse(match.group(2)!); // For ordering
     final totalMark = num.parse(match.group(3)!);
 
     final obtained = (value as List).isNotEmpty ? value[0] as num : 0;
 
+    // NOTE:
+    // We intentionally DO NOT pad missing CT numbers with placeholder
+    // entries like [0, total]. That padding was creating extra "empty"
+    // bars/rows whenever a new CT appeared with a higher CT number,
+    // since all the skipped CTs were back-filled as 0.
+    //
+    // Instead, we only keep the actual CT records that exist in Firestore.
+    // The UI widgets then simply render however many CTs exist for each
+    // course.
     courses.putIfAbsent(courseName, () => []);
-    // Ensure lists are in correct order. Insert at ctNumber - 1
-    while (courses[courseName]!.length < ctNumber) {
-      courses[courseName]!.add([0, totalMark]);
-    }
-    courses[courseName]![ctNumber - 1] = [obtained, totalMark];
+    courses[courseName]!.add([obtained, totalMark]);
   }
 
   return {'courses': courses};

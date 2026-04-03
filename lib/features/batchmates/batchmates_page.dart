@@ -9,6 +9,8 @@ import 'package:uni_connect/features/navigation/side_navigation.dart';
 
 import '../../utils/batchmate_card.dart';
 import '../../widgets/batchmate_search.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 class BatchmatesPage extends StatefulWidget {
   const BatchmatesPage({super.key});
@@ -29,55 +31,57 @@ class _BatchmatesPageState extends State<BatchmatesPage> {
       end: Alignment.bottomRight,
     );
 
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           _scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: _scaffoldKey,
-        endDrawer: const SideNavigation(),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
         backgroundColor: const Color(0xFF181A2A),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            'Batchmates',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.search, color: Colors.cyanAccent),
-              tooltip: 'Search',
-              onPressed: () async {
-                final result = await showSearch(
-                  context: context,
-                  delegate: BatchmateSearchDelegate(
-                    fetchBatchmatesFromFirestore,
-                    showGrid,
-                    _openDetails,
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  'Batchmates',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                );
-                if (result != null && result is Map<String, dynamic>) {
-                  _openDetails(context, result);
-                }
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                showGrid ? Icons.list : Icons.grid_view,
-                color: Colors.cyanAccent,
+                ),
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.search, color: Colors.cyanAccent),
+                    tooltip: 'Search',
+                    onPressed: () async {
+                      final result = await showSearch(
+                        context: context,
+                        delegate: BatchmateSearchDelegate(
+                          fetchBatchmatesFromFirestore,
+                          showGrid,
+                          _openDetails,
+                        ),
+                      );
+                      if (result != null && result is Map<String, dynamic>) {
+                        _openDetails(context, result);
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      showGrid ? Icons.list : Icons.grid_view,
+                      color: Colors.cyanAccent,
+                    ),
+                    tooltip: showGrid ? 'Show List' : 'Show Grid',
+                    onPressed: () => setState(() => showGrid = !showGrid),
+                  ),
+                ],
               ),
-              tooltip: showGrid ? 'Show List' : 'Show Grid',
-              onPressed: () => setState(() => showGrid = !showGrid),
-            ),
-          ],
-        ),
         body: RefreshIndicator(
           color: Colors.cyanAccent,
           backgroundColor: const Color(0xFF181A2A),
@@ -87,77 +91,141 @@ class _BatchmatesPageState extends State<BatchmatesPage> {
           },
           child: Container(
             decoration: BoxDecoration(gradient: backgroundGradient),
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: fetchBatchmatesFromFirestore(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final batchmates = List<Map<String, dynamic>>.from(
-                  snapshot.data!,
-                );
-                batchmates.sort((a, b) {
-                  final aRoll = int.tryParse(a['roll'].toString());
-                  final bRoll = int.tryParse(b['roll'].toString());
-                  if (aRoll != null && bRoll != null) {
-                    return aRoll.compareTo(bRoll);
-                  } else {
-                    return a['roll'].toString().compareTo(b['roll'].toString());
-                  }
-                });
-
-                if (showGrid) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      return ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: constraints.maxHeight,
+            child: Column(
+              children: [
+                if (kIsWeb)
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Batchmates',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        child: GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 20,
-                                crossAxisSpacing: 20,
-                                childAspectRatio: 0.78,
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.cyanAccent,
                               ),
+                              tooltip: 'Search',
+                              onPressed: () async {
+                                final result = await showSearch(
+                                  context: context,
+                                  delegate: BatchmateSearchDelegate(
+                                    fetchBatchmatesFromFirestore,
+                                    showGrid,
+                                    _openDetails,
+                                  ),
+                                );
+                                if (result != null &&
+                                    result is Map<String, dynamic>) {
+                                  _openDetails(context, result);
+                                }
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                showGrid ? Icons.list : Icons.grid_view,
+                                color: Colors.cyanAccent,
+                              ),
+                              tooltip: showGrid ? 'Show List' : 'Show Grid',
+                              onPressed: () =>
+                                  setState(() => showGrid = !showGrid),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                Expanded(
+                  child: FutureBuilder<List<Map<String, dynamic>>>(
+                    future: fetchBatchmatesFromFirestore(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final batchmates = List<Map<String, dynamic>>.from(
+                        snapshot.data!,
+                      );
+                      batchmates.sort((a, b) {
+                        final aRoll = int.tryParse(a['roll'].toString());
+                        final bRoll = int.tryParse(b['roll'].toString());
+                        if (aRoll != null && bRoll != null) {
+                          return aRoll.compareTo(bRoll);
+                        } else {
+                          return a['roll'].toString().compareTo(
+                            b['roll'].toString(),
+                          );
+                        }
+                      });
+
+                      if (showGrid) {
+                        return LayoutBuilder(
+                          builder: (context, constraints) {
+                            return ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: constraints.maxHeight,
+                              ),
+                              child: GridView.builder(
+                                padding: const EdgeInsets.all(16),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 20,
+                                      crossAxisSpacing: 20,
+                                      childAspectRatio: 0.78,
+                                    ),
+                                itemCount: batchmates.length,
+                                itemBuilder: (context, index) {
+                                  final mate = batchmates[index];
+                                  return BatchmateCard(
+                                    mate: mate,
+                                    onTap: () => _openDetails(context, mate),
+                                    isGrid: true,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(10),
                           itemCount: batchmates.length,
                           itemBuilder: (context, index) {
                             final mate = batchmates[index];
-                            return BatchmateCard(
-                              mate: mate,
-                              onTap: () => _openDetails(context, mate),
-                              isGrid: true,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: BatchmateCard(
+                                mate: mate,
+                                onTap: () => _openDetails(context, mate),
+                                isGrid: false,
+                              ),
                             );
                           },
-                        ),
-                      );
+                        );
+                      }
                     },
-                  );
-                } else {
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(10),
-                    itemCount: batchmates.length,
-                    itemBuilder: (context, index) {
-                      final mate = batchmates[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: BatchmateCard(
-                          mate: mate,
-                          onTap: () => _openDetails(context, mate),
-                          isGrid: false,
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/batchmates', child: content);
+    }
+    return content;
   }
 
   void _openDetails(BuildContext context, Map<String, dynamic> mate) {

@@ -6,6 +6,7 @@ import 'firebase/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'utils/font_scale.dart';
 import 'utils/splash_toggle.dart';
+import 'utils/data_preloader.dart';
 
 import 'package:uni_connect/features/navigation/transition.dart';
 import 'package:uni_connect/features/auth/login_page.dart';
@@ -22,28 +23,59 @@ import 'package:uni_connect/features/frontpage/front_page.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
+import 'features/resources/models/resource_item.dart';
 import 'features/user/user_analytics.dart';
 import 'features/calendar/calendar_page.dart';
+import 'features/web/web_profile_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'features/web/web_front_page.dart';
+import 'features/web/web_login_page.dart';
+import 'widgets/responsive_wrapper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('Error loading .env file: $e');
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint('Error initializing Firebase: $e');
+  }
+
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
-  await Hive.openBox<TodoTask>('todoBox');
-  await Hive.openBox<TodoTask>('dailyTaskBox');
-  await Hive.openBox('profileBox');
-  await Hive.openBox('userBox');
-  await Hive.openBox('batchmatesBox');
-  await Hive.openBox('teachersBox');
-  await Hive.openBox('examsBox');
-  await Hive.openBox('noticesBox');
-  await Hive.openBox('settingsBox');
-  await Hive.openBox('goals');
-  await Hive.openBox('goals_history');
-  await Hive.openBox('calendarBox');
+  Hive.registerAdapter(ResourceTypeAdapter());
+  Hive.registerAdapter(ResourceItemAdapter());
+
+  // Open all Hive boxes in parallel for faster startup
+  await Future.wait([
+    Hive.openBox<TodoTask>('todoBox'),
+    Hive.openBox<TodoTask>('dailyTaskBox'),
+    Hive.openBox('profileBox'),
+    Hive.openBox('userBox'),
+    Hive.openBox('batchmatesBox'),
+    Hive.openBox('teachersBox'),
+    Hive.openBox('examsBox'),
+    Hive.openBox('noticesBox'),
+    Hive.openBox('settingsBox'),
+    Hive.openBox('goals'),
+    Hive.openBox('goals_history'),
+    Hive.openBox('calendarBox'),
+    Hive.openBox('userCtMarksBox'),
+    Hive.openBox('calendarNotesBox'),
+    Hive.openBox<ResourceItem>('resourcesBox'),
+  ]);
+
+  // Preload critical data in background
+  DataPreloader.preloadCriticalData();
 
   runApp(
     MultiProvider(
@@ -67,20 +99,26 @@ class UniConnectApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         // Use MediaQuery to change textScaleFactor globally
-        return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(fontScale)),
-          child: child!,
+        return ResponsiveWrapper(
+          child: MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(fontScale)),
+            child: child!,
+          ),
         );
       },
       home: const AuthWrapper(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/profile':
-            return NicePageRoute(page: const UserProfilePage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebProfilePage() : const UserProfilePage(),
+            );
           case '/frontpage':
-            return NicePageRoute(page: FrontPage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebFrontPage() : const FrontPage(),
+            );
           case '/todo':
             return NicePageRoute(page: const TodoPage());
           case '/routine':
@@ -98,7 +136,9 @@ class UniConnectApp extends StatelessWidget {
           case '/notices':
             return NicePageRoute(page: const NoticesPage());
           case '/login':
-            return NicePageRoute(page: const LoginPage());
+            return NicePageRoute(
+              page: kIsWeb ? const WebLoginPage() : const LoginPage(),
+            );
           case '/settings':
             return NicePageRoute(page: const SettingsPage());
           case '/chat':

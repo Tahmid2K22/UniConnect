@@ -8,29 +8,45 @@ import 'package:provider/provider.dart';
 import 'package:uni_connect/utils/font_scale.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
+import 'package:uni_connect/utils/guest_service.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final content = Scaffold(
       backgroundColor: const Color(0xFF121232),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          'Settings',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      appBar: kIsWeb
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: Colors.white),
+              title: Text(
+                'Settings',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          if (kIsWeb) ...[
+            Text(
+              'Settings',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
           // About Section
           Container(
             padding: const EdgeInsets.all(20),
@@ -252,6 +268,11 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/settings', child: content);
+    }
+    return content;
   }
 
   // Logout button
@@ -283,6 +304,7 @@ class SettingsPage extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
+              await GuestService.logoutGuest();
               await FirebaseAuth.instance.signOut();
               Navigator.pushNamedAndRemoveUntil(
                 context,

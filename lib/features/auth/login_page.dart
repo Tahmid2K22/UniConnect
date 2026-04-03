@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:uni_connect/firebase/auth/auth.dart';
+import 'package:uni_connect/utils/guest_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -63,6 +64,14 @@ class _LoginPageState extends State<LoginPage>
       );
     }
     setState(() => _isLoading = false);
+  }
+
+  Future<void> _handleGuestSignIn() async {
+    setState(() => _isLoading = true);
+    await GuestService.loginAsGuest();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/frontpage');
+    }
   }
 
   @override
@@ -186,6 +195,25 @@ class _LoginPageState extends State<LoginPage>
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _isLoading ? null : _handleGuestSignIn,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 20,
+                        ),
+                      ),
+                      child: Text(
+                        "Continue as Guest",
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),

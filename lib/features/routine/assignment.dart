@@ -2,12 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uni_connect/utils/AnimatedAssignmentCard.dart';
 
-class AssignmentPage extends StatelessWidget {
+class AssignmentPage extends StatefulWidget {
   final List<List<String>> assignments;
   const AssignmentPage({super.key, required this.assignments});
 
   @override
+  State<AssignmentPage> createState() => _AssignmentPageState();
+}
+
+class _AssignmentPageState extends State<AssignmentPage> 
+    with AutomaticKeepAliveClientMixin {
+  
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
@@ -47,7 +58,7 @@ class AssignmentPage extends StatelessWidget {
             end: Alignment.bottomRight,
           ),
         ),
-        child: assignments.isEmpty || assignments[0][0].isEmpty
+        child: widget.assignments.isEmpty || widget.assignments[0][0].isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -74,13 +85,13 @@ class AssignmentPage extends StatelessWidget {
                   vertical: 30,
                   horizontal: 10,
                 ),
-                itemCount: assignments.length,
+                itemCount: widget.assignments.length,
                 itemBuilder: (context, index) {
                   return AnimatedAssignmentCard(
-                    key: ValueKey(index), // <-- Add this line
+                    key: ValueKey(index),
                     index: index,
                     title: 'Assignment ${index + 1}',
-                    description: assignments[index][0],
+                    description: widget.assignments[index][0],
                   );
                 },
               ),

@@ -29,23 +29,27 @@ class Routine extends StatefulWidget {
   State<Routine> createState() => _RoutineState();
 }
 
-class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
+class _RoutineState extends State<Routine> 
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   String _selectedSection = 'Section A';
   List<DataModel> _displayData = [];
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 400),
     );
     _scaleAnimation = Tween<double>(
-      begin: 0.95,
+      begin: 0.98,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     _loadSection();
     _loadProfile();
     _controller.forward();
@@ -59,6 +63,7 @@ class _RoutineState extends State<Routine> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       appBar: AppBar(
         elevation: 10,

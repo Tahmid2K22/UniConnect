@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 
 /// Fetches all routine and assignment data from your Google Apps Script endpoint.
 /// Expects a JSON structure like:
@@ -11,24 +13,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// }
 class CollectData {
   static Future<Map<String, List<List<String>>>> collectAllData() async {
-    // Replace with your actual Apps Script URL:
-    final scriptURL =
-        "https://script.google.com/macros/s/AKfycbwV26WyUpb8zgfyWGlepwMP3JS3Vo6YamCIlYaJR03KGtdSDbIeqC80cFITkh04HjZfAQ/exec";
-    final response = await http.get(Uri.parse(scriptURL));
-    if (response.statusCode == 200) {
-      //print('Raw response: ${response.body}');
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      //print('Data keys: ${data.keys}');
-      return data.map(
-        (key, value) => MapEntry(
-          key,
-          (value as List)
-              .map((e) => (e as List).map((cell) => cell.toString()).toList())
-              .toList(),
-        ),
-      );
-    } else {
-      throw Exception('Failed to load data from Google Apps Script');
+    try {
+      final scriptURL =
+          "https://script.google.com/macros/s/AKfycbwV26WyUpb8zgfyWGlepwMP3JS3Vo6YamCIlYaJR03KGtdSDbIeqC80cFITkh04HjZfAQ/exec";
+      
+      final response = await http
+          .get(Uri.parse(scriptURL))
+          .timeout(const Duration(seconds: 15));
+          
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return data.map(
+          (key, value) => MapEntry(
+            key,
+            (value as List)
+                .map((e) => (e as List).map((cell) => cell.toString()).toList())
+                .toList(),
+          ),
+        );
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } on TimeoutException {
+      debugPrint('Routine data fetch timeout');
+      throw Exception('Request timeout - please check your connection');
+    } catch (e) {
+      debugPrint('Error fetching routine data: $e');
+      throw Exception('Failed to load routine data: $e');
     }
   }
 }

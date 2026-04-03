@@ -1,16 +1,17 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CountdownCard extends StatefulWidget {
   final String title;
-  final int daysLeft;
+  final DateTime targetDate;
   final IconData icon;
   final List<Color> gradientColors;
 
   const CountdownCard({
     super.key,
     required this.title,
-    required this.daysLeft,
+    required this.targetDate,
     required this.icon,
     this.gradientColors = const [Colors.blue, Colors.purple, Colors.black],
   });
@@ -21,23 +22,17 @@ class CountdownCard extends StatefulWidget {
 
 class _CountdownCardState extends State<CountdownCard>
     with TickerProviderStateMixin {
-  late AnimationController _numberController;
-  late Animation<int> _numberAnimation;
   late AnimationController _gradientController;
+  Timer? _timer;
+  Duration _timeLeft = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-
-    _numberController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    );
-    _numberAnimation = IntTween(begin: 0, end: widget.daysLeft).animate(
-      CurvedAnimation(parent: _numberController, curve: Curves.easeOut),
-    );
-
-    _numberController.forward();
+    _calculateTimeLeft();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _calculateTimeLeft();
+    });
 
     _gradientController = AnimationController(
       vsync: this,
@@ -45,9 +40,27 @@ class _CountdownCardState extends State<CountdownCard>
     )..repeat(reverse: true);
   }
 
+  void _calculateTimeLeft() {
+    final now = DateTime.now();
+    if (widget.targetDate.isAfter(now)) {
+      if (mounted) {
+        setState(() {
+          _timeLeft = widget.targetDate.difference(now);
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _timeLeft = Duration.zero;
+        });
+      }
+      _timer?.cancel();
+    }
+  }
+
   @override
   void dispose() {
-    _numberController.dispose();
+    _timer?.cancel();
     _gradientController.dispose();
     super.dispose();
   }
@@ -64,18 +77,23 @@ class _CountdownCardState extends State<CountdownCard>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_numberController, _gradientController]),
+      animation: _gradientController,
       builder: (context, _) {
+        final days = _timeLeft.inDays;
+        final hours = _timeLeft.inHours % 24;
+        final mins = _timeLeft.inMinutes % 60;
+        final secs = _timeLeft.inSeconds % 60;
+
         return Container(
-          height: 240, // reduced height
-          width: 200, // slightly slimmer
+          height: 240,
+          width: 200,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
             gradient: _animatedGradient(),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 10,
                 spreadRadius: 1,
                 offset: const Offset(0, 5),
@@ -85,70 +103,90 @@ class _CountdownCardState extends State<CountdownCard>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withOpacity(0.25),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.4),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(widget.icon, size: 32, color: Colors.white),
-              ),
-
-              // Days Left Number
-              Column(
-                children: [
-                  FittedBox(
-                    child: Text(
-                      "${_numberAnimation.value}",
-                      style: GoogleFonts.robotoMono(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.5,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.5),
-                            offset: const Offset(2, 2),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "days left",
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-
-              // Title (max 2 lines with fade)
+              // Event Title
               Text(
                 widget.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                   height: 1.2,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // 2x2 Grid using Wrap or Table
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildTimeSlot(days.toString().padLeft(2, '0'), "Days"),
+                        const SizedBox(width: 12),
+                        _buildTimeSlot(
+                          hours.toString().padLeft(2, '0'),
+                          "Hours",
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildTimeSlot(mins.toString().padLeft(2, '0'), "Mins"),
+                        const SizedBox(width: 12),
+                        _buildTimeSlot(secs.toString().padLeft(2, '0'), "Secs"),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTimeSlot(String value, String label) {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.robotoMono(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.cyanAccent,
+            ),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.poppins(fontSize: 10, color: Colors.white70),
+          ),
+        ],
+      ),
     );
   }
 }

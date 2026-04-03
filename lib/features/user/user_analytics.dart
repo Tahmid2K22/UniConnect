@@ -17,10 +17,13 @@ import 'package:uni_connect/widgets/full_cgpa_ranking_chart.dart';
 import 'package:uni_connect/widgets/cgpa_pie_chart.dart';
 
 import 'package:uni_connect/utils/ct_comparison_entries.dart';
+import 'package:uni_connect/models/ct_comparison_entry.dart';
 import 'package:uni_connect/utils/cgpa_ranking.dart';
 import 'package:uni_connect/utils/user_cgpa_position.dart';
 
 import 'package:uni_connect/firebase/firestore/database.dart';
+import 'package:flutter/foundation.dart';
+import 'package:uni_connect/features/web/web_layout.dart';
 
 const String userCtMarksBox = 'userCtMarksBox';
 const String batchAverageCtMarksBox = 'batchCtAverageBox';
@@ -115,16 +118,32 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
   @override
   Widget build(BuildContext context) {
     final scaffoldKey = GlobalKey<ScaffoldState>();
-    return GestureDetector(
+    final content = GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.delta.dx < -10) {
+        if (!kIsWeb && details.delta.dx < -10) {
           scaffoldKey.currentState?.openEndDrawer();
         }
       },
       child: Scaffold(
         key: scaffoldKey,
-        endDrawer: const SideNavigation(),
-        backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+        endDrawer: kIsWeb ? null : const SideNavigation(),
+        backgroundColor: kIsWeb
+            ? Colors.transparent
+            : const Color.fromARGB(255, 11, 11, 34),
+        appBar: kIsWeb
+            ? null
+            : AppBar(
+                backgroundColor: const Color.fromARGB(255, 11, 11, 34),
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  "Analytics",
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const BackButton(color: Colors.white),
+              ),
         body: RefreshIndicator(
           color: Colors.cyanAccent,
           backgroundColor: const Color.fromARGB(255, 11, 11, 34),
@@ -160,14 +179,27 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      "Analytics",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
+                    if (kIsWeb)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: Text(
+                          "Analytics",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        "Analytics",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 24),
                     const SectionTitle("Monthly Task Completion"),
 
@@ -208,7 +240,8 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                       const SizedBox(height: 30),
                     ],
                     const SectionTitle("CT Marks Histogram"),
-                    if ((ctMarksData!['courses'] as Map).isEmpty)
+                    if (ctMarksData == null ||
+                        (ctMarksData!['courses'] as Map).isEmpty)
                       Column(
                         children: [
                           const SizedBox(height: 12),
@@ -227,7 +260,8 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                       CtMarksHistogram(data: ctMarksData!),
                     const SizedBox(height: 24),
 
-                    if ((ctMarksData!['courses'] as Map).isEmpty) ...[
+                    if (ctMarksData == null ||
+                        (ctMarksData!['courses'] as Map).isEmpty) ...[
                       const SectionTitle("Your CT Marks vs. Batch Average"),
                       const SizedBox(height: 12),
                       Text(
@@ -239,19 +273,56 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                    ] else if (ctMarksAverageData != null) ...[
+                      const SectionTitle("Your CT Marks vs. Batch Average"),
+                      Builder(
+                        builder: (context) {
+                          final entries = getCtComparisonEntries(
+                            ctMarksData!,
+                            ctMarksAverageData!,
+                          );
+                          if (entries.isEmpty) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12.0,
+                              ),
+                              child: Text(
+                                "Not enough data to compare with batch average yet.",
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white54,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CtComparisonChart(entries: entries),
+                              const SizedBox(height: 12),
+                              _CtComparisonSummary(entries: entries),
+                            ],
+                          );
+                        },
+                      ),
                     ] else ...[
                       const SectionTitle("Your CT Marks vs. Batch Average"),
-                      CtComparisonChart(
-                        entries: getCtComparisonEntries(
-                          ctMarksData!,
-                          ctMarksAverageData!,
+                      const SizedBox(height: 12),
+                      Text(
+                        "Batch average data is still loading.",
+                        style: GoogleFonts.poppins(
+                          color: Colors.white54,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      // keep legend + summary the same
                     ],
 
                     const SectionTitle("CT Marks Details"),
-                    if ((ctMarksData!['courses'] as Map).isEmpty)
+                    if (ctMarksData == null ||
+                        (ctMarksData!['courses'] as Map).isEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Text(
@@ -318,6 +389,11 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
         ),
       ),
     );
+
+    if (kIsWeb) {
+      return WebLayout(currentRoute: '/analytics', child: content);
+    }
+    return content;
   }
 
   Future<void> loadCtMarks() async {
@@ -366,18 +442,17 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       if (match == null) continue;
 
       final courseName = match.group(1)!;
-      final ctNumber = int.parse(match.group(2)!);
       final totalMark = num.parse(match.group(3)!);
 
       final obtained = (value as List).isNotEmpty ? value[0] as num : 0;
 
+      // Same logic as the front page:
+      // do NOT pad missing CT numbers, only store real records.
+      // Padding was the cause of the extra empty entries.
       if (!courses.containsKey(courseName)) {
         courses[courseName] = [];
       }
-      while (courses[courseName]!.length < ctNumber) {
-        courses[courseName]!.add([0, totalMark]);
-      }
-      courses[courseName]![ctNumber - 1] = [obtained, totalMark];
+      courses[courseName]!.add([obtained, totalMark]);
     }
 
     return {'courses': courses};
@@ -444,14 +519,12 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       if (match == null) continue;
 
       final course = match.group(1)!;
-      final ctNum = int.parse(match.group(2)!);
       final total = int.parse(match.group(3)!);
 
+      // Just like user CT data, we do NOT pad missing CT slots here.
+      // We only keep actual averaged CTs that exist in the dataset.
       courses.putIfAbsent(course, () => []);
-      while (courses[course]!.length < ctNum) {
-        courses[course]!.add([0, total]);
-      }
-      courses[course]![ctNum - 1] = [entry.value, total];
+      courses[course]!.add([entry.value, total]);
     }
 
     return {'courses': courses};
@@ -572,5 +645,38 @@ class _UserAnalyticsPageState extends State<UserAnalyticsPage> {
       print("❌ Error loading batch CT average: $e");
       return null;
     }
+  }
+}
+
+class _CtComparisonSummary extends StatelessWidget {
+  final List<CtComparisonEntry> entries;
+  const _CtComparisonSummary({required this.entries});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: entries.map((e) {
+        final diff = e.userPercent - e.avgPercent;
+        final bool better = diff >= 0;
+        final String sign = better ? "+" : "-";
+        final String label =
+            "${e.course} CT${e.ctNumber}: $sign${diff.abs().toStringAsFixed(1)}% "
+            "${better ? "above" : "below"} batch average";
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2.0),
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: better
+                  ? const Color.fromARGB(255, 70, 255, 24)
+                  : const Color.fromARGB(255, 255, 99, 71),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        );
+      }).toList(),
+    );
   }
 }
