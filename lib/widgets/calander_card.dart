@@ -1,28 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../features/calendar/data_models.dart';
+import '../features/calendar/calendar_uitils.dart';
 import '../utils/glass_card.dart';
 import '../firebase/firestore/database.dart';
 
 class AcademicCalendarWidget extends StatelessWidget {
   const AcademicCalendarWidget({super.key});
-
-  double calculateSemesterProgress(DateTime today, Semester semester) {
-    final semesterStart = semester.startDate;
-    final semesterEnd = semester.finalsEnd;
-    final totalDays = semesterEnd.difference(semesterStart).inDays + 1;
-
-    int passedDays;
-    if (today.isBefore(semesterStart)) {
-      passedDays = 0;
-    } else if (today.isAfter(semesterEnd)) {
-      passedDays = totalDays;
-    } else {
-      passedDays = today.difference(semesterStart).inDays + 1;
-    }
-
-    return (passedDays / totalDays).clamp(0.0, 1.0);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,19 +30,21 @@ class AcademicCalendarWidget extends StatelessWidget {
         final semester = Semester.fromMap(snapshot.data!);
         final today = DateTime.now();
 
-        final semesterProgress = calculateSemesterProgress(today, semester);
+        final status = getCurrentCalendarStatus(semester, today);
+        final semesterProgress = status.heroProgress;
 
+        final t = stripTime(today);
         final currentVacation = semester.vacations.firstWhere(
           (v) =>
-              today.isAfter(v.startDate.subtract(const Duration(days: 1))) &&
-              today.isBefore(v.endDate.add(const Duration(days: 1))),
+              !t.isBefore(stripTime(v.startDate)) &&
+              !t.isAfter(stripTime(v.endDate)),
           orElse: () =>
               Vacation(name: "", startDate: DateTime(0), endDate: DateTime(0)),
         );
         final isVacationActive = currentVacation.name.isNotEmpty;
 
         final nextVacation = semester.vacations.firstWhere(
-          (v) => v.startDate.isAfter(today),
+          (v) => stripTime(v.startDate).isAfter(t),
           orElse: () =>
               Vacation(name: "", startDate: DateTime(0), endDate: DateTime(0)),
         );
@@ -79,19 +65,11 @@ class AcademicCalendarWidget extends StatelessWidget {
                         // Header
                         Flexible(
                           child: Text(
-                            today.isBefore(semester.startDate)
-                                ? "Semester Starts Soon"
-                                : today.isAfter(semester.finalsEnd)
-                                ? "Semester Ended 🎉"
-                                : isVacationActive
-                                ? currentVacation.name
-                                : today.isAfter(semester.finalsStart)
-                                ? "Term Finals"
-                                : "Week ${((today.difference(semester.startDate).inDays + 1) / 7).ceil()}",
+                            status.heroTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.pressStart2p(
-                              fontSize: 20,
+                              fontSize: 16,
                               color: Colors.cyanAccent,
                               fontWeight: FontWeight.bold,
                             ),
@@ -102,11 +80,7 @@ class AcademicCalendarWidget extends StatelessWidget {
                         // Subtitle
                         Flexible(
                           child: Text(
-                            today.isBefore(semester.startDate)
-                                ? "Semester starts in ${semester.startDate.difference(today).inDays + 1} days"
-                                : today.isAfter(semester.finalsEnd)
-                                ? "New calendar will be available soon"
-                                : "Semester ends in ${semester.finalsEnd.difference(today).inDays + 1} days",
+                            status.heroSubtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
@@ -115,6 +89,60 @@ class AcademicCalendarWidget extends StatelessWidget {
                             ),
                           ),
                         ),
+
+                        // Active Notes
+                        if (getEventNotes(status.heroTitle).isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: getEventNotes(status.heroTitle).map((
+                                  note,
+                                ) {
+                                  return Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amberAccent.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.amberAccent.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.push_pin_rounded,
+                                          color: Colors.amberAccent,
+                                          size: 10,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          note,
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+
                         const SizedBox(height: 6),
 
                         // Progress
@@ -137,16 +165,16 @@ class AcademicCalendarWidget extends StatelessWidget {
                                   ? "Reopens in"
                                   : "Next Vacation",
                               value: isVacationActive
-                                  ? "${currentVacation.endDate.difference(today).inDays + 1}d"
+                                  ? "${stripTime(currentVacation.endDate).difference(t).inDays}d"
                                   : nextVacation.name.isNotEmpty
-                                  ? "${nextVacation.startDate.difference(today).inDays + 1}d"
+                                  ? "${stripTime(nextVacation.startDate).difference(t).inDays}d"
                                   : "-",
                             ),
                             _MiniInfoBox(
                               title: "Finals",
-                              value: today.isBefore(semester.finalsStart)
-                                  ? "${semester.finalsStart.difference(today).inDays + 1}d"
-                                  : today.isAfter(semester.finalsEnd)
+                              value: t.isBefore(stripTime(semester.finalsStart))
+                                  ? "${stripTime(semester.finalsStart).difference(t).inDays}d"
+                                  : t.isAfter(stripTime(semester.finalsEnd))
                                   ? "Done"
                                   : "Now",
                             ),

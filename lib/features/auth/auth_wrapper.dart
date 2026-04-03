@@ -8,6 +8,7 @@ import 'package:uni_connect/utils/splash_toggle.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uni_connect/features/web/web_front_page.dart';
 import 'package:uni_connect/features/web/web_login_page.dart';
+import 'package:uni_connect/utils/guest_service.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -18,6 +19,8 @@ class AuthWrapper extends StatelessWidget {
 
     if (showSplash) {
       return const SplashScreen();
+    } else if (GuestService.isGuestUser) {
+      return kIsWeb ? const WebFrontPage() : const FrontPage();
     } else {
       return StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),

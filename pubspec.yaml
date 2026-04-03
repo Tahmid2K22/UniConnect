@@ -64,6 +64,14 @@ dependencies:
   http: ^1.1.0
   shared_preferences: ^2.2.3
   universal_io: ^2.3.1
+  file_picker: ^10.3.10
+  open_filex: ^4.7.0
+  flutter_image_compress: ^2.4.0
+  photo_view: ^0.15.0
+  any_link_preview: ^3.0.3
+  uuid: ^4.5.3
+  # Let's add them. Wait, doing a dry run with flutter pub add might be safer to ensure resolving.
+
 
 dev_dependencies:
   flutter_test:
@@ -105,6 +113,7 @@ flutter:
     - assets/teachers.json
     - assets/exams.json
     - assets/notices.json
+    - assets/calendar_demo.json
     - assets/animations/
     - .env
   uses-material-design: true

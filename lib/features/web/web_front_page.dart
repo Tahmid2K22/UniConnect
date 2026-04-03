@@ -148,31 +148,34 @@ class _WebFrontPageState extends State<WebFrontPage> {
           final isMobile = constraints.maxWidth < 768;
           final isTablet =
               constraints.maxWidth >= 768 && constraints.maxWidth < 1024;
+          final sectionSpacing = isMobile ? 16.0 : (isTablet ? 20.0 : 24.0);
+          final pagePadding =
+              EdgeInsets.all(isMobile ? 16 : (isTablet ? 24 : 32));
 
           if (isMobile) {
             // Mobile: Single column layout
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: pagePadding,
               child: Column(
                 children: [
                   _WebProfileCard(userProfile: userProfile),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _NextClassCard(
                     nextClass: nextClass,
                     userRoll: userProfile?['roll'],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _QuickActionsCard(),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _QuickAnalyticsCard(
                     ctMarksData: _ctMarksData,
                     userProfile: userProfile,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _UpcomingExamsCard(exams: _exams),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _BriefCalendarCard(calendarEvents: _calendarEvents),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sectionSpacing),
                   _NoticesSection(notices: _notices),
                 ],
               ),
@@ -180,7 +183,7 @@ class _WebFrontPageState extends State<WebFrontPage> {
           } else if (isTablet) {
             // Tablet: Two column layout
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: pagePadding,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -188,9 +191,9 @@ class _WebFrontPageState extends State<WebFrontPage> {
                     child: Column(
                       children: [
                         _WebProfileCard(userProfile: userProfile),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _QuickActionsCard(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _NextClassCard(
                           nextClass: nextClass,
                           userRoll: userProfile?['roll'],
@@ -198,7 +201,7 @@ class _WebFrontPageState extends State<WebFrontPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: sectionSpacing),
                   Expanded(
                     child: Column(
                       children: [
@@ -206,11 +209,11 @@ class _WebFrontPageState extends State<WebFrontPage> {
                           ctMarksData: _ctMarksData,
                           userProfile: userProfile,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _UpcomingExamsCard(exams: _exams),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _BriefCalendarCard(calendarEvents: _calendarEvents),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _NoticesSection(notices: _notices),
                       ],
                     ),
@@ -221,7 +224,7 @@ class _WebFrontPageState extends State<WebFrontPage> {
           } else {
             // Desktop: Three column layout (original)
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(32),
+              padding: pagePadding,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -231,12 +234,12 @@ class _WebFrontPageState extends State<WebFrontPage> {
                     child: Column(
                       children: [
                         _WebProfileCard(userProfile: userProfile),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _QuickActionsCard(),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: sectionSpacing),
 
                   // Center Column: Routine & Notices (45%)
                   Expanded(
@@ -247,12 +250,12 @@ class _WebFrontPageState extends State<WebFrontPage> {
                           nextClass: nextClass,
                           userRoll: userProfile?['roll'],
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _NoticesSection(notices: _notices),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: sectionSpacing),
 
                   // Right Column: Analytics, Exams & Calendar (30%)
                   Expanded(
@@ -263,9 +266,9 @@ class _WebFrontPageState extends State<WebFrontPage> {
                           ctMarksData: _ctMarksData,
                           userProfile: userProfile,
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _UpcomingExamsCard(exams: _exams),
-                        const SizedBox(height: 24),
+                        SizedBox(height: sectionSpacing),
                         _BriefCalendarCard(calendarEvents: _calendarEvents),
                       ],
                     ),
@@ -287,6 +290,8 @@ class _WebProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = userProfile == null;
+
     return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -299,7 +304,7 @@ class _WebProfileCard extends StatelessWidget {
                   userProfile != null && userProfile!['profile_pic'] != null
                   ? MemoryImage(base64Decode(userProfile!['profile_pic']))
                   : null,
-              child: userProfile == null
+              child: isLoading
                   ? const CircularProgressIndicator()
                   : (userProfile!['profile_pic'] == null
                         ? const Icon(
@@ -311,7 +316,7 @@ class _WebProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              userProfile?['name'] ?? 'Loading...',
+              isLoading ? 'Loading profile...' : (userProfile?['name'] ?? ''),
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 20,
@@ -321,7 +326,9 @@ class _WebProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              userProfile?['university'] ?? '',
+              isLoading
+                  ? 'Fetching your details'
+                  : (userProfile?['university'] ?? ''),
               style: GoogleFonts.poppins(
                 color: Colors.tealAccent[400],
                 fontSize: 14,
@@ -330,8 +337,11 @@ class _WebProfileCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '${userProfile?['department'] ?? ''} • Roll: ${userProfile?['roll'] ?? ''}',
+              isLoading
+                  ? 'Please wait a moment'
+                  : '${userProfile?['department'] ?? ''} • Roll: ${userProfile?['roll'] ?? ''}',
               style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             OutlinedButton(
@@ -413,21 +423,28 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: const BoxConstraints(minWidth: 90),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white10),
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white12),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Colors.tealAccent[400], size: 24),
-            const SizedBox(height: 4),
+            Icon(icon, color: Colors.tealAccent[400], size: 26),
+            const SizedBox(height: 6),
             Text(
               label,
-              style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+              style: GoogleFonts.poppins(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -515,21 +532,38 @@ class _NoticesSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Latest Notices',
-              style: GoogleFonts.poppins(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Latest Notices',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${notices?.length ?? 0}',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white38,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             if (notices == null)
-              const Center(child: CircularProgressIndicator())
+              _EmptyStateMessage(
+                icon: Icons.notifications_active_outlined,
+                title: 'Loading notices',
+                subtitle: 'Fetching the latest updates',
+              )
             else if (notices!.isEmpty)
-              const Text(
-                'No notices found',
-                style: TextStyle(color: Colors.white54),
+              _EmptyStateMessage(
+                icon: Icons.notifications_off_outlined,
+                title: 'No notices yet',
+                subtitle: 'Check back later for updates',
               )
             else
               Column(
@@ -731,7 +765,13 @@ class _UpcomingExamsCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            if (upcomingExam != null) ...[
+            if (exams == null)
+              _EmptyStateMessage(
+                icon: Icons.event_note_outlined,
+                title: 'Loading exams',
+                subtitle: 'Syncing the exam schedule',
+              )
+            else if (upcomingExam != null) ...[
               Text(
                 upcomingExam['title'] ?? '',
                 style: GoogleFonts.poppins(
@@ -772,9 +812,10 @@ class _UpcomingExamsCard extends StatelessWidget {
                 ),
               ],
             ] else ...[
-              Text(
-                'No upcoming exams',
-                style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+              _EmptyStateMessage(
+                icon: Icons.event_busy_outlined,
+                title: 'No upcoming exams',
+                subtitle: 'You are all caught up',
               ),
             ],
             const SizedBox(height: 16),
@@ -867,7 +908,13 @@ class _BriefCalendarCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            if (nextEvent != null) ...[
+            if (calendarEvents == null)
+              _EmptyStateMessage(
+                icon: Icons.calendar_today_outlined,
+                title: 'Loading calendar',
+                subtitle: 'Preparing your semester dates',
+              )
+            else if (nextEvent != null) ...[
               Text(
                 nextEvent['title'] ?? '',
                 style: GoogleFonts.poppins(
@@ -885,9 +932,10 @@ class _BriefCalendarCard extends StatelessWidget {
                 ),
               ),
             ] else ...[
-              Text(
-                'No calendar data',
-                style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+              _EmptyStateMessage(
+                icon: Icons.event_busy_outlined,
+                title: 'No calendar data',
+                subtitle: 'Add important dates to stay ahead',
               ),
             ],
             const SizedBox(height: 16),
@@ -940,5 +988,66 @@ class _BriefCalendarCard extends StatelessWidget {
     }
 
     return {'title': 'Semester In Progress', 'subtitle': 'Stay focused!'};
+  }
+}
+
+class _EmptyStateMessage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  const _EmptyStateMessage({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white70, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

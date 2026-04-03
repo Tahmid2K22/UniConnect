@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uni_connect/firebase/firestore/database.dart';
+import 'package:uni_connect/utils/guest_service.dart';
 import 'dart:convert';
 
 class WebNavigationBar extends StatelessWidget {
@@ -275,34 +276,37 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = Colors.tealAccent[400]!;
+
     return InkWell(
       onTap: () {
         if (!isActive) {
           Navigator.pushReplacementNamed(context, route);
         }
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
         margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: isActive
-            ? BoxDecoration(
-                color: Colors.tealAccent.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              )
-            : null,
+        decoration: BoxDecoration(
+          color: isActive ? activeColor.withValues(alpha: 0.15) : null,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? activeColor.withValues(alpha: 0.4) : Colors.white12,
+          ),
+        ),
         child: Row(
           children: [
             Icon(
               icon,
               size: 20,
-              color: isActive ? Colors.tealAccent[400] : Colors.white60,
+              color: isActive ? activeColor : Colors.white60,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.poppins(
-                color: isActive ? Colors.tealAccent[400] : Colors.white60,
+                color: isActive ? activeColor : Colors.white60,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 14,
               ),
@@ -394,6 +398,7 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
         } else if (value == 'settings') {
           Navigator.pushNamed(context, '/settings');
         } else if (value == 'logout') {
+          await GuestService.logoutGuest();
           await FirebaseAuth.instance.signOut();
           if (mounted) {
             Navigator.pushNamedAndRemoveUntil(

@@ -10,6 +10,7 @@ import 'package:uni_connect/utils/font_scale.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uni_connect/features/web/web_layout.dart';
+import 'package:uni_connect/utils/guest_service.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -303,6 +304,7 @@ class SettingsPage extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
+              await GuestService.logoutGuest();
               await FirebaseAuth.instance.signOut();
               Navigator.pushNamedAndRemoveUntil(
                 context,

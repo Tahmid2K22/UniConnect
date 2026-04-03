@@ -14,13 +14,16 @@ class CtMarksDetails extends StatelessWidget {
     courses.forEach((course, exams) {
       for (int i = 0; i < (exams as List).length; i++) {
         final pair = exams[i] as List;
-        final percent = (pair[0] / pair[1]) * 100;
+        final num obtained = pair[0] ?? 0;
+        final num total = pair[1] ?? 0;
+        if (total == 0) continue;
+        final percent = (obtained / total) * 100;
         entries.add(
           CtMarkEntry(
             course: course,
             exam: i + 1,
-            obtained: pair[0],
-            total: pair[1],
+            obtained: obtained,
+            total: total,
             percent: percent,
           ),
         );

@@ -18,81 +18,124 @@ class CtComparisonChart extends StatelessWidget {
   Widget _buildChart(BuildContext context) {
     final xLabels = entries.map((e) => '${e.course} CT${e.ctNumber}').toList();
 
-    return SizedBox(
-      height: 260,
-      child: BarChart(
-        BarChartData(
-          maxY: 100,
-          minY: 0,
-          groupsSpace: 16,
-          barGroups: List.generate(entries.length, (i) {
-            final entry = entries[i];
-            return BarChartGroupData(
-              x: i,
-              barRods: [
-                BarChartRodData(
-                  toY: entry.userPercent,
-                  color: Colors.cyanAccent,
-                  width: 12,
-                  borderRadius: BorderRadius.circular(4),
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 240,
+          child: BarChart(
+            BarChartData(
+              maxY: 100,
+              minY: 0,
+              groupsSpace: 16,
+              barGroups: List.generate(entries.length, (i) {
+                final entry = entries[i];
+                return BarChartGroupData(
+                  x: i,
+                  barRods: [
+                    BarChartRodData(
+                      toY: entry.userPercent,
+                      color: Colors.cyanAccent,
+                      width: 12,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    BarChartRodData(
+                      toY: entry.avgPercent,
+                      color: Colors.blueAccent,
+                      width: 12,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ],
+                );
+              }),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 32,
+                    interval: 20,
+                    getTitlesWidget: (value, meta) {
+                      if (value % 20 == 0) {
+                        return Text(
+                          '${value.toInt()}%',
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
                 ),
-                BarChartRodData(
-                  toY: entry.avgPercent,
-                  color: Colors.blueAccent,
-                  width: 12,
-                  borderRadius: BorderRadius.circular(4),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: false,
+                    getTitlesWidget: (value, meta) {
+                      if (value.toInt() < xLabels.length) {
+                        return RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            xLabels[value.toInt()],
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 11,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ),
-              ],
-            );
-          }),
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 32,
-                interval: 20,
-                getTitlesWidget: (value, meta) {
-                  if (value % 20 == 0) {
-                    return Text(
-                      '${value.toInt()}%',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                      ),
-                    );
-                  }
-                  return const SizedBox();
-                },
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
+              gridData: FlGridData(show: true, drawVerticalLine: false),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(enabled: true),
             ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: false,
-                getTitlesWidget: (value, meta) {
-                  if (value.toInt() < xLabels.length) {
-                    return RotatedBox(
-                      quarterTurns: 3,
-                      child: Text(
-                        xLabels[value.toInt()],
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 11,
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-          gridData: FlGridData(show: true, drawVerticalLine: false),
-          borderData: FlBorderData(show: false),
-          barTouchData: BarTouchData(enabled: true),
         ),
-      ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: Colors.cyanAccent,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              "You",
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              "Batch average",
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

@@ -23,6 +23,7 @@ import 'package:uni_connect/features/frontpage/front_page.dart';
 import 'package:uni_connect/features/user/user_profile_page.dart';
 import 'features/routine/routine_page.dart';
 import 'features/todo/todo_task.dart';
+import 'features/resources/models/resource_item.dart';
 import 'features/user/user_analytics.dart';
 import 'features/calendar/calendar_page.dart';
 import 'features/web/web_profile_page.dart';
@@ -51,6 +52,8 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(TodoTaskAdapter());
+  Hive.registerAdapter(ResourceTypeAdapter());
+  Hive.registerAdapter(ResourceItemAdapter());
 
   // Open all Hive boxes in parallel for faster startup
   await Future.wait([
@@ -67,6 +70,8 @@ void main() async {
     Hive.openBox('goals_history'),
     Hive.openBox('calendarBox'),
     Hive.openBox('userCtMarksBox'),
+    Hive.openBox('calendarNotesBox'),
+    Hive.openBox<ResourceItem>('resourcesBox'),
   ]);
 
   // Preload critical data in background
